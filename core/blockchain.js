@@ -1,10 +1,22 @@
 "use strict";
 const CryptoJS = require("crypto-js");
 
-const ut = require("./utils");
+const ut = require("../common/utils");
 
-// block structure
+/**
+ * Represents the block structure
+ */
 class Block {
+    /**
+     * @constructor
+     * @param {*} index 
+     * @param {*} previousHash 
+     * @param {*} timestamp 
+     * @param {*} data 
+     * @param {*} hash 
+     * @param {*} difficulty 
+     * @param {*} nonce 
+     */
     constructor(index, previousHash, timestamp, data, hash, difficulty, nonce) {
         this.index = index;
         this.previousHash = previousHash.toString();
@@ -13,6 +25,13 @@ class Block {
         this.hash = hash.toString();
         this.difficulty = difficulty;
         this.nonce = nonce;
+    }
+
+    /**
+     * Example method
+     */
+    hello() {
+        return 'hello';
     }
 }
 

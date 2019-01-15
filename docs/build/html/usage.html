@@ -1,0 +1,218 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Usage(development only) &#8212; Plasma-DAG-Client 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Core" href="core.html" />
+    <link rel="prev" title="Intro" href="intro.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="usage-development-only">
+<h1>Usage(development only)<a class="headerlink" href="#usage-development-only" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="process">
+<h2>Process<a class="headerlink" href="#process" title="Permalink to this headline">¶</a></h2>
+<p>(새로운 디렉토리 만들지 않는 경우 스킵)</p>
+<p>새로운 디렉토리를 만들거나 디렉토리 내부에 하위 디렉토리를 생성할 경우,</p>
+<p>plasma-client/docs/source/conf.py의 js_source_path 리스트에 해당 디렉토리를 추가한다.</p>
+<p>이 때, 디렉토리 하위를 recursive하게 돌지 않으므로 모든 path를 하나하나 다 적어줘야 한다…</p>
+<p>그리고나서 conf.py가 있는 디렉토리의 rst 파일들을 잘 모방해서 새로운 rst 파일을 만들고 index.rst에 파일 이름 기입.</p>
+<p>1. 새로운 함수, 클래스 등을 추가할 경우, JSDoc 규격에 맞게 주석을 단다.
+<a class="reference external" href="https://code.i-harness.com/ko-kr/docs/eslint/rules/valid-jsdoc/">valid-jsdoc</a></p>
+<ol class="arabic simple" start="2">
+<li>plasma-client/docs/ 디렉토리에서 make html 명령어를 입력. 오류가 나는지 확인.</li>
+<li>plasma-client/docs/build/html/index.html 파일을 브라우저에서 열어보고 확인.</li>
+<li>커밋.</li>
+</ol>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<p>이름이 겹치지 않는 것이 확실할 때,</p>
+<dl class="function">
+<dt id="Book">
+<code class="descname">Book</code><span class="sig-paren">(</span><em>title</em>, <em>author</em><span class="sig-paren">)</span><a class="headerlink" href="#Book" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a book.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
+<li><strong>title</strong> (<em>string</em>) – The title of the book.</li>
+<li><strong>author</strong> (<em>string</em>) – The author of the book.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<p>이름이 겹치는 경우가 생길 것이 우려 될 때,</p>
+<dl class="function">
+<dt id="doc_test.doc_test.Book2">
+<code class="descclassname">doc_test.doc_test.</code><code class="descname">Book2</code><span class="sig-paren">(</span><em>title</em>, <em>author</em><span class="sig-paren">)</span><a class="headerlink" href="#doc_test.doc_test.Book2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a book.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
+<li><strong>title</strong> (<em>string</em>) – The title of the book.</li>
+<li><strong>author</strong> (<em>string</em>) – The author of the book.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="TestDocNode">
+<em class="property">class </em><code class="descname">TestDocNode</code><span class="sig-paren">(</span><em>constructor</em>, <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#TestDocNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test Doc Node Class</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
+<li><strong>str</strong> (<em>string</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="TestDocNode.bong">
+<code class="descclassname">TestDocNode.</code><code class="descname">bong</code><a class="headerlink" href="#TestDocNode.bong" title="Permalink to this definition">¶</a></dt>
+<dd><p>The getter function example.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="TestDocNode.str">
+<code class="descclassname">TestDocNode.</code><code class="descname">str</code><a class="headerlink" href="#TestDocNode.str" title="Permalink to this definition">¶</a></dt>
+<dd><p>The test node’s title.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="TestDocNode.str">
+<code class="descclassname">TestDocNode.</code><code class="descname">str</code><a class="headerlink" href="#TestDocNode.str" title="Permalink to this definition">¶</a></dt>
+<dd><p>The test node’s title.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="TestDocNode.bong">
+<code class="descclassname">TestDocNode.</code><code class="descname">bong</code><a class="headerlink" href="#TestDocNode.bong" title="Permalink to this definition">¶</a></dt>
+<dd><p>The getter function example.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Plasma-DAG-Client</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Intro</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage(development only)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#process">Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#functions">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#classes">Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">Core</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="intro.html" title="previous chapter">Intro</a></li>
+      <li>Next: <a href="core.html" title="next chapter">Core</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Decipher.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/usage.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -2,8 +2,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 
-const nw = require("./network");
-const wl = require("./wallet");
+const nw = require("../network/network");
+const wl = require("../client/wallet");
 
 // set environment variable
 const http_port = process.env.HTTP_PORT || 3001;                              // > $env:HTTP_PORT=3003 (windows) || export HTTP_PORT=3003 (mac)
@@ -11,7 +11,7 @@ const initialPeers = process.env.PEERS ? process.env.PEERS.split(',') : [];   //
 
 // REST API
 function initHttpServer() {
-    const bc = require("./blockchain");
+    const bc = require("../core/blockchain");
     
     const app = express();
     app.use(bodyParser.json());
