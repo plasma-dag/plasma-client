@@ -8,8 +8,7 @@ class StateDB {
 	 * @param {*} db 
 	 * @param {*} trie 
 	 * @param {*} stateObjects 
-	 */
-	
+	 */	
     constructor(db, trie, stateObjects) {
         this.trie = db.openTree();
         this.stateObjects = {};
