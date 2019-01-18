@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Core &#8212; Plasma-DAG-Client 0.1.0 documentation</title>
+    <title>Common &#8212; Plasma-DAG-Client 0.1.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -16,7 +16,8 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Common" href="common.html" />
+    <link rel="next" title="Core" href="core.html" />
+    <link rel="prev" title="Usage(development only)" href="usage.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -33,37 +34,56 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="core">
-<h1>Core<a class="headerlink" href="#core" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="blockchain-js">
-<h2>blockchain.js<a class="headerlink" href="#blockchain-js" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="Block">
-<em class="property">class </em><code class="descname">Block</code><span class="sig-paren">(</span><em>constructor</em>, <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#Block" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents the block structure</p>
+  <div class="section" id="common">
+<h1>Common<a class="headerlink" href="#common" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="types-js">
+<h2>types.js<a class="headerlink" href="#types-js" title="Permalink to this headline">¶</a></h2>
+<dl class="attribute">
+<dt id="HASH_LENGTH">
+<code class="descname">HASH_LENGTH</code><a class="headerlink" href="#HASH_LENGTH" title="Permalink to this definition">¶</a></dt>
+<dd><p>HASH_LENGTH is the expected length of the hash.</p>
+<p>current value = 32</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ADDRESS_LENGTH">
+<code class="descname">ADDRESS_LENGTH</code><a class="headerlink" href="#ADDRESS_LENGTH" title="Permalink to this definition">¶</a></dt>
+<dd><p>ADDRESS_LENGTH is the expected length of the address.</p>
+<p>current value = 20</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="bytesToHash">
+<code class="descname">bytesToHash</code><span class="sig-paren">(</span><em>b</em><span class="sig-paren">)</span><a class="headerlink" href="#bytesToHash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns hash value within HASH_LENGTH</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
-<li><strong>index</strong> (<em>*</em>) – </li>
-<li><strong>previousHash</strong> (<em>*</em>) – </li>
-<li><strong>timestamp</strong> (<em>*</em>) – </li>
-<li><strong>data</strong> (<em>*</em>) – </li>
-<li><strong>hash</strong> (<em>*</em>) – </li>
-<li><strong>difficulty</strong> (<em>*</em>) – </li>
-<li><strong>nonce</strong> (<em>*</em>) – </li>
+<li><strong>b</strong> (<em>string</em>) – bytes value as string.</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<dl class="function">
-<dt id="Block.hello">
-<code class="descclassname">Block.</code><code class="descname">hello</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Block.hello" title="Permalink to this definition">¶</a></dt>
-<dd><p>Example method</p>
 </dd></dl>
 
+<dl class="function">
+<dt id="bytesToAddress">
+<code class="descname">bytesToAddress</code><span class="sig-paren">(</span><em>b</em><span class="sig-paren">)</span><a class="headerlink" href="#bytesToAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns ㅁddress value within ADDRESS_LENGTH</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
+<li><strong>b</strong> (<em>string</em>) – bytes value as string.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -89,18 +109,19 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Intro</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage(development only)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Core</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#blockchain-js">blockchain.js</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Common</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#types-js">types.js</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">Core</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="common.html" title="previous chapter">Common</a></li>
+      <li>Previous: <a href="usage.html" title="previous chapter">Usage(development only)</a></li>
+      <li>Next: <a href="core.html" title="next chapter">Core</a></li>
   </ul></li>
 </ul>
 </div>
@@ -136,7 +157,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="_sources/core.rst.txt"
+      <a href="_sources/common.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

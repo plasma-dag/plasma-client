@@ -6,6 +6,7 @@ Welcome to Plasma-DAG-Client's documentation!
    
    intro
    usage
+   common
    core
    
 Indices and tables
