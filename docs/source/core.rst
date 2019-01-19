@@ -2,8 +2,25 @@
 Core
 =====
 
+block.js
+========
+
+.. autoClass:: Header(constructor)
+  :members:
+
+.. autoClass:: Block(constructor)
+  :members:
+
+
+transactions.js
+===============
+
+.. autoClass:: Transaction(constructor)
+  :members:
+
+
 blockchain.js
 =============
 
-.. autoClass:: Block(constructor, args)
-   :members:
+.. autoClass:: Blockchain(constructor)
+  :members:

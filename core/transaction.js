@@ -1,37 +1,50 @@
+'use-strict';
+const ut = require('../common/utils');
+
 /**
- * 
+ * Transaction
  */
-
-
 class Transaction {
     /**
      * @constructor
-     * @param {*} type 
-     * @param {*} nonce 
-     * @param {*} recipient[] 
-     * @param {*} value 
-     * @param {*} transactionSignature  
-     * @param {*} timestamp 
+     * 
+     * @param {string} type 'send' or 'receive' 
+     * @param {number} accountNonce 
+     * @param {address} recipient 
+     * @param {address} sender 
+     * @param {number} value 
+     * @param {string} transactionSignature 
      */
-    constructor(type, nonce, recipient, value, transactionSignature, timestamp) {
-        this.type = type;
-        this.nonce = nonce;
-        this.recipient = recipient;
-        this.value = value;
+    constructor(type, accountNonce, recipient, sender, value, transactionSignature) {
+        if (!(type || accountNonce || recipient || sender || value || transactionSignature)) {
+            return Error('Not enough parameters');
+        }
+        this.data = {
+            type,
+            accountNonce,
+            recipient,
+            sender,
+            value,
+        }
         this.transcationSignature = transactionSignature;
-        this.timestamp = timestamp;
     }
-
     /**
-     * Example method
+     * Returns and saves hash value of tx data, exclude signature information
      */
-    hello() {
-        return 'hello';
+    hash() {
+        if (this.hash) return this.hash
+        // cache hash value
+        this.hash = ut.calculateHash(this.data).toString();
+        return this.hash;
     }
 }
 
-
-
+function rlpEncode(tx) {
+    return rlp.encode(tx.data);
+}
+/** 
+ * TODO: this part is for cli, not about transaction itself. Should be moved to other files.
+ */
 const operatorAddr = 21321412; 
 
 function sendTransaction(sender, signature, receiver, value) {
@@ -62,4 +75,6 @@ function isValidTransaction(newTransaction) {
 	
 }
 
-
+module.exports = {
+    Transaction
+}

@@ -35,33 +35,182 @@
             
   <div class="section" id="core">
 <h1>Core<a class="headerlink" href="#core" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="blockchain-js">
-<h2>blockchain.js<a class="headerlink" href="#blockchain-js" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="block-js">
+<h2>block.js<a class="headerlink" href="#block-js" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Header">
+<em class="property">class </em><code class="descname">Header</code><span class="sig-paren">(</span><em>constructor</em><span class="sig-paren">)</span><a class="headerlink" href="#Header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents the block header structure</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
+<li><strong>previousHash</strong> (<em>String</em>) – </li>
+<li><strong>state</strong> (<em>Object</em>) – state of the block producer’s account</li>
+<li><strong>txHash</strong> (<em>String</em>) – all transactions’ hash value</li>
+<li><strong>difficulty</strong> (<em>Number</em>) – </li>
+<li><strong>number</strong> (<em>Number</em>) – </li>
+<li><strong>timestamp</strong> (<em>Number</em>) – </li>
+<li><strong>nonce</strong> (<em>Number</em>) – </li>
+<li><strong>checkpoint</strong> (<em>Object</em>) – Operator’s receipt about previous block, 꼭 직전의 블록일 이유는 없음.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="class">
 <dt id="Block">
-<em class="property">class </em><code class="descname">Block</code><span class="sig-paren">(</span><em>constructor</em>, <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#Block" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descname">Block</code><span class="sig-paren">(</span><em>constructor</em><span class="sig-paren">)</span><a class="headerlink" href="#Block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents the block structure</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
-<li><strong>index</strong> (<em>*</em>) – </li>
-<li><strong>previousHash</strong> (<em>*</em>) – </li>
-<li><strong>timestamp</strong> (<em>*</em>) – </li>
-<li><strong>data</strong> (<em>*</em>) – </li>
-<li><strong>hash</strong> (<em>*</em>) – </li>
-<li><strong>difficulty</strong> (<em>*</em>) – </li>
-<li><strong>nonce</strong> (<em>*</em>) – </li>
+<li><strong>header</strong> (<a class="reference internal" href="#Header" title="Header"><em>Header</em></a>) – this block’s header</li>
+<li><strong>signature</strong> (<em>Stirng</em>) – signature of block producer</li>
+<li><strong>transactions</strong> (<em>Array.&lt;Transaction&gt;</em>) – list of txs</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="transactions-js">
+<h2>transactions.js<a class="headerlink" href="#transactions-js" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Transaction">
+<em class="property">class </em><code class="descname">Transaction</code><span class="sig-paren">(</span><em>constructor</em><span class="sig-paren">)</span><a class="headerlink" href="#Transaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transaction</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
+<li><strong>type</strong> (<em>string</em>) – ‘send’ or ‘receive’</li>
+<li><strong>accountNonce</strong> (<em>number</em>) – </li>
+<li><strong>recipient</strong> (<em>address</em>) – </li>
+<li><strong>sender</strong> (<em>address</em>) – </li>
+<li><strong>value</strong> (<em>number</em>) – </li>
+<li><strong>transactionSignature</strong> (<em>string</em>) – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
 <dl class="function">
-<dt id="Block.hello">
-<code class="descclassname">Block.</code><code class="descname">hello</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Block.hello" title="Permalink to this definition">¶</a></dt>
-<dd><p>Example method</p>
+<dt id="Transaction.hash">
+<code class="descclassname">Transaction.</code><code class="descname">hash</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Transaction.hash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns and saves hash value of tx data, exclude signature information</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="blockchain-js">
+<h2>blockchain.js<a class="headerlink" href="#blockchain-js" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Blockchain">
+<em class="property">class </em><code class="descname">Blockchain</code><span class="sig-paren">(</span><em>constructor</em><span class="sig-paren">)</span><a class="headerlink" href="#Blockchain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents the Blockchain structure</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
+<li><strong>db</strong> (<em>Database</em>) – block db</li>
+<li><strong>account</strong> (<em>Account</em>) – this blockchain’s owner</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="Blockchain.checkpoints">
+<code class="descclassname">Blockchain.</code><code class="descname">checkpoints</code><a class="headerlink" href="#Blockchain.checkpoints" title="Permalink to this definition">¶</a></dt>
+<dd><p>final checkpoint got receipt from operator</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Blockchain.getBlock">
+<code class="descclassname">Blockchain.</code><code class="descname">getBlock</code><span class="sig-paren">(</span><em>hash</em>, <em>number</em><span class="sig-paren">)</span><a class="headerlink" href="#Blockchain.getBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the block matching hash value or number.
+나중에 header chain 집어 넣었을 때 필요.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
+<li><strong>hash</strong> (<em>String</em>) – </li>
+<li><strong>number</strong> (<em>Number</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Blockchain.getBlockByNumber">
+<code class="descclassname">Blockchain.</code><code class="descname">getBlockByNumber</code><span class="sig-paren">(</span><em>number</em><span class="sig-paren">)</span><a class="headerlink" href="#Blockchain.getBlockByNumber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the block with block number</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
+<li><strong>number</strong> (<em>Number</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Blockchain.getCurrentBlock">
+<code class="descclassname">Blockchain.</code><code class="descname">getCurrentBlock</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Blockchain.getCurrentBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns current block of this blockchain</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Blockchain.insert">
+<code class="descclassname">Blockchain.</code><code class="descname">insert</code><span class="sig-paren">(</span><em>block</em><span class="sig-paren">)</span><a class="headerlink" href="#Blockchain.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Injects a new head block into the current block chain. This method
+assumes that the block is indeed a true head.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
+<li><strong>block</strong> (<a class="reference internal" href="#Block" title="Block"><em>Block</em></a>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Blockchain.updateCheckpoint">
+<code class="descclassname">Blockchain.</code><code class="descname">updateCheckpoint</code><span class="sig-paren">(</span><em>checkpoint</em><span class="sig-paren">)</span><a class="headerlink" href="#Blockchain.updateCheckpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates a new checkpoint received from operator</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
+<li><strong>checkpoint</strong> (<em>Object</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -91,6 +240,8 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage(development only)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Core</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#block-js">block.js</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#transactions-js">transactions.js</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#blockchain-js">blockchain.js</a></li>
 </ul>
 </li>
