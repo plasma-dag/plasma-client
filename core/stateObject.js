@@ -15,50 +15,72 @@ class StateObject {
         this.account = account;
     }
     
-    getNonce(nonce) {
-    	if(this.account == null)
-    		return null;
-    	return this.account.getNonce(nonce);
+    empty() {
+        if(this.account == undefined) {
+            return undefined;
+        }
+        return this.account.empty();
+    }
+
+    getAddress() {
+        return this.address;
+    }
+
+    getNonce() {
+    	if(this.account == undefined)
+    		return undefined;
+    	return this.account.getNonce();
     }
     
     setNonce(nonce) {
-    	if(this.account == null)
-    		return null;
+    	if(this.account == undefined) {
+            return undefined;
+        }
     	return this.account.setNonce(nonce);
     }
     
     getBalance() {
+        if(this.account == undefined) {
+            return undefined;
+        }
     	return this.account.getBalance();
     }
     
     addBalance(amount) {
-    	if(this.account == null)
-    		return null;
+    	if(this.account == undefined) {
+            return undefined;
+        }
     	return this.account.addBalance(amount);
     }
     
     subBalance(amount) {
-    	if(this.account == null)
-    		return null;
+    	if(this.account == undefined) {
+            return undefined;
+        }
     	return this.account.subBalance(amount);
-	}
+    }
     
+    setBalance(amount) {
+        if(this.account == undefined) {
+            return undefined;
+        }
+        this.account.setBalance(amount);
+    }
     
+    /* account storage
+    setStateObject(db, key, value) {
+        prevValue = this.getStateObject(db, key);
+        if(prevValue == value) {
+            return;
+        }
+        db.append(key, value);
+    }
+    
+    getStateObject(db, key) {
+        return db.openStateObject(db, key); 
+    }
+    */
 
-    setState(db, key) {
-    	
-    }
-    
-    getState(db, key) {
-    	
-    }
-
-    /**
-     * Example method
-     */
-    hello() {
-        return 'hello';
-    }
 }
 
 

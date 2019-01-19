@@ -3,7 +3,7 @@
  */
 
 
-class account {
+class Account {
     /**
      * @constructor
      * @param {*} nonce 
@@ -13,19 +13,26 @@ class account {
     constructor(nonce, balance, storageRoot) {
         this.nonce = nonce;
         this.balance = balance;
-        this.storageRoot = storageRoot;        
+        this.storageRoot = storageRoot;
     }
     
+    empty() {
+        return this.nonce == 0 && this.balance == 0 && storageRoot == 0;
+    }
+
     getNonce() {
-    	return this.Nonce;
+    	return this.nonce;
     }
     
+    setBalance(amount) {
+        this.balance = amount;
+    }
     getBalance() {
-    	return this.Balance;
+    	return this.balance;
     }
     
     getStorageRoot() {
-    	return this.getStorageRoot;
+    	return this.storageRoot;
     }   
 }
 
