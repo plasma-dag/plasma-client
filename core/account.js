@@ -36,24 +36,6 @@ class Account {
     }   
 }
 
-
-function increaseNonce(account) {
-	account.nonce++;
-}
-
-function addBalance(account, amount) {
-	account.balance += amount;
-}
-
-function subBalance(account, amount) {
-	if(account.balance < amount) {
-		alert("balance is smaller than amount.")
-		return;
-	}
-	account.balance -= amount;
-}
-
-function calculateStorageRoot(account, storage) {
-	
-	
-}
+module.exports = { 
+    Account,
+};

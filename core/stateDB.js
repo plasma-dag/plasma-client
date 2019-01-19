@@ -1,6 +1,8 @@
 /**
  * 
  */
+const { Account } = require("./account.js");
+const { StateObject } = require("./stateObject.js");
 
 class StateDB {
     /**
@@ -36,7 +38,7 @@ class StateDB {
 	}
 
     getStateObject(addr) {
-    	var stateObject = this.stateObjects.addr;
+    	let stateObject = this.stateObjects.addr;
     	if(stateObject != undefined) {
     		if(stateObject.deleted) {
     			return undefined;
@@ -47,18 +49,19 @@ class StateDB {
     }
 
     setStateObject(stateObject) {
-    	this.stateObjects.addr = stateObject;
+    	this.stateObjects[stateObject.address] = stateObject;
     }
 
-    createStateObject(addr) {
-    	var account = new account(0, 0, 0); 
-    	var stateObject = new StateObject(addr, account);
-    	return this.setStateObject(stateObject);
+    createStateObject(addr) {		
+		let account = new Account(0, 0, 0);    	
+		let stateObject = new StateObject(addr, account);
+		this.setStateObject(stateObject);
+		return stateObject;
     }
 /* 
     updateStateObject(stateObject) {
-    	var addr = stateObject.address;
-    	// var data = rlp.encodeToByte(stateObject);
+    	let addr = stateObject.address;
+    	// let data = rlp.encodeToByte(stateObject);
     	this.trie.tryUpdate(addr, data);
     }
 */
@@ -68,7 +71,7 @@ class StateDB {
     }
 
     getNonce(addr, nonce) {
-    	var stateObject = this.getStateObject(addr);
+    	let stateObject = this.getStateObject(addr);
     	if(stateObject == undefined) {
     		alert("stateObject doen't exist");
     	}
@@ -76,7 +79,7 @@ class StateDB {
     }
 
     setNonce(addr, nonce) {
-    	var stateObject = this.getStateObject(addr);
+    	let stateObject = this.getStateObject(addr);
     	if(stateObject == null) {
     		alert("stateObject doen't exist");
     	}
@@ -84,14 +87,14 @@ class StateDB {
     }    
 
     getBalance(addr) {
-    	var stateObject = this.getStateObject(addr);
+    	let stateObject = this.getStateObject(addr);
     	if(stateObject == undefined) 
     		return undefined;
     	return stateObject.getBalance(amount);    	
     }    
 
     addBalance(addr, amount) {
-    	var stateObject = this.getStateObject(addr);
+    	let stateObject = this.getStateObject(addr);
     	if(stateObject == undefined) {
     		alert("stateObject doen't exist");
     	}
@@ -99,7 +102,7 @@ class StateDB {
     }
 
     subBalance(addr, amount) {
-    	var stateObject = this.getStateObject(addr);
+    	let stateObject = this.getStateObject(addr);
     	if(stateObject == undefined) {
     		alert("stateObject doen't exist");
     	}
@@ -107,7 +110,7 @@ class StateDB {
     }
 
     getStorageRoot(addr) {
-    	var stateObject = this.getStateObject(addr);
+    	let stateObject = this.getStateObject(addr);
     	if(stateObject == undefined) {
     		alert("stateObject doen't exist");
     	}
@@ -117,6 +120,9 @@ class StateDB {
 	
 }
 
+module.exports = { 
+	StateDB,
+};
 
 
 

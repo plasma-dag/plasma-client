@@ -1,14 +1,15 @@
 /**
  * 
  */
+const { Account } = require("./account.js");
 
 class StateObject {
     /**
      * @constructor
      * @param {*} address
      * @param {*} account
-     * @param {*} db?
-     * @param {*} trie?
+     * @param {*} db
+     * @param {*} trie
      */
     constructor(address, account) {
         this.address = address;
@@ -83,7 +84,9 @@ class StateObject {
 
 }
 
-
+module.exports = { 
+    StateObject,
+};
 
 
 
