@@ -1,4 +1,14 @@
 'use strict';
+const { SHA256 } = require("crypto-js");
+
+/**
+ * Returns calculated SHA256 hash value
+ * 
+ * @param {string} str 
+ */
+function calculateHash(str) {
+    return SHA256(str).toString();
+}
 
 function hexToBinary(s) {
     const lookupTable = {
@@ -20,4 +30,7 @@ function hexToBinary(s) {
     return ret;
 }
 
-module.exports = { hexToBinary };
+module.exports = { 
+    calculateHash,
+    hexToBinary,
+};
