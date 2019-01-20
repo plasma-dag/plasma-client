@@ -14,18 +14,18 @@ class Database{
     
     readBlock(hash) {
         return new Promise((resolve, reject) => {
-        this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
-            if (err) {
-              console.error(err)
-              return
-            }
-            const blocks = client.db('plasma').collection('blocks')
+            this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
+                if (err) {
+                console.error(err)
+                return
+                }
+                const blocks = client.db('plasma').collection('blocks')
 
-            blocks.findOne({_id : hash})
-                .then(({result}) => resolve(result) )
-                .catch(err => reject(err))
-        }
-        )
+                blocks.findOne({_id : hash})
+                    .then((result) => resolve(result) )
+                    .catch(err => reject(err))
+            }
+            )
     })
 
     }
