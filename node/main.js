@@ -2,8 +2,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 
-const nw = require("../network/network");
-const wl = require("../client/wallet");
+const nw = require("./network");
+const wl = require("./wallet");
 
 // set environment variable
 const http_port = process.env.HTTP_PORT || 3001;                              // > $env:HTTP_PORT=3003 (windows) || export HTTP_PORT=3003 (mac)
@@ -11,7 +11,7 @@ const initialPeers = process.env.PEERS ? process.env.PEERS.split(',') : [];   //
 
 // REST API
 function initHttpServer() {
-    const bc = require("../core/blockchain");
+    const bc = require("./blockchain");
     
     const app = express();
     app.use(bodyParser.json());
@@ -33,6 +33,17 @@ function initHttpServer() {
         nw.connectToPeers([req.body.peer]);
         res.send();
     });
+
+    /*
+     *  multi-cast
+     */
+    app.post("/multicast", function (req, res) {
+        var peers = req.body.peers.split(',') || [];
+        var message = req.body.message || "";
+        nw.multicast(peers, message);
+        res.send();
+    });
+
     app.get("/address", function (req, res) {
         const address = wl.getPublicFromWallet().toString();
         if(address != ""){ res.send({ "address": address }); }
@@ -53,8 +64,10 @@ function initHttpServer() {
     app.listen(http_port, function () { console.log("Listening http port on: " + http_port) });
 }
 
+/*
 // main
 nw.connectToPeers(initialPeers);
 initHttpServer();
 nw.initP2PServer();
 wl.initWallet();
+*/
