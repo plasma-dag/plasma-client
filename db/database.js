@@ -48,7 +48,46 @@ class Database{
             )
         });
     }
-}
+
+    readState(address) {
+        return new Promise((resolve, reject) => {
+            this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
+                if (err) {
+                console.error(err)
+                return
+                }
+                const blocks = client.db('plasma').collection('blocks')
+
+                blocks.findOne({_id : address})
+                    .then((result) => resolve(result) )
+                    .catch(err => reject(err))
+            }
+            )
+        });
+
+    }
+
+    writeState(state){
+        return new Promise((resolve,reject)=>{
+            this.db.connect(url, {useNewUrlParser: true}, (err, client) => {
+                if (err) {
+                    console.error(err)
+                    return
+                }
+                
+                const states = client.db('plasma').collection('states')
+
+                state._id = state.address;
+            
+                states.updateOne(state._id,state,{upsert:true})
+                    .then(({result})=>resolve(result))
+                    .catch((err => reject(err)));
+                }
+            )
+        });
+
+    }
+ }
 
 module.exports = {
     Database
