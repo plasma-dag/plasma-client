@@ -12,7 +12,21 @@ class Database{
 
     }
     
-    readBlock() {
+    readBlock(hash) {
+        return new Promise((resolve, reject) => {
+            this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
+                if (err) {
+                console.error(err)
+                return
+                }
+                const blocks = client.db('plasma').collection('blocks')
+
+                blocks.findOne({_id : hash})
+                    .then((result) => resolve(result) )
+                    .catch(err => reject(err))
+            }
+            )
+    })
 
     }
     
@@ -24,7 +38,7 @@ class Database{
                   return
                 }
                 block._id = block.hash();
-    
+
                 const blocks = client.db('plasma').collection('blocks')
                 
                 blocks.insertOne(block)
