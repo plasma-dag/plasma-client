@@ -83,7 +83,9 @@ class StateObject {
 
 }
 
-
+module.exports = {
+   StateObject
+  }
 
 
 

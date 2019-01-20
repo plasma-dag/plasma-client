@@ -57,3 +57,7 @@ function calculateStorageRoot(account, storage) {
 	
 	
 }
+
+module.exports = {
+    Account
+  }
