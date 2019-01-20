@@ -18,4 +18,4 @@ let newBlock = new Block(newHeader, 'signature', []);
 const db = new Database();
 
 db.writeBlock(newBlock).then( res => console.log(res) );
-
+db.readBlock(newBlock.hash()).then(res => console.log(res));
