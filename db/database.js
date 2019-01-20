@@ -4,14 +4,20 @@ const mongo = require('mongodb').MongoClient
 const url = 'mongodb://localhost:27017'
 
 /**
- * 
+ * Represents the database structure
  */
 class Database{ 
+    /**
+     * @constructor
+     */
     constructor() {
         this.db = mongo;
-
     }
     
+    /**
+     * Gets hash value of a block from DB, and Returns Promise object, 
+     * @param {String} hash 
+     */
     readBlock(hash) {
         return new Promise((resolve, reject) => {
             this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
@@ -27,8 +33,12 @@ class Database{
             }
             )
     })
-
     }
+
+    /**
+     * Get a Block object and write it on DB, Returns Promise object
+     * @param {Block} block 
+     */
     writeBlock(block) {
         return new Promise((resolve, reject) => {
             this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
@@ -47,7 +57,12 @@ class Database{
             )
         });
     }
-    
+
+    /**
+     * Gets hash value of tx, Returns Promise objects from DB
+     * @param {String} hash 
+     */
+
     readTx(hash){
 
         return new Promise((resolve, reject) => {
@@ -64,10 +79,12 @@ class Database{
             }
             )
     })
-
-        
-
     }
+
+    /**
+     * Get a Transaction object and write it on DB, Returns Promise an object.
+     * @param {Transaction} tx 
+     */
     writeTx(tx){
 
         return new Promise((resolve, reject) => {
