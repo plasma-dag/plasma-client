@@ -1,7 +1,7 @@
 "use strict";
 const WebSocket = require("ws");
 
-const bc = require("../core/blockchain");
+const bc = require("./blockchain");
 
 // set environment variable
 const p2p_port = process.env.P2P_PORT || 6001;  // > $env:P2P_PORT=6003 (windows) || export P2P_PORT=3003 (mac)
@@ -61,10 +61,8 @@ function initErrorHandler(ws) {
 function connectToPeers(newPeers) {
     newPeers.forEach(function (peer) {
         const ws = new WebSocket(peer);
-        ws.on("open", function () { initConnection(ws) });
-        ws.on("error", function () {
-            console.log("Connection failed");
-        });
+        ws.on("open", function () { initConnection(ws); });
+        ws.on("error", function () { console.log("Connection failed"); });
     });
 }
 
@@ -113,4 +111,26 @@ function responseLatestMsg() {
 function write(ws, message) { ws.send(JSON.stringify(message)); }
 function broadcast(message) { sockets.forEach(socket => write(socket, message)); }
 
-module.exports = { connectToPeers, getSockets, broadcast, responseLatestMsg, initP2PServer };
+/*
+ *  multi-cast
+ */
+function multicast(peers, message) {
+    peers.forEach(function (peer) {
+        const ws = new WebSocket(peer);
+        ws.on("open", function () {
+            write(ws, message);
+        });
+        ws.on("error", function () {
+            console.log("Connection failed");
+        });
+    });
+}
+
+module.exports = {
+    connectToPeers,
+    getSockets,
+    broadcast,
+    multicast,
+    responseLatestMsg,
+    initP2PServer
+};
