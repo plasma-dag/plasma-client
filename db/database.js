@@ -29,7 +29,6 @@ class Database{
     })
 
     }
-    
     writeBlock(block) {
         return new Promise((resolve, reject) => {
             this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
@@ -47,6 +46,47 @@ class Database{
                 }
             )
         });
+    }
+    
+    readTx(hash){
+
+        return new Promise((resolve, reject) => {
+            this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
+                if (err) {
+                console.error(err)
+                return
+                }
+                const transactions = client.db('plasma').collection('transactions')
+
+                transactions.findOne({_id : hash})
+                    .then((result) => resolve(result) )
+                    .catch(err => reject(err))
+            }
+            )
+    })
+
+        
+
+    }
+    writeTx(tx){
+
+        return new Promise((resolve, reject) => {
+            this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
+                if (err) {
+                  console.error(err)
+                  return
+                }
+                tx._id = tx.hash();
+
+                const transactions = client.db('plasma').collection('transactions')
+                
+                transactions.insertOne(tx)
+                    .then(({result}) => resolve(result))
+                    .catch(err => reject(err));
+                }
+            )
+        });
+
     }
 
     
