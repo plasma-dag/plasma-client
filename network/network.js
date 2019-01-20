@@ -1,7 +1,7 @@
 "use strict";
 const WebSocket = require("ws");
 
-const bc = require("./blockchain");
+const bc = require("../core/blockchain");
 
 // set environment variable
 const p2p_port = process.env.P2P_PORT || 6001;  // > $env:P2P_PORT=6003 (windows) || export P2P_PORT=3003 (mac)
