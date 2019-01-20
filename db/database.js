@@ -62,7 +62,6 @@ class Database{
      * Gets hash value of tx, Returns Promise objects from DB
      * @param {String} hash 
      */
-
     readTx(hash){
 
         return new Promise((resolve, reject) => {
@@ -105,14 +104,6 @@ class Database{
         });
 
     }
-
-    
-
-    
-
-
-
-
 
 }
 
