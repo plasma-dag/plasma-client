@@ -1,7 +1,7 @@
 "use strict";
 
 const ut = require("../common/utils");
-
+const { Database } = require('./database');
 /**
  * Represents the Blockchain structure
  */
@@ -39,8 +39,8 @@ class Blockchain {
      * 
      * @param {Block} block 
      */
-    insert(block) {
-        this.db.writeBlock(block, block.hash()); // Not implemented function.
+    insertBlock(block) {
+        this.db.writeBlock(block);
         this.currentBlock = block;
         this.blocks.push(block);
     }
@@ -51,6 +51,7 @@ class Blockchain {
      * @param {Object} checkpoint 
      */
     updateCheckpoint(checkpoint) {
+        this.db.writeCheckpoint(checkpoint);
         this.checkpoints.push(checkpoint);
     }
 
@@ -91,8 +92,10 @@ class Blockchain {
     }
 
     makeBlockChain() {
+        const blocklist = this.db.loadAllBlocks();
         // generate list of blocks within db. 
         // 이 때, operator의 checkpoint들을 이용해서 만들어야 함.
+        return blocklist;
     }
 }
 
