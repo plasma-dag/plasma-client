@@ -1,4 +1,4 @@
-
+"use strict";
 
 const { Transaction } = require("./transaction.js");
 const { StateObject } = require("./stateObject.js");

@@ -9,11 +9,11 @@
 // 트랜잭션 밸리데이터도 필요하다. 트랜잭션이 센드일때, 리시브일때에 따라 봐야하는 스테이트 종
 // 류가 다름을 인지해야한다.
 
-
+"use strict";
 
 // operator validation
 function validateBlock(block, signature, publicKey) {
-    let headerHash = hash(block.header);
+    let headerHash = calculateHash(block.header);
     if(decryptSignature(headerHash, publicKey) != signature) {
         alert("signautre is invalid.")
         return false;

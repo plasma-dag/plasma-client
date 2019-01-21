@@ -1,6 +1,5 @@
-/**
- * 
- */
+"use strict";
+
 const { Account } = require("./account.js");
 const { StateObject } = require("./stateObject.js");
 
@@ -115,9 +114,7 @@ class StateDB {
     		alert("stateObject doen't exist");
     	}
     	stateObject.getStorageRoot();    	
-	}
-	
-	
+	}	
 }
 
 

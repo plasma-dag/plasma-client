@@ -45,17 +45,13 @@ function rlpEncode(tx) {
  */
 const operatorAddr = 21321412; 
 
-function sendTransaction(sender, receiver, value) {
-	if(sender.balance < value)
-		return;
-	var addr = [operatorAddr, reciever.key];
-	var Transaction = new Transaction(0, sender.nonce, addr, value, Math.round(new Date().getTime() / 1000));
+function sendTransaction(nonce, receiver, sender, value) {
+	let Transaction = new Transaction(0, nonce, receiver, sender, value);
 	//transfer(Transaction, );
 }
 
 function receiveTransaction(sender, receiver, value) {
-	var addr = [operatorAddr];
-	var Transaction = new Transaction(1, sender.nonce, addr, value, Math.round(new Date().getTime() / 1000));
+	let Transaction = new Transaction(1, nonce, receiver, sender, value);
 	//trasfer(Transaction, )
 }
 

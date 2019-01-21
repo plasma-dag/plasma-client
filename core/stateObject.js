@@ -1,6 +1,5 @@
-/**
- * 
- */
+"use strict";
+
 const { Account } = require("./account.js");
 
 class StateObject {
@@ -17,7 +16,11 @@ class StateObject {
     }
 
     deepCopy() {
-        return [this.address, this.account.nonce, this.account.balance];
+        return {
+            address: this.address, 
+            nonce: this.account.nonce, 
+            balance: this.account.balance
+        };
     }
     
     empty() {
@@ -96,6 +99,8 @@ class StateObject {
     */
 
 }
+
+
 
 module.exports = { 
     StateObject,

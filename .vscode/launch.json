@@ -19,7 +19,7 @@
             "name": "Launch Program",    
             "outFiles": ["${workspaceFolder}/core"],
             "runtimeExecutable": "C:/Program Files/nodejs/node",
-            "program": "${workspaceFolder}/core/test.js"
+            "program": "${workspaceFolder}/tests/state_test.js"
         }
     ]
 }

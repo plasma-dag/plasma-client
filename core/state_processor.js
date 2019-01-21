@@ -3,6 +3,7 @@
  * 스테이트를 처리하는 방법은 내가 갖고 있는 체인에 적용가능한 tx인지를 확인하고,
  * 한 단계 씩 순서대로 진행하면서 스테이트를 바꾸면 된다.
  */
+"use strict";
 
 // for validated block
 function operatorProcess(blockchain, stateDB, block, blockOwnerAddr) {
@@ -12,9 +13,7 @@ function operatorProcess(blockchain, stateDB, block, blockOwnerAddr) {
 //for validated block
  function process(stateObject, block) {    
     let copyOfStateObject = stateObject.deepCopy();
-    let address = copyOfStateObject[0];
-    let nonce = copyOfStateObject[1];
-    let balance = copyOfStateObject[2];
+    let { address, nonce, balance } = copyOfStateObject;
     let receipts = [];
     for(key in block.transactions) {    
         let transaction = block.transactions[key];
@@ -39,7 +38,7 @@ function operatorProcess(blockchain, stateDB, block, blockOwnerAddr) {
     /**
      * TODO : process receipt.
      */ 
-    
+
     let receipt;
 
     return receipt;
