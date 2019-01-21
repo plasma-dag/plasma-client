@@ -15,12 +15,25 @@ class StateObject {
         this.address = address;
         this.account = account;
     }
+
+    deepCopy() {
+        return [this.address, this.account.nonce, this.account.balance];
+    }
     
     empty() {
         if(this.account == undefined) {
             return undefined;
         }
         return this.account.empty();
+    }
+
+    setState(address, nonce, balance) {
+        if(this.account == undefined) { 
+            return undefined;
+        }
+        this.address = address;
+        this.account.nonce = noce;
+        this.account.balance = balance;
     }
 
     getAddress() {

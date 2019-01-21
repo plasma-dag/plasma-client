@@ -4,68 +4,49 @@
  * 한 단계 씩 순서대로 진행하면서 스테이트를 바꾸면 된다.
  */
 
-const { Transaction } = require("./transaction.js");
-const { StateObject } = require("./stateObject.js");
+// for validated block
+function operatorProcess(blockchain, stateDB, block, blockOwnerAddr) {
+    return process(stateDB.stateObjects[blockOwnerAddrAddr], block);
+}
 
-const SEND = 0;
-const RECEIVE = 1;
-
-function userStateTransition(stateObject, transaction) {
-    // check validity of signature 
-    if(!isValidTransaction(transaction)) {
-        alert("unvalid transaction.")
-        return null;
+//for validated block
+ function process(stateObject, block) {    
+    let copyOfStateObject = stateObject.deepCopy();
+    let address = copyOfStateObject[0];
+    let nonce = copyOfStateObject[1];
+    let balance = copyOfStateObject[2];
+    let receipts = [];
+    for(key in block.transactions) {    
+        let transaction = block.transactions[key];
+        let receipt = applyTransaction(stateObject, transaction);
+        if(receipt == undefined || receipt == false) {
+            setState(stateObject, address, nonce, balance);
+            alert("receipt is undefined.");
+            return undefined;
+        }
+        receipts.push(receipt);
     }
+    return receipts;
+}
+
+
+ 
+ function applyTransaction(stateObject, transaction) {
+    if(!applyStateTransition(stateObject, transaction)) {
+        return false;
+    }
+
+    /**
+     * TODO : process receipt.
+     */ 
     
-    if(transaction.accountNonce <= stateObject.getNonce()) {
-        alert("transaction nonce is already used.")
-        return null;
-    }    
+    let receipt;
 
-    if(transaction.type == SEND) {
-        sendStateTransition(stateObject, transcation);
-    }
-    else if(transaction.type == RECEIVE) {
-        receiveStateTransition(stateObject, transaction);
-    } 
-    else {
-        alert("undefined transaction type.")
-        return null;
-    }
-}
-
-function sendStateTransition(stateObject, transaction) {
-    if(transaction.sender != stateObject.account) {
-        alert("diffrent stateObject-transaction account.")
-        return null;
-    }
-
-    if(stateObject.getBalance() < transaction.value) {
-        alert("balance shortage.")
-        return null;
-    }
-
-    stateObject.subBalance(transaction.value);    
-    stateObject.setNonce(stateObject.getNonce()++);
-}
-
-function receiveStateTransition(stateObject, transaction) {
-    if(transaction.receiver != stateObject.account) {
-        alert("diffrent stateObject-transaction account.")
-        return null;
-    }
-
-    stateObject.addBalance(transaction.value);
-    stateObject.setNonce(stateObject.getNonce()++);
-}
-
-/**
- * 
- * TODO: state transition과 operator의 승인에 대한 처리
- */
+    return receipt;
+ }
 
 
-module.exports = {
-    userStateTransition
-
-}
+ module.exports = {
+     operatorProcess,
+     process
+ }

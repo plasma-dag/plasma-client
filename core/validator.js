@@ -8,3 +8,50 @@
 
 // 트랜잭션 밸리데이터도 필요하다. 트랜잭션이 센드일때, 리시브일때에 따라 봐야하는 스테이트 종
 // 류가 다름을 인지해야한다.
+
+
+
+// operator validation
+function validateBlock(block, signature, publicKey) {
+    let headerHash = hash(block.header);
+    if(decryptSignature(headerHash, publicKey) != signature) {
+        alert("signautre is invalid.")
+        return false;
+    }
+    
+    /**
+     * TODO : verify block header.
+     */
+
+    Object.keys(block.transactions).forEach( function(key) {
+        if(!validateTransaction(block, block.transactions[key], block.signatures[key])) {
+            return false;
+        }
+    });
+    return true;
+}
+
+function validateTransaction(block, transaction, signature) {
+    let publicKey = getPublicKey(transaction.sender);
+    let transactionHash = hash(transaction);
+    if(decryptSignature(transactionHash, publicKey) != signature) {
+        alert("transaction signature is invalid.");
+        return false;
+    }
+    if(transaction.type != SEND_TRANSACTION && transaction.type != RECEIVE_TRANSACTION) {
+        alert("transaction type is invalid.");
+        return false;
+    }
+    if(block.state.address != transaction.sender && block.state.address != transaction.recipient) {
+        alert("invalid transcation for block state.");
+        return false;
+    }
+    if(transaction.value <= 0) {
+        alert("transaction value is invalid.")
+    }
+    return true;
+}
+
+module.exports = {
+    validateBlock
+}
