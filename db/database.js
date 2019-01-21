@@ -13,33 +13,73 @@ class Database{
     }
     
     /**
+     * for updateCheckpoint()
+     * @param {*} checkpoint 
+     */
+    writeCheckpoint(checkpoint) {
+        
+    }
+    /**
+     * return checkpoints
+     */
+    loadCheckpoints() {
+
+    }
+    
+    /**
+     * 
+     * @param {*} account 
+     */
+    loadAccountDB(account) {
+
+    }
+
+    /**
+     * return blocklist
+     */
+    loadAllBlocks() {
+        return new Promise((resolve, reject) => {
+            this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
+                if (err) {
+                    console.error(err)
+                    return
+                }
+                const blocks = client.db('plasma').collection('blocks')
+
+                return blocks.find().toArray()
+                    .then((result) => resolve(result) )
+                    .catch(err => reject(err))
+                }
+            )
+        }) 
+    }
+
+    /**
      * Gets hash value of a block from DB, and Returns Promise object, 
      * @param {String} hash 
-     */
-
+     */  
     readBlock(hash) {
         return new Promise((resolve, reject) => {
             this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
                 if (err) {
-                console.error(err)
-                return
+                    console.error(err)
+                    return
                 }
                 const blocks = client.db('plasma').collection('blocks')
 
                 blocks.findOne({_id : hash})
                     .then((result) => resolve(result) )
                     .catch(err => reject(err))
-            }
+                }
             )
-    })
+        })
 
     }
     
     /**
      * Get a Block object and write it on DB, Returns Promise object
      * @param {Block} block 
-     */
-    
+     */   
     writeBlock(block) {
         return new Promise((resolve, reject) => {
             this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
@@ -56,10 +96,10 @@ class Database{
                     .catch(err => reject(err));
                 }
             )
-        });
+        })
     }
 
-      /**
+    /**
      * Gets hash value of tx, Returns Promise objects from DB
      * @param {String} hash 
      */
@@ -68,17 +108,17 @@ class Database{
         return new Promise((resolve, reject) => {
             this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
                 if (err) {
-                console.error(err)
-                return
+                    console.error(err)
+                    return
                 }
                 const transactions = client.db('plasma').collection('transactions')
 
                 transactions.findOne({_id : hash})
                     .then((result) => resolve(result) )
                     .catch(err => reject(err))
-            }
+                }
             )
-    })
+        })
     }
 
     /**
@@ -102,35 +142,35 @@ class Database{
                     .catch(err => reject(err));
                 }
             )
-        });
+        })
 
     }
-/**
- * Gets a State Object, Returns Promise objects from DB
- * @param {*} address 
- */
+    /**
+    * Gets a State Object, Returns Promise objects from DB
+    * @param {String} address 
+    */
     readState(address) {
         return new Promise((resolve, reject) => {
             this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
                 if (err) {
-                console.error(err)
-                return
+                    console.error(err)
+                    return
                 }
-                const blocks = client.db('plasma').collection('blocks')
+                const states = client.db('plasma').collection('states')
 
-                blocks.findOne({_id : address})
+                states.findOne({_id : address})
                     .then((result) => resolve(result) )
                     .catch(err => reject(err))
             }
             )
-        });
+        })
 
     }
-/**
- * Get a State object and update it on DB, Returns Promise an object.
 
- * @param {*} state 
- */
+    /**
+    * Get a State object and update it on DB, Returns Promise an object.
+    * @param {Object} state 
+    */
     writeState(state){
         return new Promise((resolve,reject)=>{
             this.db.connect(url, {useNewUrlParser: true}, (err, client) => {
@@ -148,7 +188,7 @@ class Database{
                     .catch((err => reject(err)));
                 }
             )
-        });
+        })
 
     }
  }
