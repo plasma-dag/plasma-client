@@ -8,6 +8,7 @@ Welcome to Plasma-DAG-Client's documentation!
    usage
    common
    core
+   db
    
 Indices and tables
 ==================
