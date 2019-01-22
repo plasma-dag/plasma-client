@@ -1,18 +1,26 @@
-/**
- * 
- */
+"use strict";
+
+const { Account } = require("./account.js");
 
 class StateObject {
     /**
      * @constructor
      * @param {*} address
      * @param {*} account
-     * @param {*} db?
-     * @param {*} trie?
+     * @param {*} db
+     * @param {*} trie
      */
     constructor(address, account) {
         this.address = address;
         this.account = account;
+    }
+
+    deepCopy() {
+        return {
+            address: this.address, 
+            nonce: this.account.nonce, 
+            balance: this.account.balance
+        };
     }
     
     empty() {
@@ -20,6 +28,15 @@ class StateObject {
             return undefined;
         }
         return this.account.empty();
+    }
+
+    setState(address, nonce, balance) {
+        if(this.account == undefined) { 
+            return undefined;
+        }
+        this.address = address;
+        this.account.nonce = noce;
+        this.account.balance = balance;
     }
 
     getAddress() {
@@ -86,6 +103,10 @@ class StateObject {
 module.exports = {
    StateObject
   }
+
+module.exports = { 
+    StateObject,
+};
 
 
 

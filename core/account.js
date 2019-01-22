@@ -36,7 +36,6 @@ class Account {
     }   
 }
 
-
 function increaseNonce(account) {
 	account.nonce++;
 }
@@ -59,5 +58,5 @@ function calculateStorageRoot(account, storage) {
 }
 
 module.exports = {
-    Account
-  }
+    Account,
+}
