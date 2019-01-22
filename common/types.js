@@ -5,16 +5,16 @@
 /**
  * HASH_LENGTH is the expected length of the hash.
  * 
- * current value = 32
+ * current value = 64 ( 32 Bytes )
  */
-const HASH_LENGTH = 32;
+const HASH_LENGTH = 64;
 
 /**
  * ADDRESS_LENGTH is the expected length of the address.
  * 
- * current value = 20
+ * current value = 40 ( 20 Bytes )
  */
-const	ADDRESS_LENGTH = 20;
+const	ADDRESS_LENGTH = 40;
 
 /**
  * Returns hash value within HASH_LENGTH
