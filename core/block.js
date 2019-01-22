@@ -46,12 +46,12 @@ class Block {
    * @constructor
    * 
    * @param {Header} header this block's header
-   * @param {Stirng} signature signature of block producer
+   * @param {Signature[]} signatures list of signature
    * @param {Transaction[]} transactions list of txs
    */
-  constructor(header, signature, transactions) {
+  constructor(header, signatures, transactions) {
       this.header       = header;
-      this.signature    = signature;
+      this.signatures   = signatures;
       this.transactions = transactions;
   }
 
