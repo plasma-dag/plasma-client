@@ -8,7 +8,7 @@ class Header {
   /**
    * @constructor
    * 
-   * @param {String} previousHash 
+   * @param {String[]} previousHash 
    * @param {Object} state state of the block producer's account
    * @param {String} txHash all transactions' hash value
    * @param {Number} difficulty 
@@ -31,8 +31,9 @@ class Header {
   }
 
   hash() {
-    if (this.hash) return this.hash;
-    this.hash = ut.calculateHash(this.data);
+    if (this.blockHash) return this.blockHash;
+    this.blockHash = ut.calculateHash(this.data);
+    return this.blockHash;
     // TODO: db storing
   }
 }
@@ -55,8 +56,9 @@ class Block {
   }
 
   hash() {
-    if (this.hash) return this.hash;
-    this.hash = this.header.hash();
+    if (this.blockHash) return this.blockHash;
+    this.blockHash = this.header.hash();
+    return this.blockHash;
     // TODO: db storing
   }
   

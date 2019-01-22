@@ -101,10 +101,10 @@ class StateObject {
 
 }
 
+module.exports = {
+   StateObject
+  }
 
-module.exports = { 
-    StateObject,
-};
 
 
 

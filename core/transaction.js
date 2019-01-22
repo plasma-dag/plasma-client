@@ -28,10 +28,10 @@ class Transaction {
      * Returns and saves hash value of tx data, exclude signature information
      */
     hash() {
-        if (this.hash) return this.hash
+        if (this.txHash) return this.txHash
         // cache hash value
-        this.hash = ut.calculateHash(this.data).toString();
-        return this.hash;
+        this.txHash = ut.calculateHash(this.data).toString();
+        return this.txHash;
     }
 }
 
