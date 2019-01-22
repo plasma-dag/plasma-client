@@ -23,7 +23,7 @@ function validateBlock(block, signature, publicKey) {
      * TODO : verify block header.
      */
 
-    Object.keys(block.transactions).forEach( function(key) {
+    block.transactions.forEach( function(key) {
         if(!validateTransaction(block, block.transactions[key], block.signatures[key])) {
             return false;
         }
