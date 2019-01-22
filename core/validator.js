@@ -53,5 +53,6 @@ function validateTransaction(block, transaction, signature) {
 }
 
 module.exports = {
-    validateBlock
+    validateBlock,
+    validateTransaction
 }

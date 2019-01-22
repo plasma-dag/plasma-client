@@ -12,7 +12,7 @@ class Blockchain {
      * @param {Database} db         block db
      * @param {Address} address     this blockchain's owner
      */
-    constructor(db, account) {
+    constructor(db, address) {
         
         this.db             = db;
         /**

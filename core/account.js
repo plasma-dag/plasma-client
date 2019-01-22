@@ -1,14 +1,12 @@
 /**
- * 
+ * Represent Account structure
  */
-
-
 class Account {
     /**
      * @constructor
-     * @param {*} nonce 
-     * @param {*} balance
-     * @param {*} storageRoot
+     * @param {Number} nonce 
+     * @param {Number} balance
+     * @param {Hash} storageRoot
      */
     constructor(nonce, balance, storageRoot) {
         this.nonce = nonce;
@@ -16,8 +14,8 @@ class Account {
         this.storageRoot = storageRoot;
     }
     
-    empty() {
-        return this.nonce == 0 && this.balance == 0 && storageRoot == 0;
+    isEmpty() {
+        return this.nonce == 0 && this.balance == 0 && storageRoot == '';
     }
 
     getNonce() {
@@ -27,34 +25,32 @@ class Account {
     setBalance(amount) {
         this.balance = amount;
     }
+
     getBalance() {
     	return this.balance;
     }
     
     getStorageRoot() {
     	return this.storageRoot;
-    }   
-}
+    }
 
-function increaseNonce(account) {
-	account.nonce++;
-}
+    increaseNonce() {
+        this.nonce++;
+    }
 
-function addBalance(account, amount) {
-	account.balance += amount;
-}
+    addBalance(amount) {
+        // TODO: balance overflow checking algorithm
+        this.balance += amount;
+    }
 
-function subBalance(account, amount) {
-	if(account.balance < amount) {
-		alert("balance is smaller than amount.")
-		return;
-	}
-	account.balance -= amount;
-}
+    subBalance(amount) {
+        if(this.balance < amount) {
+            return Error('Not enough balance');
+        }
+        this.balance -= amount;
+    }
 
-function calculateStorageRoot(account, storage) {
-	
-	
+    calculateStorageRoot(storage) {}
 }
 
 module.exports = {

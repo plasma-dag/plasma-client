@@ -1,128 +1,98 @@
 "use strict";
 
-const { Account } = require("./account.js");
 const { StateObject } = require("./stateObject.js");
 
 class StateDB {
-    /**
+	/**
+	 * @constructor
 	 * 
 	 * @param {*} db 
 	 * @param {*} trie 
 	 * @param {*} stateObjects 
 	 */	
-
-    constructor(db) {
-		//this.trie = db.openTree();
-		db = db;
-        this.stateObjects = {};
+	constructor(db) {
+		// this.trie = db.openTree();
+		this.db = db;
+		this.stateObjects = [];
 	}
 	
-	exist(addr) {
-		return this.getStateObject(addr);
+	isExist(addr) {
+		return Boolean(this.getStateObject(addr));
 	}
 
-	empty(addr) {
-		stateObject = this.getStateObject(addr);
-		return stateObject == undefined || stateObject.empty();		
+	async getStateObject(addr) {
+		if (this.stateObjects[addr]) return this.stateObjects[addr];
+		const stateObj = await this.db.readState(addr);
+		if (stateObj) this.stateObjects[addr] = stateObj;
+		return stateObj;
 	}
 
-	setState(addr, key, value) {
-		stateObject = this.getStateObject(addr);
-		if(stateObject != undefined) {
-			stateObject.setState(this.db, key, value);
-		} 
-		else {
-			stateObject = createStateObject(addr);
-		}
+	async setState(addr, account) {
+		let newState = new StateObject(addr, account);
+		this.stateObjects[addr] = newState;
+		return await this.db.writeState(newState);
 	}
-
-    getStateObject(addr) {
-    	let stateObject = this.stateObjects.addr;
-    	if(stateObject != undefined) {
-    		if(stateObject.deleted) {
-    			return undefined;
-    		}
-    		return stateObject;
-    	}
-    	return undefined;
-    }
-
-    setStateObject(stateObject) {
-    	this.stateObjects[stateObject.address] = stateObject;
-    }
-
-    createStateObject(addr) {		
-		let account = new Account(0, 0, 0);    	
-		let stateObject = new StateObject(addr, account);
-		this.setStateObject(stateObject);
-		return stateObject;
-    }
 /* 
-    updateStateObject(stateObject) {
-    	let addr = stateObject.address;
-    	// let data = rlp.encodeToByte(stateObject);
-    	this.trie.tryUpdate(addr, data);
-    }
+	updateStateObject(stateObject) {
+		let addr = stateObject.address;
+		// let data = rlp.encodeToByte(stateObject);
+		this.trie.tryUpdate(addr, data);
+	}
 */
-    deleteStateObject(stateObject) {
-    	stateObject.deleted = true;
+	// deleteStateObject(stateObject) {
+	// 	stateObject.deleted = true;
 //    	this.trie.tryDelete(stateObject.address);
-    }
+	// }
 
-    getNonce(addr, nonce) {
-    	let stateObject = this.getStateObject(addr);
-    	if(stateObject == undefined) {
-    		alert("stateObject doen't exist");
-    	}
-    	stateObject.getNonce(nonce);    	
-    }
+	getNonce(addr) {
+		let stateObject = this.getStateObject(addr);
+		if(stateObject) {
+			return stateObject.getNonce();  
+		}
+		return null;
+	}
 
-    setNonce(addr, nonce) {
-    	let stateObject = this.getStateObject(addr);
-    	if(stateObject == null) {
-    		alert("stateObject doen't exist");
-    	}
-    	stateObject.setNonce(nonce);    	
-    }    
+	setNonce(addr, nonce) {
+		let stateObject = this.getStateObject(addr);
+		if(stateObject) {
+			return stateObject.setNonce(nonce);
+		}
+		return Error("state object doesn't exist");
+	}
 
-    getBalance(addr) {
-    	let stateObject = this.getStateObject(addr);
-    	if(stateObject == undefined) 
-    		return undefined;
-    	return stateObject.getBalance(amount);    	
-    }    
+	getBalance(addr) {
+		let stateObject = this.getStateObject(addr);
+		if(stateObject) {
+			return stateObject.getBalance();
+		}
+		return Error("state object doesn't exist");
+	}    
 
-    addBalance(addr, amount) {
-    	let stateObject = this.getStateObject(addr);
-    	if(stateObject == undefined) {
-    		alert("stateObject doen't exist");
-    	}
-    	stateObject.addBalance(amount);
-    }
+	addBalance(addr, amount) {
+		let stateObject = this.getStateObject(addr);
+		if(stateObject) {
+			return stateObject.addBalance(amount);
+		}
+		return Error("state object doesn't exist");
+	}
 
-    subBalance(addr, amount) {
-    	let stateObject = this.getStateObject(addr);
-    	if(stateObject == undefined) {
-    		alert("stateObject doen't exist");
-    	}
-    	stateObject.subBalance(amount);
-    }
+	subBalance(addr, amount) {
+		let stateObject = this.getStateObject(addr);
+		if(stateObject) {
+			return stateObject.subBalance(amount);
+		}
+		return Error("state object doesn't exist");
+	}
 
-    getStorageRoot(addr) {
-    	let stateObject = this.getStateObject(addr);
-    	if(stateObject == undefined) {
-    		alert("stateObject doen't exist");
-    	}
-    	stateObject.getStorageRoot();    	
+	getStorageRoot(addr) {
+		let stateObject = this.getStateObject(addr);
+		if(stateObject) {
+			return stateObject.getStorageRoot();
+		}
+		return Error("state object doesn't exist");
 	}	
 }
-
-
 
 module.exports = { 
 	StateDB,
 };
-
-
-
-

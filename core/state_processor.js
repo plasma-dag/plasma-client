@@ -7,10 +7,10 @@
 
 // for validated block
 function operatorProcess(blockchain, stateDB, block, blockOwnerAddr) {
-    return process(stateDB.stateObjects[blockOwnerAddrAddr], block);
+    return process(stateDB.stateObjects[blockOwnerAddr], block);
 }
 
-//for validated block
+// for validated block
  function process(stateObject, block) {    
     let copyOfStateObject = stateObject.deepCopy();
     let { address, nonce, balance } = copyOfStateObject;

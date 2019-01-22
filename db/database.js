@@ -4,12 +4,14 @@ const mongo = require('mongodb').MongoClient
 const url = 'mongodb://localhost:27017'
 
 /**
- * 
+ * Represent database structure
  */
 class Database{ 
+    /**
+     * @constructor
+     */
     constructor() {
         this.db = mongo;
-
     }
     
     /**
@@ -41,7 +43,7 @@ class Database{
                 const blocks = client.db('plasma').collection('blocks')
 
                 return blocks.find().toArray()
-                    .then((result) => resolve(result) )
+                    .then((result) => resolve(result))
                     .catch(err => reject(err))
                 }
             )

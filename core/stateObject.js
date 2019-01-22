@@ -23,11 +23,8 @@ class StateObject {
         };
     }
     
-    empty() {
-        if(this.account == undefined) {
-            return undefined;
-        }
-        return this.account.empty();
+    isEmpty() {
+        return this.account ? this.account.isEmpty() : undefined;
     }
 
     setState(address, nonce, balance) {
@@ -35,7 +32,7 @@ class StateObject {
             return undefined;
         }
         this.address = address;
-        this.account.nonce = noce;
+        this.account.nonce = nonce;
         this.account.balance = balance;
     }
 
@@ -44,44 +41,32 @@ class StateObject {
     }
 
     getNonce() {
-    	if(this.account == undefined)
-    		return undefined;
-    	return this.account.getNonce();
+    	return this.account ? this.account.getNonce() : undefined;
     }
     
     setNonce(nonce) {
-    	if(this.account == undefined) {
-            return undefined;
-        }
-    	return this.account.setNonce(nonce);
+    	return this.account ? this.account.setNonce(nonce) : undefined;
+    }
+
+    increaseNonce() {
+        return this.account ? this.account.increaseNonce() : undefined;
     }
     
     getBalance() {
-        if(this.account == undefined) {
-            return undefined;
-        }
-    	return this.account.getBalance();
+        return this.account ? this.account.getBalance() : undefined;
     }
     
     addBalance(amount) {
-    	if(this.account == undefined) {
-            return undefined;
-        }
-    	return this.account.addBalance(amount);
+        return this.account ? this.account.addBalance(amount) : undefined;
     }
     
     subBalance(amount) {
-    	if(this.account == undefined) {
-            return undefined;
-        }
-    	return this.account.subBalance(amount);
+        return this.account ? this.account.setBalance(amount) : undefined;
     }
     
     setBalance(amount) {
-        if(this.account == undefined) {
-            return undefined;
-        }
-        this.account.setBalance(amount);
+        return this.account ? this.account.setBalance(amount) : undefined;
+
     }
     
     /* account storage
@@ -100,14 +85,6 @@ class StateObject {
 
 }
 
-module.exports = {
-   StateObject
-  }
-
 module.exports = { 
     StateObject,
 };
-
-
-
-

@@ -21,6 +21,12 @@ let newAccount = new Account(
     null
 )
 
+async function read_block_test(promise) {
+  let a = await promise;
+  console.log(a);
+  return;
+}
+
 let newBlock = new Block(newHeader, 'signature', []);
 let newState = new StateObject(
     'addresstest',
@@ -29,15 +35,16 @@ let newState = new StateObject(
 
 const db = new Database();
 
-db.writeBlock(newBlock)
-.then(res => console.log(res))
-.catch(err => console.log(err));
-db.readBlock(newBlock.hash())
-.then(res => console.log(res))
-.catch(err => console.log(err));
-db.writeState(newState)
-.then(res => console.log(res))
-.catch(err => console.log(err));
-db.readState(newState.getAddress)
-.then(res => console.log(res))
-.catch(err => console.log(err));
+// db.writeBlock(newBlock)
+// .then(res => console.log(res))
+// .catch(err => console.log(err));
+
+read_block_test(db.readBlock(newBlock.hash()));
+
+// db.writeState(newState)
+// .then(res => console.log(res))
+// .catch(err => console.log(err));
+
+// db.readState(newState.getAddress)
+// .then(res => console.log(res))
+// .catch(err => console.log(err));
