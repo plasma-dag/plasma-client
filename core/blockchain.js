@@ -10,24 +10,24 @@ class Blockchain {
      * @constructor
      * 
      * @param {Database} db         block db
-     * @param {Account} account     this blockchain's owner
+     * @param {Address} address     this blockchain's owner
      */
     constructor(db, account) {
         
-        this.db             = db.loadAccountDB(account);
+        this.db             = db;
         /**
          * final checkpoint got receipt from operator
          */
-        this.checkpoints    = db.loadCheckpoints();
+        this.checkpoints    = db.loadCheckpoint(address);
         
-        this.genesisBlock = this.getBlockByNumber(0);
-        if (this.genesisBlock == []) {
-            return Error('No Genesis Block');
-        }
-
         this.blocks = this.makeBlockChain();
         if (this.blocks == []) {
             return Error("No Blocks at all.");
+        }
+
+        this.genesisBlock = this.getBlockByNumber(0);
+        if (this.genesisBlock == []) {
+            return Error('No Genesis Block');
         }
 
         this.currentBlock   = this.blocks[this.blocks.length - 1];

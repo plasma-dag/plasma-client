@@ -13,24 +13,18 @@ class Database{
     }
     
     /**
-     * for updateCheckpoint()
+     * for update checkpoint
+     * 
      * @param {*} checkpoint 
+     * @param {Number} account
      */
-    writeCheckpoint(checkpoint) {
+    writeCheckpoint(checkpoint, address) {
         
     }
     /**
-     * return checkpoints
+     * return checkpoint
      */
-    loadCheckpoints() {
-
-    }
-    
-    /**
-     * 
-     * @param {*} account 
-     */
-    loadAccountDB(account) {
+    loadCheckpoint(address) {
 
     }
 
