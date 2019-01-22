@@ -65,14 +65,14 @@ class StateDB {
     }
 */
     deleteStateObject(stateObject) {
-    	stateObject.deleted = true;
+    	delete(stateObjects[stateObject.address]);
 //    	this.trie.tryDelete(stateObject.address);
     }
 
     getNonce(addr, nonce) {
     	let stateObject = this.getStateObject(addr);
     	if(stateObject == undefined) {
-    		alert("stateObject doen't exist");
+    		console.log("stateObject doen't exist");
     	}
     	stateObject.getNonce(nonce);    	
     }
@@ -80,7 +80,7 @@ class StateDB {
     setNonce(addr, nonce) {
     	let stateObject = this.getStateObject(addr);
     	if(stateObject == null) {
-    		alert("stateObject doen't exist");
+    		console.log("stateObject doen't exist");
     	}
     	stateObject.setNonce(nonce);    	
     }    
@@ -95,7 +95,7 @@ class StateDB {
     addBalance(addr, amount) {
     	let stateObject = this.getStateObject(addr);
     	if(stateObject == undefined) {
-    		alert("stateObject doen't exist");
+    		console.log("stateObject doen't exist");
     	}
     	stateObject.addBalance(amount);
     }
@@ -103,7 +103,7 @@ class StateDB {
     subBalance(addr, amount) {
     	let stateObject = this.getStateObject(addr);
     	if(stateObject == undefined) {
-    		alert("stateObject doen't exist");
+    		console.log("stateObject doen't exist");
     	}
     	stateObject.subBalance(amount);
     }
@@ -111,13 +111,18 @@ class StateDB {
     getStorageRoot(addr) {
     	let stateObject = this.getStateObject(addr);
     	if(stateObject == undefined) {
-    		alert("stateObject doen't exist");
+    		console.log("stateObject doen't exist");
     	}
     	stateObject.getStorageRoot();    	
 	}	
 }
 
-
+function commitState(db, stateObjects) {
+	for(key in stateObjects) {
+		let stateObject = stateObjects[key];
+		db.writeState(stateObject);
+	}
+}
 
 module.exports = { 
 	StateDB,

@@ -10,9 +10,10 @@ class StateObject {
      * @param {*} db
      * @param {*} trie
      */
-    constructor(address, account) {
+    constructor(address, account, db) {
         this.address = address;
         this.account = account;
+        this.db = db;
     }
 
     deepCopy() {
@@ -35,7 +36,7 @@ class StateObject {
             return undefined;
         }
         this.address = address;
-        this.account.nonce = noce;
+        this.account.nonce = nonce;
         this.account.balance = balance;
     }
 
@@ -99,7 +100,6 @@ class StateObject {
     */
 
 }
-
 
 
 module.exports = { 
