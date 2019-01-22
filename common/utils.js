@@ -1,5 +1,6 @@
 'use strict';
-const { SHA256 } = require("crypto-js");
+//const { SHA256 } = require("crypto-js");
+const { SHA256 } = require("crypto");
 
 /**
  * Returns calculated SHA256 hash value

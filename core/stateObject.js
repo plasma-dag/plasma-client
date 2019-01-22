@@ -10,9 +10,10 @@ class StateObject {
      * @param {*} db
      * @param {*} trie
      */
-    constructor(address, account) {
+    constructor(address, account, db) {
         this.address = address;
         this.account = account;
+        this.db = db;
     }
 
     deepCopy() {

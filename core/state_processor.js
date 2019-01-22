@@ -5,6 +5,11 @@
  */
 "use strict";
 
+const { stateDB } = require("./stateDB");
+const { StateObject } = require("./stateObject");
+const { Block } = require("./block");
+const { applyStateTransition } = require("./state_transition");
+
 // for validated block
 function operatorProcess(blockchain, stateDB, block, blockOwnerAddr) {
     return process(stateDB.stateObjects[blockOwnerAddr], block);
@@ -15,16 +20,18 @@ function operatorProcess(blockchain, stateDB, block, blockOwnerAddr) {
     let copyOfStateObject = stateObject.deepCopy();
     let { address, nonce, balance } = copyOfStateObject;
     let receipts = [];
-    for(key in block.transactions) {    
+
+    for(let key in block.transactions) {    
         let transaction = block.transactions[key];
         let receipt = applyTransaction(stateObject, transaction);
         if(receipt == undefined || receipt == false) {
-            setState(stateObject, address, nonce, balance);
-            alert("receipt is undefined.");
+            stateObject.setState(stateObject, address, nonce, balance);
+            console.log("receipt is undefined.");
             return undefined;
         }
         receipts.push(receipt);
     }
+
     return receipts;
 }
 
@@ -43,6 +50,7 @@ function operatorProcess(blockchain, stateDB, block, blockOwnerAddr) {
 
     return receipt;
  }
+
 
 
  module.exports = {
