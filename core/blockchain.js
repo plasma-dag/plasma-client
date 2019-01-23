@@ -33,7 +33,17 @@ class Blockchain {
         this.currentBlock   = this.blocks[this.blocks.length - 1];
     }
 
+
     /**
+     * After validation
+     * 오퍼레이터권한, 블록승인후 처리 
+     */
+    acceptBlock(){
+        
+    }
+    
+    /**
+     * Before validation
      * Injects a new head block into the current block chain. This method
      * assumes that the block is indeed a true head.
      * 

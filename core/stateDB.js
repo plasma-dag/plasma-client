@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const { StateObject } = require("./stateObject.js");
 
@@ -32,6 +32,7 @@ class StateDB {
 		this.stateObjects[addr] = newState;
 		return await this.db.writeState(newState);
 	}
+
 /* 
 	updateStateObject(stateObject) {
 		let addr = stateObject.address;
@@ -43,7 +44,6 @@ class StateDB {
 	// 	stateObject.deleted = true;
 //    	this.trie.tryDelete(stateObject.address);
 	// }
-
 	getNonce(addr) {
 		let stateObject = this.getStateObject(addr);
 		if(stateObject) {
@@ -94,5 +94,5 @@ class StateDB {
 }
 
 module.exports = { 
-	StateDB,
+	StateDB
 };

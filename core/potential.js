@@ -1,60 +1,118 @@
 "use strict";
 const Transaction = require("../core/transaction");
 const db = require("../db/database");
-
+const calculateHash = require("../common/utils");
 
 class Potential {
-
-    constructor(address) {
-        this.address = address;
-        this.txHash = new Array();
-        this.potential = {};
-    
-    }
     /**
-     * potential at DB
+     * @constructor
+     * 
+     * @param {*} address 
+     * @param {*} txHash 
+     */
+    constructor(address,txHash) {
+        this.txHash = txHash;
+        this.data = {
+            address,
+            potentialList = []
+        };
+    }
+
+    /**
+     * potentialData at DB
      * {
      *  _id : address
-     *  txHash : [...]
+     *  potentialList : [...]
      */
+
 
     /**
-     * TO DO :
-     * operatorProcess 에서 실행
-     * state_transition 중복되는 부분 수정 필요
+     * Create potential DB for new address
+     * Use this method when create new address
      */
-    addPotential(address,txHash) {
+    createPotentialData(address) {
+        db.writePotential(address);
+    }
 
-        const tx = Transaction.getTxDatabyHash(txHash);
+    /**
+     * 
+     * @param {*} address 
+     * @param {*} hash 
+     */
+    savePotentialData(address,hash) {
+        db.writePotential(address,hash);
+    }
+
+    /**
+     * return potential data from DB
+     * @param {*} address 
+     */
+    getPotentialData(address) {
+        this.data = db.readAllPotentials(address);
+    }
+
+    /**
+     * return potential data from DB
+     * @param {*} hash 
+     */
+    getPotentialbyHash(hash) {
+        db.findPotential(hash);
+    }
+
+    /**
+     * remove potential data when it is processed
+     * @param {*} hash 
+     */
+    removePotential(hash) {
+        const processedHash = this.getPotentialbyHash(hash);
+        db.removePotential(processedHash);
+    }
+
+    /**
+     * Run by operatorProcess
+     * @param {*} address 
+     * @param {Transaction} tx 
+     */
+    potentialProcess(address,tx) {
+
+        let potentialData = this.getPotentialData(address);
+        let hash = calculateHash(transaction.data).toString();
         const sender = tx.data.sender;
         const receiver = tx.data.receiver;
-        const value = tx.data.value;        
 
-        if(address.account.balance == sender){
-            //state_transition이랑 중복
-            address.account.balance = -value;
-            this.potential.txHash.push(txHash);
-            
-        }
-        
-        if(address.account.balance == receiver){
-            if(db.findPotential(txHash)){
-                db.removePotential(txHash);
+        // Add potential to receiver when send tx
+        if(address === sender){
+            let index = potentialData.findIndex( potential => tx.receiver === potential.address );
+            if(index !== -1) {
+                potentialData[index].potentialList.add(hash);
             }
-            //state_transition이랑 중복
-            address.account.balance = +value;
+            else {
+                let newPotential = new Potential(address,hash);
+                potentialData.push(newPotential);
+            }
+
+            this.savePotentialData(address,hash);
+        }
+          
+        // Remove potential when receive tx
+        else if(address === receiver){
+            if(potentialData.address.find(hash) !== undefined){                
+                this.removePotential(hash);
+            }
         }
 
-        db.writePotentialTx(address,txHash);
-
+        //log
+        console.log(`------------ address: ${potentialData.address}, potentialList: ${potentialData.potentialList}-------------------`);
+        for(let i of potentialData.potentialList) {
+            console.log(potentialData.potentialList[i]);
+        }
     }
 
-    /**
-     * 새 address생성시 함께 생성
-     */
-    createPotential(address) {
-        db.newPotential(address);
-    }
-    
+}
+
+
+module.exports = {
+    potentialProcess,
+    createPotential
 }
 
