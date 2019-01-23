@@ -9,17 +9,17 @@ class Transaction {
      * @constructor
      * 
      * @param {number} accountNonce 
-     * @param {address} recipient 
+     * @param {address} receiver
      * @param {address} sender 
      * @param {number} value 
      */
-    constructor(accountNonce, recipient, sender, value) {
-        if (!(accountNonce || recipient || sender || value)) {
+    constructor(accountNonce, receiver, sender, value) {
+        if (!(accountNonce || receiver || sender || value)) {
             return Error('Not enough parameters');
         }
         this.data = {
             accountNonce,
-            recipient,
+            receiver,
             sender,
             value,
         }
@@ -32,6 +32,15 @@ class Transaction {
         // cache hash value
         this.txHash = ut.calculateHash(this.data).toString();
         return this.txHash;
+    }
+
+
+    /**
+     * 
+     * @param {*} txHash 
+     */
+    getTxDatabyhash(txHash) {
+        
     }
 }
 

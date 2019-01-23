@@ -51,10 +51,10 @@ const operatorProcess = (stateDB, block) => {
             let hash = calculateHash(transactionToString(transaction));            
             let index = potentialList.findIndex( potential => transaction.recipient === potential.address );
             if(index !== -1) {
-                potentialList[index].add(transaction, hash);
+                potentialList[index].add(transaction, hash); //파라미터 수정. hash만 넣음
             }
             else {
-                let newPotential = new Potential(transaction, hash);
+                let newPotential = new Potential(transaction, hash); //파라미터 수정
                 potentialList.push(newPotential);
             }
         }
