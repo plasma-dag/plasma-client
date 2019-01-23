@@ -5,6 +5,41 @@
  */
 'use strict';
 
+<<<<<<< HEAD:src/core/state_processor.js
+const { stateDB } = require("./stateDB");
+const { StateObject } = require("./stateObject");
+const { Block } = require("./block");
+const { applyStateTransition } = require("./state_transition");
+
+// for validated block
+function operatorProcess(blockchain, stateDB, block, blockOwnerAddr) {
+    return process(stateDB.stateObjects[blockOwnerAddr], block);
+}
+
+// for validated block
+function process(stateObject, block) {
+    let copyOfStateObject = stateObject.deepCopy();
+    let { address, nonce, balance } = copyOfStateObject;
+    let receipts = [];
+
+    for (let key in block.transactions) {
+        let transaction = block.transactions[key];
+        let receipt = applyTransaction(stateObject, transaction);
+        if (receipt == undefined || receipt == false) {
+            stateObject.setState(stateObject, address, nonce, balance);
+            console.log("receipt is undefined.");
+            return undefined;
+        }
+        receipts.push(receipt);
+    }
+
+    return receipts;
+}
+
+function applyTransaction(stateObject, transaction) {
+    if (!applyStateTransition(stateObject, transaction)) {
+        return false;
+=======
 const { stateDB } = require('./stateDB');
 const { StateObject } = require('./stateObject');
 const { Block } = require('./block');
@@ -26,16 +61,22 @@ const process = (stateObject, block) => {
         } 
         console.log(`----------transaction is {nonce: ${transaction.accountNonce}, recipient: ${transaction.recipient}, sender: ${transaction.sender}, value: ${transaction.value}}`)
         console.log(`----------account is {nonce: ${stateObject.getNonce()}, balance: ${stateObject.getBalance()}}.----------------`);
+>>>>>>> master:core/state_processor.js
     }
 }
 
 const applyTransaction = (stateObjcet, transaction) => {
     /**
+<<<<<<< HEAD:src/core/state_processor.js
+     * TODO : process receipt.
+     */
+=======
      * 
      */
     return applyStateTransition(stateObjcet, transaction);            
     
 }
+>>>>>>> master:core/state_processor.js
 
 const operatorProcess = (stateDB, block) => {
     const address = block.header.data.state.address;
@@ -64,6 +105,10 @@ const operatorProcess = (stateDB, block) => {
             potential.remove(potential.find(hash));
         }
 
+<<<<<<< HEAD:src/core/state_processor.js
+    return receipt;
+}
+=======
         if(!applyTransaction(stateObject, transaction)) {
             //stateObject.setState(address, nonce, balance);            
             return;
@@ -83,8 +128,9 @@ const operatorProcess = (stateDB, block) => {
     stateDB.setState(address, stateObject.account);
 }
 
+>>>>>>> master:core/state_processor.js
 
  module.exports = {
      operatorProcess,
      process
- }
+ };

@@ -4,7 +4,7 @@ const WebSocket = require("ws");
 const bc = require("../core/blockchain");
 
 // set environment variable
-const p2p_port = process.env.P2P_PORT || 6001;  // > $env:P2P_PORT=6003 (windows) || export P2P_PORT=3003 (mac)
+const p2p_port = process.env.P2P_PORT || 6001; // > $env:P2P_PORT=6003 (windows) || export P2P_PORT=3003 (mac)
 
 const MessageType = {
     QUERY_LATEST: 0,
@@ -15,11 +15,15 @@ const MessageType = {
 // sockets
 var sockets = [];
 
-function getSockets() { return sockets; }
+function getSockets() {
+    return sockets;
+}
 
 function initP2PServer() {
     const server = new WebSocket.Server({ port: p2p_port });
-    server.on("connection", function (ws) { initConnection(ws) });    
+    server.on("connection", function(ws) {
+        initConnection(ws);
+    });
     console.log("Listening websocket p2p port on: " + p2p_port);
 }
 
@@ -31,7 +35,7 @@ function initConnection(ws) {
 }
 
 function initMessageHandler(ws) {
-    ws.on("message", function (data) {
+    ws.on("message", function(data) {
         const message = JSON.parse(data);
         console.log("Received message" + JSON.stringify(message));
         switch (message.type) {
@@ -54,15 +58,21 @@ function closeConnection(ws) {
 }
 
 function initErrorHandler(ws) {
-    ws.on("close", function () { closeConnection(ws) });
-    ws.on("error", function () { closeConnection(ws) });
+    ws.on("close", function() {
+        closeConnection(ws);
+    });
+    ws.on("error", function() {
+        closeConnection(ws);
+    });
 }
 
 function connectToPeers(newPeers) {
-    newPeers.forEach(function (peer) {
+    newPeers.forEach(function(peer) {
         const ws = new WebSocket(peer);
-        ws.on("open", function () { initConnection(ws) });
-        ws.on("error", function () {
+        ws.on("open", function() {
+            initConnection(ws);
+        });
+        ws.on("error", function() {
             console.log("Connection failed");
         });
     });
@@ -74,43 +84,63 @@ function handleBlockchainResponse(message) {
     const latestBlockHeld = bc.getLatestBlock();
 
     if (latestBlockReceived.index > latestBlockHeld.index) {
-        console.log("Blockchain possibly behind. We got: " + latestBlockHeld.index + " Peer got: " + latestBlockReceived.index);
+        console.log(
+            "Blockchain possibly behind. We got: " +
+                latestBlockHeld.index +
+                " Peer got: " +
+                latestBlockReceived.index
+        );
         if (latestBlockHeld.hash === latestBlockReceived.previousHash) {
             console.log("We can append the received block to our chain");
             if (bc.addBlock(latestBlockReceived)) {
                 broadcast(responseLatestMsg());
             }
-        }
-        else if (receivedBlocks.length === 1) {
+        } else if (receivedBlocks.length === 1) {
             console.log("We have to query the chain from our peer");
             broadcast(queryAllMsg());
-        }
-        else {
-            console.log("Received blockchain is longer than current blockchain");
+        } else {
+            console.log(
+                "Received blockchain is longer than current blockchain"
+            );
             bc.replaceChain(receivedBlocks);
         }
-    }
-    else {
-        console.log("Received blockchain is not longer than current blockchain. Do nothing");
+    } else {
+        console.log(
+            "Received blockchain is not longer than current blockchain. Do nothing"
+        );
     }
 }
 
-function queryAllMsg() { return ({ "type": MessageType.QUERY_ALL }); }
-function queryChainLengthMsg() { return ({ "type": MessageType.QUERY_LATEST }); }
+function queryAllMsg() {
+    return { type: MessageType.QUERY_ALL };
+}
+function queryChainLengthMsg() {
+    return { type: MessageType.QUERY_LATEST };
+}
 function responseChainMsg() {
-    return ({
-        "type": MessageType.RESPONSE_BLOCKCHAIN,
-        "data": JSON.stringify(bc.getBlockchain())
-    });
+    return {
+        type: MessageType.RESPONSE_BLOCKCHAIN,
+        data: JSON.stringify(bc.getBlockchain())
+    };
 }
 function responseLatestMsg() {
-    return ({
-        "type": MessageType.RESPONSE_BLOCKCHAIN,
-        "data": JSON.stringify([bc.getLatestBlock()])
-    });
+    return {
+        type: MessageType.RESPONSE_BLOCKCHAIN,
+        data: JSON.stringify([bc.getLatestBlock()])
+    };
 }
 
-function write(ws, message) { ws.send(JSON.stringify(message)); }
-function broadcast(message) { sockets.forEach(socket => write(socket, message)); }
+function write(ws, message) {
+    ws.send(JSON.stringify(message));
+}
+function broadcast(message) {
+    sockets.forEach(socket => write(socket, message));
+}
 
-module.exports = { connectToPeers, getSockets, broadcast, responseLatestMsg, initP2PServer };
+module.exports = {
+    connectToPeers,
+    getSockets,
+    broadcast,
+    responseLatestMsg,
+    initP2PServer
+};

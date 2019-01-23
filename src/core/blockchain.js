@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 "use strict";
 
 const ut = require("../common/utils");
@@ -8,18 +9,18 @@ const { Database } = require('./database');
 class Blockchain {
     /**
      * @constructor
-     * 
+     *
      * @param {Database} db         block db
      * @param {Address} address     this blockchain's owner
      */
     constructor(db, address) {
-        
+
         this.db             = db;
         /**
          * final checkpoint got receipt from operator
          */
         this.checkpoints    = db.loadCheckpoint(address);
-        
+
         this.blocks = this.makeBlockChain();
         if (this.blocks == []) {
             return Error("No Blocks at all.");
@@ -33,32 +34,22 @@ class Blockchain {
         this.currentBlock   = this.blocks[this.blocks.length - 1];
     }
 
-
     /**
-     * After validation
-     * 오퍼레이터권한, 블록승인후 처리 
-     */
-    acceptBlock(){
-        
-    }
-    
-    /**
-     * Before validation
      * Injects a new head block into the current block chain. This method
      * assumes that the block is indeed a true head.
-     * 
-     * @param {Block} block 
+     *
+     * @param {Block} block
      */
     insertBlock(block) {
         this.db.writeBlock(block);
         this.currentBlock = block;
         this.blocks.push(block);
     }
-    
+
     /**
      * Updates a new checkpoint received from operator
-     * 
-     * @param {Object} checkpoint 
+     *
+     * @param {Object} checkpoint
      */
     updateCheckpoint(checkpoint) {
         this.db.writeCheckpoint(checkpoint);
@@ -68,9 +59,9 @@ class Blockchain {
     /**
      * Returns the block matching hash value or number.
      * 나중에 header chain 집어 넣었을 때 필요.
-     * 
-     * @param {String} hash 
-     * @param {Number} number 
+     *
+     * @param {String} hash
+     * @param {Number} number
      */
     getBlock(hash, number) {
         if (this.blockCache[hash]) return this.blockCache[hash];
@@ -87,8 +78,8 @@ class Blockchain {
 
     /**
      * Returns the block with block number
-     * 
-     * @param {Number} number 
+     *
+     * @param {Number} number
      */
     getBlockByNumber(number) {
         return this.blocks[number] ? this.blocks[number] : null;
@@ -103,14 +94,14 @@ class Blockchain {
 
     makeBlockChain() {
         const blocklist = this.db.loadAllBlocks();
-        // generate list of blocks within db. 
+        // generate list of blocks within db.
         // 이 때, operator의 checkpoint들을 이용해서 만들어야 함.
         return blocklist;
     }
 }
 
 /**
- * 
+ *
  * TODO: 이 아래에 있는 function 들은 제 위치로 이동이 필요함.
  */
 // get new block
@@ -240,11 +231,12 @@ class Blockchain {
 //     }
 // }
 
-module.exports = { 
+module.exports = {
     Blockchain,
-    // generateNextBlock, 
-    // getLatestBlock, 
-    // getBlockchain, 
-    // addBlock, 
-    // replaceChain 
+    // generateNextBlock,
+    // getLatestBlock,
+    // getBlockchain,
+    // addBlock,
+    // replaceChain
 };
+

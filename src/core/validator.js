@@ -38,25 +38,73 @@ const validateTransaction = (block, transaction, signature) => {
 
 const validateBlock = (block, signature, publicKey) => {
     let headerHash = calculateHash(block.header);
+<<<<<<< HEAD:src/core/validator.js
+    if (decryptSignature(headerHash, publicKey) != signature) {
+        console.log("signautre is invalid.");
+=======
     if(decryptSignature(headerHash, publicKey) != signature) {
         console.log("signautre is invalid.")
+>>>>>>> master:core/validator.js
         return false;
     }
-    
+
     /**
      * TODO : verify block header.
      */
 
+<<<<<<< HEAD:src/core/validator.js
+    block.transactions.forEach(function(key) {
+        if (
+            !validateTransaction(
+                block,
+                block.transactions[key],
+                block.signatures[key]
+            )
+        ) {
+=======
     Object.keys(block.transactions).forEach( (key) => {
         if(!validateTransaction(block, block.transactions[key], block.signatures[key])) {
+>>>>>>> master:core/validator.js
             return false;
         }
     });
     return true;
 }
 
+<<<<<<< HEAD:src/core/validator.js
+function validateTransaction(block, transaction, signature) {
+    let publicKey = getPublicKey(transaction.sender);
+    let transactionHash = calculateHash(transaction);
+    if (decryptSignature(transactionHash, publicKey) != signature) {
+        console.log("transaction signature is invalid.");
+        return false;
+    }
+    /*
+    if(transaction.type != SEND_TRANSACTION && transaction.type != RECEIVE_TRANSACTION) {
+        console.log("transaction type is invalid.");
+        return false;
+    }
+    */
+    if (
+        block.state.address != transaction.sender &&
+        block.state.address != transaction.recipient
+    ) {
+        console.log("invalid transcation for block state.");
+        return false;
+    }
+    if (transaction.value <= 0) {
+        console.log("transaction value is invalid.");
+    }
+    return true;
+}
+=======
+>>>>>>> master:core/validator.js
 
 module.exports = {
     validateBlock,
     validateTransaction
+<<<<<<< HEAD:src/core/validator.js
+};
+=======
 }
+>>>>>>> master:core/validator.js

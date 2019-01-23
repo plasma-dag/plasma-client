@@ -1,15 +1,27 @@
 # virtualenv settings for docs
 env/*
 
-# OS X
-.DS_Store
+# vscode
+.vscode/
 
+# wallet
+wallet/
+
+# OS X
+**/.DS_Store
+
+# Wallet
+wallet/
 # Logs
 logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# rej
+**/*.rej
+**/.*.rej
 
 # Runtime data
 pids

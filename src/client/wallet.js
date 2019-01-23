@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 "use strict";
 const fs = require("fs");
 const ecdsa = require("elliptic");
@@ -6,7 +7,8 @@ const ec = new ecdsa.ec("secp256k1");
 
 // set environment variable
 const http_port = process.env.HTTP_PORT || 3001;
-const privateKeyLocation = process.env.PRIVATE_KEY || ("wallet/" + http_port.toString());   // DIR
+const privateKeyLocation =
+    process.env.PRIVATE_KEY || "wallet/" + http_port.toString(); // DIR
 const privateKeyFile = privateKeyLocation + "/private_key";
 
 // get private key
@@ -21,8 +23,7 @@ function getPublicFromWallet() {
         const privateKey = getPrivateFromWallet();
         const key = ec.keyFromPrivate(privateKey, "hex");
         return key.getPublic().encode("hex");
-    }
-    else {
+    } else {
         console.log("No private key at: %s", privateKeyFile);
         return "";
     }
@@ -38,7 +39,9 @@ function generatePrivateKey() {
 // get or generate private key
 function initWallet() {
     // do not override existing private keys
-    if (fs.existsSync(privateKeyFile)) { return; }
+    if (fs.existsSync(privateKeyFile)) {
+        return;
+    }
 
     const newPrivateKey = generatePrivateKey();
 
@@ -92,4 +95,9 @@ function deleteWallet() {
     console.log("Wallet with private key removed to: %s", privateKeyFile);
 }
 
-module.exports = { initWallet, getPublicFromWallet, createWallet, deleteWallet };
+module.exports = {
+    initWallet,
+    getPublicFromWallet,
+    createWallet,
+    deleteWallet
+};
