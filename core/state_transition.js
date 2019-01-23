@@ -8,7 +8,7 @@ const { StateObject } = require('./stateObject');
 
 
 const applyStateTransition = (stateObject, transaction) => {
-    if(transaction.sender == stateObject.address && transaction.accountNonce < stateObject.getNonce()) {
+    if(transaction.sender === stateObject.address && transaction.accountNonce < stateObject.getNonce()) {
         console.log(`transaction nonce is already used.`);
         return false;
     }    

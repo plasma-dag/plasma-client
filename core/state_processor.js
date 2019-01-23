@@ -76,11 +76,11 @@ const operatorProcess = (stateDB, block) => {
      }
     console.log(`--------------------${address}, ${stateObject.account}---------------------`);
 
-    stateDB.db.writePotential(address, Potential);
-    for(let key in potentials) {
-        stateDB.db.writePotential(key, potentials[key]);
+    stateDB.db.writePotential(address, potential);
+    for(let potential of potentials) {
+        stateDB.db.writePotential(potential.address, potential);
     }
-    stateDB.db.setState(address, stateObject.account);
+    stateDB.setState(address, stateObject.account);
 }
 
 
