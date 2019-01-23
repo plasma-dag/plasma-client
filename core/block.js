@@ -10,18 +10,18 @@ class Header {
    * 
    * @param {String[]} previousHash 
    * @param {Object} state state of the block producer's account
-   * @param {String} txHash all transactions' hash value
+   * @param {String} merkleHash all transactions' hash value
    * @param {Number} difficulty 
    * @param {Number} number 
    * @param {Number} timestamp 
    * @param {Number} nonce 
    * @param {Object} checkpoint Operator's receipt about previous block, 꼭 직전의 블록일 이유는 없음.
    */
-  constructor(previousHash, state, txHash, difficulty, number, timestamp, nonce, checkpoint) {
+  constructor(previousHash, state, merkleHash, difficulty, number, timestamp, nonce, checkpoint) {
     this.data = {
         previousHash,
         state,
-        txHash,
+        merkleHash,
         difficulty,
         number,
         timestamp,
@@ -61,6 +61,21 @@ class Block {
     return this.blockHash;
     // TODO: db storing
   }
+  /**
+   * Save to transactions
+   */
+  getTransactionList(address) {
+    
+  }
+
+  /**
+   * Create merkle tree using txHash
+   */
+  createMerkle(){
+
+  }
+
+}
   
 }
 
