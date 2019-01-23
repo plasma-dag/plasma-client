@@ -3,7 +3,7 @@ const Transaction = require("../core/transaction");
 const db = require("../db/database");
 
 
-Class Potential {
+class Potential {
 
     constructor(address) {
         this.address = address;

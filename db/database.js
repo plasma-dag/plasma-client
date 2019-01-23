@@ -17,16 +17,48 @@ class Database{
     /**
      * for update checkpoint
      * 
-     * @param {*} checkpoint 
-     * @param {Number} account
+     * @param {Object} checkpoint 
+     * Gets checkpoint Object and update them on db, and returns a Promise object.
+     * todo : blockhash => signed blockhash
      */
-    writeCheckpoint(checkpoint, address) {
-        
+    writeCheckpoint(checkpoint) {
+        return new Promise((resolve, reject) => {
+            this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
+                if (err) {
+                  console.error(err)
+                  return
+                }
+
+                const checkpoints = client.db('plasma').collection('checkpoints')
+                
+                checkpoints.updateOne({_id : checkpoint.address}, 
+                                      {$set:{signedhash : checkpoint.signedhash}},
+                                      {upsert : true})
+                           .then(({result}) => resolve(result))
+                           .catch(err => reject(err));
+                }
+            )
+        })
     }
     /**
-     * return checkpoint
+     * Gets address and returns matching blockhash
+     * @param {String} address 
      */
     loadCheckpoint(address) {
+        return new Promise((resolve, reject) => {
+            this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
+                if (err) {
+                    console.error(err)
+                    return
+                }
+                const checkpoints = client.db('plasma').collection('checkpoints')
+
+                checkpoints.findOne({_id : address})
+                           .then((result) => resolve(result) )
+                           .catch(err => reject(err))
+                }
+            )
+        })
 
     }
 
