@@ -10,6 +10,7 @@ const { StateObject } = require('./stateObject');
 const { Block } = require('./block');
 const { applyStateTransition } = require('./state_transition');
 const { calculateHash } = require('../common/utils');
+const { potentialProcess } = require('../core/potential');
 //const { Account } = require('./account');
 
 // for validated block
@@ -40,29 +41,35 @@ const applyTransaction = (stateObjcet, transaction) => {
 const operatorProcess = (stateDB, block) => {
     const address = block.header.data.state.address;
     let stateObject = stateDB.getStateObject(address);
-    let potential = stateDB.db.readPotential(address);
-    let potentialList = [];
+
+    /* potential.js로 옮김. 테스트 후 지울예정 */
+    //let potential = db.readPotential(address);
+    //let potentialList = [];
     
     for(let key in block.transactions) {    
         let transaction = block.transactions[key];
         
-        // add potential to receiver when send tx
-        if(address === transaction.sender) {
-            let hash = calculateHash(transactionToString(transaction));            
-            let index = potentialList.findIndex( potential => transaction.recipient === potential.address );
-            if(index !== -1) {
-                potentialList[index].add(transaction, hash); //파라미터 수정. hash만 넣음
-            }
-            else {
-                let newPotential = new Potential(transaction, hash); //파라미터 수정
-                potentialList.push(newPotential);
-            }
-        }
-        // remove potential when receive tx
-        else if(address === transaction.recipient) {
-            let hash = calculateHash(transaction);
-            potential.remove(potential.find(hash));
-        }
+
+        potentialProcess(address, transaction);
+
+        /* potential.js로 옮김. 테스트 후 지울예정 */
+        // // add potential to receiver when send tx
+        // if(address === transaction.sender) {
+        //     let hash = calculateHash(transactionToString(transaction));            
+        //     let index = potentialList.findIndex( potential => transaction.recipient === potential.address );
+        //     if(index !== -1) {
+        //         potentialList[index].add(transaction, hash); //파라미터 수정. hash만 넣음
+        //     }
+        //     else {
+        //         let newPotential = new Potential(transaction, hash); //파라미터 수정
+        //         potentialList.push(newPotential);
+        //     }
+        // }
+        // // remove potential when receive tx
+        // else if(address === transaction.recipient) {
+        //     let hash = calculateHash(transaction);
+        //     potential.remove(potential.find(hash));
+        // }
 
         if(!applyTransaction(stateObject, transaction)) {
             //stateObject.setState(address, nonce, balance);            
@@ -70,16 +77,13 @@ const operatorProcess = (stateDB, block) => {
         }
     }
     
-    console.log(`------------ ${address}, ${Potential}-------------------`);
-     for(let i of potentialList) {
-         console.log(potentialList[i]);
-     }
     console.log(`--------------------${address}, ${stateObject.account}---------------------`);
 
-    stateDB.db.writePotential(address, potential);
-    for(let potential of potentials) {
-        stateDB.db.writePotential(potential.address, potential);
-    }
+    /* potential.js로 옮김. 테스트 후 지울예정 */
+    //stateDB.db.writePotential(address, potential);
+    // for(let potential of potentials) {
+    //     stateDB.db.writePotential(potential.address, potential);
+    // }
     stateDB.setState(address, stateObject.account);
 }
 

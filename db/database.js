@@ -15,7 +15,40 @@ class Database{
     }
     
     /**
-     * for update checkpoint
+     * write one potential hash for address
+     * @param {*} address 
+     * @param {*} hash 
+     */
+    writePotential(address, hash) {
+
+    }
+
+    /**
+     * read all potentials for address
+     * @param {*} address 
+     */
+    readAllPotentials(address) {
+        
+    }
+
+    /**
+     * find one potential hash
+     * @param {*} hash 
+     */
+    findPotential(hash) {
+
+    }
+
+    /**
+     * remove one potential hash
+     * @param {*} hash 
+     */
+    removePotential(hash) {
+
+    }
+
+    /**
+     * update checkpoint
      * 
      * @param {*} checkpoint 
      * @param {Number} account
@@ -26,14 +59,14 @@ class Database{
     /**
      * return checkpoint
      */
-    loadCheckpoint(address) {
+    readCheckpoint(address) {
 
     }
 
     /**
-     * return blocklist
+     * return blocklist for address
      */
-    loadAllBlocks() {
+    loadBlockswithAddress() {
         return new Promise((resolve, reject) => {
             this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
                 if (err) {
