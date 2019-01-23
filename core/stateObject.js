@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const { Account } = require("./account.js");
 
@@ -29,12 +29,22 @@ class StateObject {
     }
 
     setState(address, nonce, balance) {
-        if(this.account == undefined) { 
+        if(this.account === undefined) { 
             return undefined;
         }
         this.address = address;
         this.account.nonce = nonce;
         this.account.balance = balance;
+    }
+    
+    getState() {
+        if(this.account === undefined) { 
+            return undefined;
+        }
+        return {
+            nonce: this.account.nonce,
+            balance: this.account.balance
+        };
     }
 
     getAddress() {
@@ -67,23 +77,7 @@ class StateObject {
     
     setBalance(amount) {
         return this.account ? this.account.setBalance(amount) : undefined;
-
     }
-    
-    /* account storage
-    setStateObject(db, key, value) {
-        prevValue = this.getStateObject(db, key);
-        if(prevValue == value) {
-            return;
-        }
-        db.append(key, value);
-    }
-    
-    getStateObject(db, key) {
-        return db.openStateObject(db, key); 
-    }
-    */
-
 }
 
 module.exports = { 

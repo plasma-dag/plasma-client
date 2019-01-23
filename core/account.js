@@ -1,6 +1,8 @@
 /**
  * Represent Account structure
  */
+'use-strict'
+
 class Account {
     /**
      * @constructor
@@ -21,9 +23,20 @@ class Account {
     getNonce() {
     	return this.nonce;
     }
+    setNonce(nonce) {
+        this.nonce = nonce;
+    }
     
     setBalance(amount) {
         this.balance = amount;
+    }
+
+    addBalance(amount) {
+        this.balance += amount;
+    }
+
+    subBalance(amount) {
+        this.balance -= amount;
     }
 
     getBalance() {
@@ -34,6 +47,7 @@ class Account {
     	return this.storageRoot;
     }
 
+
     increaseNonce() {
         this.nonce++;
     }
@@ -42,6 +56,14 @@ class Account {
         // TODO: balance overflow checking algorithm
         this.balance += amount;
     }
+}
+
+
+/*
+function addBalance(account, amount) {
+	account.balance += amount;
+}
+>>>>>>> Stashed changes
 
     subBalance(amount) {
         if(this.balance < amount) {
@@ -52,7 +74,8 @@ class Account {
 
     calculateStorageRoot(storage) {}
 }
+*/
 
 module.exports = {
-    Account,
+    Account
 }
