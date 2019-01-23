@@ -41,7 +41,9 @@ function operatorProcess(blockchain, stateDB, block, blockOwnerAddr) {
     if(!applyStateTransition(stateObject, transaction)) {
         return false;
     }
-
+    /**
+     * potential 참고
+     */
     /**
      * TODO : process receipt.
      */ 
