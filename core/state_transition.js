@@ -1,41 +1,39 @@
-"use strict";
+'use strict';
 
-const { Transaction } = require("./transaction.js");
-const { StateObject } = require("./stateObject.js");
+const { Transaction } = require('./transaction');
+const { StateObject } = require('./stateObject');
 
+// block에 sender, receiver둘다 있기 때문에 operator와 사용자의 state transition이 달라짐
 
-function applyStateTransition(stateObject, transaction) {    
-    if(transaction.accountNonce <= stateObject.getNonce()) {
-        alert("transaction nonce is already used.")
-        return false;
-    }    
-    if(transaction.type == SEND_TRANSACTION) {
-        return sendStateTransition(stateObject, transcation);
+const preCheck = (stateObject, transaction) => {
+    const nonce = stateObject.getNonce();
+    if(nonce < transaction.accountNonce) {
+        return Error('nonce high');
     }
-    else if(transaction.type == RECEIVE_TRANSACTION) {
-        return receiveStateTransition(stateObject, transaction);
+    else if(nonce > transaction.accountNonce) {
+        return Error('nonce low');
     }
-}
-
-function sendStateTransition(stateObject, transaction) {    
-    if(transaction.sender != stateObject.address) {
-        alert("diffrent stateObject-transaction address.");
-        return false;
-    }    
-    if(stateObject.getBalance() < transaction.value) {
-        alert("balance shortage.")
-        return false;
-    }
-    stateObject.subBalance(transaction.value);    
-    stateObject.setNonce(stateObject.getNonce()++);
+    
     return true;
 }
 
-function receiveStateTransition(stateObject, transaction) {
-    if(transaction.receiver != stateObject.address) {
-        alert("diffrent stateObject-transaction address.")
+const sendStateTransition = (stateObject, transaction) => {
+    // check nonce
+    if(!preCheck(stateObject, transaction)) {
         return false;
     }
+    // // check balance
+    // if(stateObject.getBalance() < transaction.value) {
+    //     console.log(`balance shortage.`);
+    //     return false;
+    // }
+
+    stateObject.setNonce(stateObject.getNonce()+1);        
+    stateObject.subBalance(transaction.value);    
+
+    return true;
+}
+const receiveStateTransition = (stateObject, transaction) => {
     stateObject.addBalance(transaction.value);
     return true;
 }
