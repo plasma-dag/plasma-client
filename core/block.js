@@ -76,8 +76,6 @@ class Block {
   }
 
 }
-  
-}
 
 module.exports = {
   Header,

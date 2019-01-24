@@ -107,12 +107,9 @@ class Potential {
             console.log(potentialData.potentialList[i]);
         }
     }
-
 }
 
 
 module.exports = {
-    potentialProcess,
-    createPotential
-}
-
+    Potential
+};
