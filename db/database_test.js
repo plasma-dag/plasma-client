@@ -49,5 +49,5 @@ const db = new Database();
 // .then(res => console.log(res))
 // .catch(err => console.log(err));
 
-writePotential(newState.address,[])
+db.writePotential(newState.address,[])
 //read_block_test(db.readAllPotentials())
