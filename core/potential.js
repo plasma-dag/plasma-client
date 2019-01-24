@@ -6,40 +6,40 @@ const { calculateHash } = require("../common/utils");
 /**
  * potential Data at DB
  * {
- *  _id : address
- *  txHashList : [...]
+ *  address,
+ *  blockHashList
  * }
  */
 class Potential {
     /**
      * @constructor
      * 
-     * @param {Database}  db          Database instance
-     * @param {Address}   address     Potential owner's address
-     * @param {Hash[]}    txHashList  Unreceived txId list 
+     * @param {Database}  db              Database instance
+     * @param {Address}   address         Potential owner's address
+     * @param {Hash[]}    blockHashList   Unreceived block hash list 
      */
-    constructor(db, address, txHashList) {
-        this.db         = db;
-        this.address    = address;
-        this.txHashList = txHashList;
+    constructor(db, address, blockHashList) {
+        this.db             = db;
+        this.address        = address;
+        this.blockHashList  = blockHashList;
     }
 
     async save() {
-        return await this.db.writePotential(this.address, this.txHashList);
+        return await this.db.writePotential(this.address, this.blockHashList);
     }
 
-    insert(txHash) {
-        this.txHashList.push(txHash);
+    insert(blockHash) {
+        this.blockHashList.push(blockHash);
         this.save();
     }
     
-    remove(txHash) {
-        if (this.txHashList.includes(txHash)) {
-            this.txHashList.filter(d => d !== txHash);
+    remove(blockHash) {
+        if (this.blockHashList.includes(blockHash)) {
+            this.blockHashList.filter(d => d !== blockHash);
             this.save();
             return true;
         }
-        return Error('No matching sendTx in transaction list');
+        return Error('No matching blockHash in potential');
     }
 }
 
@@ -53,28 +53,26 @@ class PotentialDB {
     async populate() {
         const res = await this.db.readAllPotentials();
         for (p in res) {
-            this.potentials[p.address] = new Potential(this.db, p.address, p.txHashList);
+            this.potentials[p.address] = new Potential(this.db, p.address, p.blockHashList);
         }
     }
 
-    getSendTx(sendTx) {
-        const { receiver } = sendTx;
+    sendPotential(blockHash, receiver) {
         // Potential already exist
         if (this.potentials[receiver]) {
-            return this.potentials[receiver].insert(sendTx.hash());
+            return this.potentials[receiver].insert(blockHash);
         }
         // make new Potential for receiver
-        this.potentials[receiver] = new Potential(this.db, receiver, sendTx.hash());
-        this.potentials[receiver].save();
+        this.potentials[receiver] = new Potential(this.db, receiver, [ blockHash ]);
+        return this.potentials[receiver].save();
     }
 
-    getReceiveTx(receiveTx) {
-        const { receiver } = receiveTx;
+    receivePotential(blockHash, receiver) {
         // Available potential is exist
         if (this.potentials[receiver]) {
-            return this.potentials[receiver].remove(receiveTx.hash());
+            return this.potentials[receiver].remove(blockHash);
         }
-        return Error("No Potential for receiver address");
+        return Error("No Potentials for receiver address");
     }
 }
 
