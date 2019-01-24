@@ -49,15 +49,21 @@ class PotentialDB {
         this.potentials = {};
         this.populate();
     }
-
+    /**
+     * TO DO :이거 constrcut에서 실행 안되는걸로 알고있는데 확인좀.
+     */
     async populate() {
         const res = await this.db.readAllPotentials();
         for (p in res) {
             this.potentials[p.address] = new Potential(this.db, p.address, p.blockHashList);
         }
     }
-
-    sendPotential(blockHash, receiver) {
+    /**
+     * 
+     * @param {*} blockHash 
+     * @param {address} receiver 
+     */
+    sendTxPotential(blockHash, receiver) {
         // Potential already exist
         if (this.potentials[receiver]) {
             return this.potentials[receiver].insert(blockHash);
@@ -66,8 +72,12 @@ class PotentialDB {
         this.potentials[receiver] = new Potential(this.db, receiver, [ blockHash ]);
         return this.potentials[receiver].save();
     }
-
-    receivePotential(blockHash, receiver) {
+    /**
+     * 
+     * @param {*} blockHash 
+     * @param {address} receiver 
+     */
+    receiveTxPotential(blockHash, receiver) {
         // Available potential is exist
         if (this.potentials[receiver]) {
             return this.potentials[receiver].remove(blockHash);
@@ -76,45 +86,54 @@ class PotentialDB {
     }
 }
 
-// 이 함수는 왜 여기 있는건지 모르겠음. 오퍼레이터가 행동하는 함수들로 묶어버리는게 좋을듯.
+// TO DO : potential도 block단위로 처리하게 되면서, operator가 block처리하는 process 만들어지면 그때 옮길지 결정
 /**
- * Run by operatorProcess
+ * Run by operatorProcess for block
  * @param {*} address 
- * @param {Transaction} tx 
+ * @param {Block} block
  */
-function potentialProcess(address,tx) {
+function potentialProcess(address,block) {
 
-    let potentialData = this.getPotentialData(address);
-    let hash = calculateHash(transaction.data).toString();
+    //let potentialData = this.getPotentialData(address);
+    let hash = block.hash();
     const sender = tx.data.sender;
     const receiver = tx.data.receiver;
 
     // Add potential to receiver when send tx
-    if(address === sender){
-        let index = potentialData.findIndex( potential => tx.receiver === potential.address );
-        if(index !== -1) {
-            potentialData[index].potentialList.add(hash);
-        }
-        else {
-            let newPotential = new Potential(address,hash);
-            potentialData.push(newPotential);
-        }
-
-        this.savePotentialData(address,hash);
+    if ( address === sender ){
+        PotentialDB.sendTxPotential( hash, receiver );
     }
-        
     // Remove potential when receive tx
-    else if(address === receiver){
-        if(potentialData.address.find(hash) !== undefined){                
-            this.removePotential(hash);
-        }
+    else if ( address === receiver ){
+        PotentialDB.receiveTxPotential( hash, receiver );
     }
 
-    //log
-    console.log(`------------ address: ${potentialData.address}, potentialList: ${potentialData.potentialList}-------------------`);
-    for(let i of potentialData.potentialList) {
-        console.log(potentialData.potentialList[i]);
-    }
+    // // Add potential to receiver when send tx
+    // if(address === sender){
+    //     let index = potentialData.findIndex( potential => tx.receiver === potential.address );
+    //     if(index !== -1) {
+    //         potentialData[index].potentialList.add(hash);
+    //     }
+    //     else {
+    //         let newPotential = new Potential(address,hash);
+    //         potentialData.push(newPotential);
+    //     }
+
+    //     this.savePotentialData(address,hash);
+    // }
+        
+    // // Remove potential when receive tx
+    // else if(address === receiver){
+    //     if(potentialData.address.find(hash) !== undefined){                
+    //         this.removePotential(hash);
+    //     }
+    // }
+
+    // //log
+    // console.log(`------------ address: ${potentialData.address}, potentialList: ${potentialData.potentialList}-------------------`);
+    // for(let i of potentialData.potentialList) {
+    //     console.log(potentialData.potentialList[i]);
+    // }
 }
 
 

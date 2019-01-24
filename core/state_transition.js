@@ -22,7 +22,7 @@ const applyStateTransition = (stateObject, transaction) => {
         stateObject.setNonce(stateObject.getNonce()+1);        
         return true;
     }
-    else if(stateObject.address === transaction.recipient) {    
+    else if(stateObject.address === transaction.receiver) {    
         stateObject.addBalance(transaction.value);
         return true;
     }
