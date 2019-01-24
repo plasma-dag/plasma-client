@@ -15,20 +15,47 @@ class Database{
     }
     
     /**
-     * write one potential hash for address
+     * write potential hash list for address
      * 
      * @param {Address} address 
-     * @param {Hash[]}  txHashList 
+     * @param {Hash[]}  hashList 
      */
-    writePotential(address, txHashList) {
-        
+    writePotential(address, hashList) {
+        return new Promise((resolve,reject)=>{
+            this.db.connect(url, {useNewUrlParser: true}, (err, client) => {
+                if (err) {
+                    console.error(err)
+                    return
+                }
+                
+                const potentials = client.db('plasma').collection('potentials')
+            
+                states.updateOne(address,hashList,{upsert:true})
+                    .then(({result})=>resolve(result))
+                    .catch((err => reject(err)));
+                }
+            )
+        })
     }
 
     /**
      * read all potentials in database
      */
     readAllPotentials() {
-        
+        return new Promise((resolve, reject) => {
+            this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
+                if (err) {
+                    console.error(err)
+                    return
+                }
+                const potentials = client.db('plasma').collection('potentials')
+
+                return potentials.find().toArray()
+                    .then((result) => resolve(result))
+                    .catch(err => reject(err))
+                }
+            )
+        }) 
     }
 
     /**

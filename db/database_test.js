@@ -39,7 +39,7 @@ const db = new Database();
 // .then(res => console.log(res))
 // .catch(err => console.log(err));
 
-read_block_test(db.readBlock(newBlock.hash()));
+//read_block_test(db.readBlock(newBlock.hash()));
 
 // db.writeState(newState)
 // .then(res => console.log(res))
@@ -48,3 +48,6 @@ read_block_test(db.readBlock(newBlock.hash()));
 // db.readState(newState.getAddress)
 // .then(res => console.log(res))
 // .catch(err => console.log(err));
+
+writePotential(newState.address,[])
+//read_block_test(db.readAllPotentials())
