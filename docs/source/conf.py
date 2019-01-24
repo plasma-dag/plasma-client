@@ -71,9 +71,9 @@ language = None
 
 primary_domain = 'js'
 
-root_for_relative_js_paths = '../'
+root_for_relative_js_paths = '../src'
 
-js_source_path = [ '../', '../node', '../core', '../client', '../common', '../db', '../network', '../doc_test']
+js_source_path = [ '../src/', '../src/node', '../src/core', '../src/client', '../src/common', '../src/db', '../src/network']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
