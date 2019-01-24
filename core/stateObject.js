@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const { Account } = require("./account.js");
 
@@ -10,9 +10,10 @@ class StateObject {
      * @param {*} db
      * @param {*} trie
      */
-    constructor(address, account) {
+    constructor(address, account, db) {
         this.address = address;
         this.account = account;
+        this.db = db;
     }
 
     deepCopy() {
@@ -23,20 +24,27 @@ class StateObject {
         };
     }
     
-    empty() {
-        if(this.account == undefined) {
-            return undefined;
-        }
-        return this.account.empty();
+    isEmpty() {
+        return this.account ? this.account.isEmpty() : undefined;
     }
 
     setState(address, nonce, balance) {
-        if(this.account == undefined) { 
+        if(this.account === undefined) { 
             return undefined;
         }
         this.address = address;
-        this.account.nonce = noce;
+        this.account.nonce = nonce;
         this.account.balance = balance;
+    }
+    
+    getState() {
+        if(this.account === undefined) { 
+            return undefined;
+        }
+        return {
+            nonce: this.account.nonce,
+            balance: this.account.balance
+        };
     }
 
     getAddress() {
@@ -44,68 +52,34 @@ class StateObject {
     }
 
     getNonce() {
-    	if(this.account == undefined)
-    		return undefined;
-    	return this.account.getNonce();
+    	return this.account ? this.account.getNonce() : undefined;
     }
     
     setNonce(nonce) {
-    	if(this.account == undefined) {
-            return undefined;
-        }
-    	return this.account.setNonce(nonce);
+    	return this.account ? this.account.setNonce(nonce) : undefined;
+    }
+
+    increaseNonce() {
+        return this.account ? this.account.increaseNonce() : undefined;
     }
     
     getBalance() {
-        if(this.account == undefined) {
-            return undefined;
-        }
-    	return this.account.getBalance();
+        return this.account ? this.account.getBalance() : undefined;
     }
     
     addBalance(amount) {
-    	if(this.account == undefined) {
-            return undefined;
-        }
-    	return this.account.addBalance(amount);
+        return this.account ? this.account.addBalance(amount) : undefined;
     }
     
     subBalance(amount) {
-    	if(this.account == undefined) {
-            return undefined;
-        }
-    	return this.account.subBalance(amount);
+        return this.account ? this.account.setBalance(amount) : undefined;
     }
     
     setBalance(amount) {
-        if(this.account == undefined) {
-            return undefined;
-        }
-        this.account.setBalance(amount);
+        return this.account ? this.account.setBalance(amount) : undefined;
     }
-    
-    /* account storage
-    setStateObject(db, key, value) {
-        prevValue = this.getStateObject(db, key);
-        if(prevValue == value) {
-            return;
-        }
-        db.append(key, value);
-    }
-    
-    getStateObject(db, key) {
-        return db.openStateObject(db, key); 
-    }
-    */
-
 }
-
-
 
 module.exports = { 
     StateObject,
 };
-
-
-
-

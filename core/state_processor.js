@@ -7,52 +7,79 @@
 
 const { stateDB } = require('./stateDB');
 const { StateObject } = require('./stateObject');
+const { Header } = require('./block');
 const { Block } = require('./block');
 const { applyStateTransition } = require('./state_transition');
 const { calculateHash } = require('../common/utils');
-//const { Account } = require('./account');
+const { Potential } = require('../core/potential');
+const { PotentialDB } = require('../core/potential');
 
-const sendTransaction = (stateObjcet, transaction) => {
+const receivePotential = (stateObjcet, potential) => {
     /**
      * 
      */
+    if(stateObject.address != potential.address) {
+        return Error('diffrent state and potential.');
+    }
     
-    return sendStateTransition(stateObjcet, transaction);                
-}
-
-const receiveTransaction = (stateObjcet, transaction) => {
-    /**
-     * 
-     */
-    
-    return receiveStateTransition(stateObjcet, transaction);                
+    const receiver = stateObject.address;
+    const blockHashList = potential.blockHashList;
+    for(let blockHash of blockHashList) {
+        let block = findBlock(blockHash); // this block was validated validateBlock() function
+        let transactions = findTransactions(block, receiver); 
+        for(let transaction of transactions) {
+            receiveStateTransition(stateObject, transaction);
+        }
+        potential.db.receivePotential(blockHash, receiver); // no db update
+    }       
 }
 
 // for validated block
-const userProcess = (stateObject, block) => {    
-    const address = block.header.state.address;
-    if(address !== stateObject.address) {
+const operatorProcess = (stateDB, potentialDB, block) => {
+    const blockOwnerAddress = block.header.data.state.address;
+    const blockHash = calculateHash(blockToString(block));
+    let blockOwnerState = stateDB.getStateObject(blockOwnerAddress);
+    
+    potentialDB.populate();
+    let potentials = potentialDB.potentials;
+    let blockOwnerPotential = potentialDB.potentials[blockOwnerAddress];
+    let changePotentialList = []; // changed potential list for db update
+    
+    // receive potential
+    receivePotential(blockOwnerState, blockOwnerPotential);
+    // process transaction
+    for(let transaction of block.transactions) {    
+        let receiver = transaction.receiver;
+        potentialDB.sendPotential(blockHash, receiver); // no db update
+        changePotentialList.push(receiver);    
+        sendStateTransition(blockOwnerState, transaction);
+    }
+
+    // validate state
+    if(!validateState(blockOwnerState)) {
         return;
     }
     
-    console.log(`----------account is {nonce: ${stateObject.getNonce()}, balance: ${stateObject.getBalance()}}.----------------`);
+    // update db after validate state 
+    stateDB.setState(blockOwnerAddress, blockOwnerState.account);
+    potentialDB.updatePotential(changePotentialList);
+}
 
-    for(let key in block.transactions) {    
-        let transaction = block.transactions[key];       
+// this function is called after merkle proof of transaction tree, so includes verifed receiveTransactionList as parameter
+const userProcess = (stateObject, block, receiveTransactionList) => {    
+    const blockOwnerAddress = block.header.state.address;
+    if(blockOwnerAddress !== stateObject.address) {
+        return Error('diffrent state and potential.');
+    }
+    // console.log(`----------account is {nonce: ${stateObject.getNonce()}, balance: ${stateObject.getBalance()}}.----------------`);
 
-        if(address === transaction.sender) {
-            if(!sendTransaction(stateObject, transaction)) {
-                return;
-            }
-        }
-        else if(address === transaction.recipient) {
-            if(!receiveTransaction(stateObject, transaction)) {
-                return;
-            }
-        }
-
-        console.log(`----------transaction is {nonce: ${transaction.accountNonce}, recipient: ${transaction.recipient}, sender: ${transaction.sender}, value: ${transaction.value}}`)
-        console.log(`----------account is {nonce: ${stateObject.getNonce()}, balance: ${stateObject.getBalance()}}.----------------`);
+    for(let receiveTransaction of receiveTransactionList) {
+        receiveStateTransition(stateObject, receiveTransaction);
+    }
+    for(let sendTransaction of block.transactions) {    
+        sendStateTransition(stateObject, Transaction);
+        // console.log(`----------transaction is {nonce: ${transaction.accountNonce}, recipient: ${transaction.receiver}, sender: ${transaction.sender}, value: ${transaction.value}}`)
+        // console.log(`----------account is {nonce: ${stateObject.getNonce()}, balance: ${stateObject.getBalance()}}.----------------`);
     }
 
     // validate state
@@ -64,63 +91,35 @@ const userProcess = (stateObject, block) => {
 }
 
 
-
-const operatorProcess = (stateDB, block) => {
-    const address = block.header.data.state.address;
-    let stateObject = stateDB.getStateObject(address);
-    let potential = stateDB.db.readPotential(address);
-    let potentialList = [];
-    
-    for(let key in block.transactions) {    
-        let transaction = block.transactions[key];
-        
-        // add potential to receiver when send tx
-        if(address === transaction.sender) {
-            let hash = calculateHash(transactionToString(transaction));            
-            let index = potentialList.findIndex( potential => transaction.recipient === potential.address );
-            if(index !== -1) {
-                potentialList[index].add(transaction, hash);
-            }
-            else {
-                let newPotential = new Potential(transaction.recipient, transaction, hash);
-                potentialList.push(newPotential);
-            }
-            if(!sendTransaction(stateObject, transaction)) {
-                //stateObject.setState(address, nonce, balance);            
-                return;
-            }
-        }
-        // remove potential when receive tx
-        else if(address === transaction.recipient) {
-            let hash = calculateHash(transactionToString(transaction));
-            potential.remove(potential.find(hash));
-            if(!receiveTransaction(stateObject, transaction)) {
-                //stateObject.setState(address, nonce, balance);            
-                return;
-            }
-        }   
+/*
+// add potential to receiver when send tx
+if(address === transaction.sender) {
+    let hash = calculateHash(transactionToString(transaction));            
+    let index = potentialList.findIndex( potential => transaction.recipient === potential.address );
+    if(index !== -1) {
+        potentialList[index].add(transaction, hash);
     }
-
-    // validate state
-    if(!validateState(stateObject)) {
+    else {
+        let newPotential = new Potential(transaction.recipient, transaction, hash);
+        potentialList.push(newPotential);
+    }
+    if(!sendTransaction(stateObject, transaction)) {
+        //stateObject.setState(address, nonce, balance);            
         return;
     }
-    
-    console.log(`------------ ${address}, ${Potential}-------------------`);
-     for(let i of potentialList) {
-         console.log(potentialList[i]);
-     }
-    console.log(`--------------------${address}, ${stateObject.account}---------------------`);
-
-    stateDB.db.writePotential(address, potential);
-    for(let potential of potentials) {
-        stateDB.db.writePotential(potential.address, potential);
-    }
-    stateDB.setState(address, stateObject.account);
 }
-
+// remove potential when receive tx
+else if(address === transaction.recipient) {
+    let hash = calculateHash(transactionToString(transaction));
+    potential.remove(potential.find(hash));
+    if(!receiveTransaction(stateObject, transaction)) {
+        //stateObject.setState(address, nonce, balance);            
+        return;
+    }
+}   
+*/
 
  module.exports = {
-     userProcess,
-     operatorProcess
+     operatorProcess,
+     userProcess
  }

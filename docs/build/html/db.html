@@ -1,0 +1,257 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Database &#8212; Plasma-DAG-Client 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Core" href="core.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="database">
+<h1>Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="database-js">
+<h2>database.js<a class="headerlink" href="#database-js" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Database">
+<em class="property">class </em><code class="descname">Database</code><span class="sig-paren">(</span><em>constructor</em><span class="sig-paren">)</span><a class="headerlink" href="#Database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent database structure</p>
+<dl class="function">
+<dt id="Database.loadAllBlocks">
+<code class="descclassname">Database.</code><code class="descname">loadAllBlocks</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Database.loadAllBlocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>return blocklist</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Database.loadCheckpoint">
+<code class="descclassname">Database.</code><code class="descname">loadCheckpoint</code><span class="sig-paren">(</span><em>address</em><span class="sig-paren">)</span><a class="headerlink" href="#Database.loadCheckpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>return checkpoint</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="Database.readBlock">
+<code class="descclassname">Database.</code><code class="descname">readBlock</code><span class="sig-paren">(</span><em>hash</em><span class="sig-paren">)</span><a class="headerlink" href="#Database.readBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets hash value of a block from DB, and Returns Promise object,</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
+<li><strong>hash</strong> (<em>String</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Database.readState">
+<code class="descclassname">Database.</code><code class="descname">readState</code><span class="sig-paren">(</span><em>address</em><span class="sig-paren">)</span><a class="headerlink" href="#Database.readState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a State Object, Returns Promise objects from DB</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
+<li><strong>address</strong> (<em>String</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Database.readTx">
+<code class="descclassname">Database.</code><code class="descname">readTx</code><span class="sig-paren">(</span><em>hash</em><span class="sig-paren">)</span><a class="headerlink" href="#Database.readTx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets hash value of tx, Returns Promise objects from DB</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
+<li><strong>hash</strong> (<em>String</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Database.writeBlock">
+<code class="descclassname">Database.</code><code class="descname">writeBlock</code><span class="sig-paren">(</span><em>block</em><span class="sig-paren">)</span><a class="headerlink" href="#Database.writeBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a Block object and write it on DB, Returns Promise object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
+<li><strong>block</strong> (<a class="reference internal" href="core.html#Block" title="Block"><em>Block</em></a>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Database.writeCheckpoint">
+<code class="descclassname">Database.</code><code class="descname">writeCheckpoint</code><span class="sig-paren">(</span><em>checkpoint</em>, <em>account</em><span class="sig-paren">)</span><a class="headerlink" href="#Database.writeCheckpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>for update checkpoint</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
+<li><strong>checkpoint</strong> (<em>*</em>) – </li>
+<li><strong>account</strong> (<em>Number</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Database.writeState">
+<code class="descclassname">Database.</code><code class="descname">writeState</code><span class="sig-paren">(</span><em>state</em><span class="sig-paren">)</span><a class="headerlink" href="#Database.writeState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a State object and update it on DB, Returns Promise an object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
+<li><strong>state</strong> (<em>Object</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="Database.writeTx">
+<code class="descclassname">Database.</code><code class="descname">writeTx</code><span class="sig-paren">(</span><em>tx</em><span class="sig-paren">)</span><a class="headerlink" href="#Database.writeTx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a Transaction object and write it on DB, Returns Promise an object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
+<li><strong>tx</strong> (<a class="reference internal" href="core.html#Transaction" title="Transaction"><em>Transaction</em></a>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Plasma-DAG-Client</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Intro</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage(development only)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">Core</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#database-js">database.js</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="core.html" title="previous chapter">Core</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Decipher.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/db.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

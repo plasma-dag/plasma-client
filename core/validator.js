@@ -55,10 +55,12 @@ const validateBlock = (block, signature, publicKey) => {
     return true;
 }
 
+
 const validateState = stateObject => {
 
     
 }
+
 
 
 module.exports = {

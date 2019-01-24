@@ -12,32 +12,24 @@ const preCheck = (stateObject, transaction) => {
     }
     else if(nonce > transaction.accountNonce) {
         return Error('nonce low');
-    }
-    
-    return true;
+    }    
 }
 
 const sendStateTransition = (stateObject, transaction) => {
     // check nonce
     if(!preCheck(stateObject, transaction)) {
-        return false;
+        return Error('nonce error');
     }
-    // // check balance
-    // if(stateObject.getBalance() < transaction.value) {
-    //     console.log(`balance shortage.`);
-    //     return false;
-    // }
 
     stateObject.setNonce(stateObject.getNonce()+1);        
     stateObject.subBalance(transaction.value);    
 
-    return true;
 }
 const receiveStateTransition = (stateObject, transaction) => {
     stateObject.addBalance(transaction.value);
-    return true;
 }
 
 module.exports = {
-    applyStateTransition
+    sendStateTransition,
+    receiveStateTransition
 }

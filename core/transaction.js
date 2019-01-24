@@ -8,20 +8,18 @@ class Transaction {
     /**
      * @constructor
      * 
-     * @param {string} type 'send' or 'receive' 
-     * @param {number} accountNonce 
-     * @param {address} recipient 
+     * @param {number}  accountNonce 
+     * @param {address} receiver
      * @param {address} sender 
-     * @param {number} value 
+     * @param {number}  value 
      */
-    constructor(type, accountNonce, recipient, sender, value) {
-        if (!(type || accountNonce || recipient || sender || value)) {
+    constructor(accountNonce, receiver, sender, value) {
+        if (!(accountNonce || receiver || sender || value)) {
             return Error('Not enough parameters');
         }
         this.data = {
-            type,
             accountNonce,
-            recipient,
+            receiver,
             sender,
             value,
         }
@@ -30,12 +28,22 @@ class Transaction {
      * Returns and saves hash value of tx data, exclude signature information
      */
     hash() {
-        if (this.hash) return this.hash
+        if (this.txHash) return this.txHash
         // cache hash value
-        this.hash = ut.calculateHash(this.data).toString();
-        return this.hash;
+        this.txHash = ut.calculateHash(this.data).toString();
+        return this.txHash;
+    }
+
+
+    /**
+     * 
+     * @param {*} txHash 
+     */
+    getTxDatabyhash(txHash) {
+        
     }
 }
+
 
 function rlpEncode(tx) {
     return rlp.encode(tx.data);
@@ -43,15 +51,15 @@ function rlpEncode(tx) {
 /** 
  * TODO: this part is for cli, not about transaction itself. Should be moved to other files.
  */
-const operatorAddr = 21321412; 
 
+/*
 function sendTransaction(nonce, receiver, sender, value) {
-	let Transaction = new Transaction(0, nonce, receiver, sender, value);
+	let Transaction = new Transaction(nonce, receiver, sender, value);
 	//transfer(Transaction, );
 }
 
 function receiveTransaction(sender, receiver, value) {
-	let Transaction = new Transaction(1, nonce, receiver, sender, value);
+	let Transaction = new Transaction(nonce, receiver, sender, value);
 	//trasfer(Transaction, )
 }
 
@@ -62,7 +70,7 @@ function addTransaction(account, newTransaction) {
 	} 
 	return false;
 }
-
+*/
 
 
 module.exports = {
