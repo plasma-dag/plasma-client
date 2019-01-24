@@ -1,5 +1,5 @@
-'use-strict';
-const ut = require('../common/utils');
+"use-strict";
+const ut = require("../common/utils");
 
 /**
  * Transaction
@@ -7,39 +7,38 @@ const ut = require('../common/utils');
 class Transaction {
     /**
      * @constructor
-     * 
-     * @param {number} accountNonce 
-     * @param {address} recipient 
-     * @param {address} sender 
-     * @param {number} value 
+     *
+     * @param {number} accountNonce
+     * @param {address} recipient
+     * @param {address} sender
+     * @param {number} value
      */
     constructor(accountNonce, recipient, sender, value) {
         if (!(accountNonce || recipient || sender || value)) {
-            return Error('Not enough parameters');
+            return Error("Not enough parameters");
         }
         this.data = {
             accountNonce,
             recipient,
             sender,
-            value,
-        }
+            value
+        };
     }
     /**
      * Returns and saves hash value of tx data, exclude signature information
      */
     hash() {
-        if (this.txHash) return this.txHash
+        if (this.txHash) return this.txHash;
         // cache hash value
         this.txHash = ut.calculateHash(this.data).toString();
         return this.txHash;
     }
 }
 
-
 function rlpEncode(tx) {
     return rlp.encode(tx.data);
 }
-/** 
+/**
  * TODO: this part is for cli, not about transaction itself. Should be moved to other files.
  */
 
@@ -61,8 +60,6 @@ function addTransaction(account, newTransaction) {
 }
 */
 
-
 module.exports = {
     Transaction
-}
-
+};

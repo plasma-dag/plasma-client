@@ -14,17 +14,23 @@
 // operator validation
 function validateBlock(block, signature, publicKey) {
     let headerHash = calculateHash(block.header);
-    if(decryptSignature(headerHash, publicKey) != signature) {
-        console.log("signautre is invalid.")
+    if (decryptSignature(headerHash, publicKey) != signature) {
+        console.log("signautre is invalid.");
         return false;
     }
-    
+
     /**
      * TODO : verify block header.
      */
 
-    block.transactions.forEach( function(key) {
-        if(!validateTransaction(block, block.transactions[key], block.signatures[key])) {
+    block.transactions.forEach(function(key) {
+        if (
+            !validateTransaction(
+                block,
+                block.transactions[key],
+                block.signatures[key]
+            )
+        ) {
             return false;
         }
     });
@@ -34,7 +40,7 @@ function validateBlock(block, signature, publicKey) {
 function validateTransaction(block, transaction, signature) {
     let publicKey = getPublicKey(transaction.sender);
     let transactionHash = calculateHash(transaction);
-    if(decryptSignature(transactionHash, publicKey) != signature) {
+    if (decryptSignature(transactionHash, publicKey) != signature) {
         console.log("transaction signature is invalid.");
         return false;
     }
@@ -44,12 +50,15 @@ function validateTransaction(block, transaction, signature) {
         return false;
     }
     */
-    if(block.state.address != transaction.sender && block.state.address != transaction.recipient) {
+    if (
+        block.state.address != transaction.sender &&
+        block.state.address != transaction.recipient
+    ) {
         console.log("invalid transcation for block state.");
         return false;
     }
-    if(transaction.value <= 0) {
-        console.log("transaction value is invalid.")
+    if (transaction.value <= 0) {
+        console.log("transaction value is invalid.");
     }
     return true;
 }
@@ -57,5 +66,4 @@ function validateTransaction(block, transaction, signature) {
 module.exports = {
     validateBlock,
     validateTransaction
-}
-
+};

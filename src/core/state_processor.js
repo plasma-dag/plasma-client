@@ -16,15 +16,15 @@ function operatorProcess(blockchain, stateDB, block, blockOwnerAddr) {
 }
 
 // for validated block
- function process(stateObject, block) {    
+function process(stateObject, block) {
     let copyOfStateObject = stateObject.deepCopy();
     let { address, nonce, balance } = copyOfStateObject;
     let receipts = [];
 
-    for(let key in block.transactions) {    
+    for (let key in block.transactions) {
         let transaction = block.transactions[key];
         let receipt = applyTransaction(stateObject, transaction);
-        if(receipt == undefined || receipt == false) {
+        if (receipt == undefined || receipt == false) {
             stateObject.setState(stateObject, address, nonce, balance);
             console.log("receipt is undefined.");
             return undefined;
@@ -35,26 +35,21 @@ function operatorProcess(blockchain, stateDB, block, blockOwnerAddr) {
     return receipts;
 }
 
-
- 
- function applyTransaction(stateObject, transaction) {
-    if(!applyStateTransition(stateObject, transaction)) {
+function applyTransaction(stateObject, transaction) {
+    if (!applyStateTransition(stateObject, transaction)) {
         return false;
     }
 
     /**
      * TODO : process receipt.
-     */ 
+     */
 
     let receipt;
 
     return receipt;
- }
+}
 
-
-
- module.exports = {
-     operatorProcess,
-     process
- }
-
+module.exports = {
+    operatorProcess,
+    process
+};
