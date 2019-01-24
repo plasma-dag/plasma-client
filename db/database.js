@@ -16,35 +16,19 @@ class Database{
     
     /**
      * write one potential hash for address
-     * @param {*} address 
-     * @param {*} hash 
+     * 
+     * @param {Address} address 
+     * @param {Hash[]}  txHashList 
      */
-    writePotential(address, hash) {
-
-    }
-
-    /**
-     * read all potentials for address
-     * @param {*} address 
-     */
-    readAllPotentials(address) {
+    writePotential(address, txHashList) {
         
     }
 
     /**
-     * find one potential hash
-     * @param {*} hash 
+     * read all potentials in database
      */
-    findPotential(hash) {
-
-    }
-
-    /**
-     * remove one potential hash
-     * @param {*} hash 
-     */
-    removePotential(hash) {
-
+    readAllPotentials() {
+        
     }
 
     /**

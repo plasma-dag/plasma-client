@@ -8,10 +8,10 @@ class Transaction {
     /**
      * @constructor
      * 
-     * @param {number} accountNonce 
+     * @param {number}  accountNonce 
      * @param {address} receiver
      * @param {address} sender 
-     * @param {number} value 
+     * @param {number}  value 
      */
     constructor(accountNonce, receiver, sender, value) {
         if (!(accountNonce || receiver || sender || value)) {
