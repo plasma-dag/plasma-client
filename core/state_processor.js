@@ -12,7 +12,7 @@ const { Block } = require('./block');
 const { applyStateTransition } = require('./state_transition');
 const { calculateHash } = require('../common/utils');
 const { Potential } = require('../core/potential');
-const { PotentialDB } = require('../core/potential');
+const { potentialDB } = require('../core/potential');
 
 const receivePotential = (stateObjcet, potential) => {
     /**
@@ -42,7 +42,7 @@ const operatorProcess = (stateDB, potentialDB, block) => {
     
     potentialDB.populate();
     let potentials = potentialDB.potentials;
-    let blockOwnerPotential = potentialDB.potentials[blockOwnerAddress];
+    let blockOwnerPotential = potentials[blockOwnerAddress];
     let changePotentialList = []; // changed potential list for db update
     
     // receive potential

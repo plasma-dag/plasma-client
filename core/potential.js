@@ -1,7 +1,5 @@
-"use strict";
-const Transaction = require("../core/transaction");
+'use strict';
 const db = require("../db/database");
-const { calculateHash } = require("../common/utils");
 
 /**
  * potential Data at DB
@@ -56,7 +54,11 @@ class PotentialDB {
             this.potentials[p.address] = new Potential(this.db, p.address, p.blockHashList);
         }
     }
-
+    /**
+     * 
+     * @param {*} blockHash 
+     * @param {address} receiver 
+     */
     sendPotential(blockHash, receiver) {
         // Potential already exist
         if (this.potentials[receiver]) {
@@ -66,7 +68,11 @@ class PotentialDB {
         this.potentials[receiver] = new Potential(this.db, receiver, [ blockHash ]);
         return this.potentials[receiver].save();
     }
-
+    /**
+     * 
+     * @param {*} blockHash 
+     * @param {address} receiver 
+     */
     receivePotential(blockHash, receiver) {
         // Available potential is exist
         if (this.potentials[receiver]) {
@@ -76,49 +82,8 @@ class PotentialDB {
     }
 }
 
-// 이 함수는 왜 여기 있는건지 모르겠음. 오퍼레이터가 행동하는 함수들로 묶어버리는게 좋을듯.
-/**
- * Run by operatorProcess
- * @param {*} address 
- * @param {Transaction} tx 
- */
-function potentialProcess(address,tx) {
-
-    let potentialData = this.getPotentialData(address);
-    let hash = calculateHash(transaction.data).toString();
-    const sender = tx.data.sender;
-    const receiver = tx.data.receiver;
-
-    // Add potential to receiver when send tx
-    if(address === sender){
-        let index = potentialData.findIndex( potential => tx.receiver === potential.address );
-        if(index !== -1) {
-            potentialData[index].potentialList.add(hash);
-        }
-        else {
-            let newPotential = new Potential(address,hash);
-            potentialData.push(newPotential);
-        }
-
-        this.savePotentialData(address,hash);
-    }
-        
-    // Remove potential when receive tx
-    else if(address === receiver){
-        if(potentialData.address.find(hash) !== undefined){                
-            this.removePotential(hash);
-        }
-    }
-
-    //log
-    console.log(`------------ address: ${potentialData.address}, potentialList: ${potentialData.potentialList}-------------------`);
-    for(let i of potentialData.potentialList) {
-        console.log(potentialData.potentialList[i]);
-    }
-}
-
 
 module.exports = {
     Potential,
-    PotentialDB
+    PotentialDB : potentialDB
 };
