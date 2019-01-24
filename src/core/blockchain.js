@@ -2,7 +2,7 @@
 "use strict";
 
 const ut = require("../common/utils");
-const { Database } = require('./database');
+const { Database } = require("../db");
 /**
  * Represents the Blockchain structure
  */
@@ -14,12 +14,11 @@ class Blockchain {
      * @param {Address} address     this blockchain's owner
      */
     constructor(db, address) {
-
-        this.db             = db;
+        this.db = db;
         /**
          * final checkpoint got receipt from operator
          */
-        this.checkpoints    = db.loadCheckpoint(address);
+        this.checkpoints = db.loadCheckpoint(address);
 
         this.blocks = this.makeBlockChain();
         if (this.blocks == []) {
@@ -28,10 +27,10 @@ class Blockchain {
 
         this.genesisBlock = this.getBlockByNumber(0);
         if (this.genesisBlock == []) {
-            return Error('No Genesis Block');
+            return Error("No Genesis Block");
         }
 
-        this.currentBlock   = this.blocks[this.blocks.length - 1];
+        this.currentBlock = this.blocks[this.blocks.length - 1];
     }
 
     /**
@@ -232,11 +231,10 @@ class Blockchain {
 // }
 
 module.exports = {
-    Blockchain,
+    Blockchain
     // generateNextBlock,
     // getLatestBlock,
     // getBlockchain,
     // addBlock,
     // replaceChain
 };
-
