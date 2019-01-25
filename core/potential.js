@@ -26,6 +26,10 @@ class Potential {
         return await this.db.writePotential(this.address, this.blockHashList);
     }
 
+    isExist(blockHash) {
+        return this.blockHashList.includes(blockHash);
+    }
+
     insert(blockHash) {
         this.blockHashList.push(blockHash);
         this.save();
@@ -53,6 +57,17 @@ class PotentialDB {
         for (p in res) {
             this.potentials[p.address] = new Potential(this.db, p.address, p.blockHashList);
         }
+    }
+    /**
+     * 
+     * @param {*} blockHash 
+     * @param {*} receiver 
+     */
+    isExist(blockHash, receiver) {
+        if (this.potentials[receiver]) {
+            return this.potentials[receiver].isExist(blockHash);
+        }
+        return Error('No potentials for this receiver');
     }
     /**
      * 
