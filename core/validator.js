@@ -11,6 +11,33 @@
 
 'use strict';
 
+class Validator {
+    constructor(signer) {
+        this.signer = signer;
+    }
+    validateBlock(block) {
+        const sender = this.signer.sender(block);
+    }
+}
+const validateBlock = (block, signature, publicKey) => {
+    let headerHash = block.hash();
+    if (decryptSignature(headerHash, publicKey) != signature) {
+        console.log("signautre is invalid.")
+        return false;
+    }
+    
+    /**
+     * TODO : verify block header.
+     */
+
+    Object.keys(block.transactions).forEach( (key) => {
+        if(!validateTransaction(block, block.transactions[key], block.signatures[key])) {
+            return false;
+        }
+    });
+    return true;
+}
+
 // operator validation
 const validateTransaction = (block, transaction, signature) => {
     let publicKey = getPublicKey(transaction.sender);
@@ -35,25 +62,6 @@ const validateTransaction = (block, transaction, signature) => {
     return true;
 }
 
-
-const validateBlock = (block, signature, publicKey) => {
-    let headerHash = calculateHash(block.header);
-    if(decryptSignature(headerHash, publicKey) != signature) {
-        console.log("signautre is invalid.")
-        return false;
-    }
-    
-    /**
-     * TODO : verify block header.
-     */
-
-    Object.keys(block.transactions).forEach( (key) => {
-        if(!validateTransaction(block, block.transactions[key], block.signatures[key])) {
-            return false;
-        }
-    });
-    return true;
-}
 
 
 const validateState = stateObject => {

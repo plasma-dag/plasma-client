@@ -21,7 +21,6 @@ let newAccount = new Account(
 let newTransaction = new Transaction(
 1,
 newAccount,
-'dfdfdfdfd',
 500000
 );
 let newHeader = new Header(

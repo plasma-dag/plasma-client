@@ -45,13 +45,11 @@ class Block {
   /**
    * @constructor
    * 
-   * @param {Header} header this block's header
-   * @param {Signature[]} signatures list of signature
-   * @param {Transaction[]} transactions list of txs
+   * @param {Header}        header        this block's header
+   * @param {Transaction[]} transactions  list of txs
    */
-  constructor(header, signatures, transactions) {
+  constructor(header, transactions) {
       this.header       = header;
-      this.signatures   = signatures;
       this.transactions = transactions;
   }
 
@@ -61,6 +59,21 @@ class Block {
     return this.blockHash;
     // TODO: db storing
   }
+
+  /**
+   * 
+   * @param {Signer}      signer 
+   * @param {Uint8Array}  sig 
+   */
+  withSignature(signer, sig) {
+    const { r, s, v, error } = signer.signatureValues(sig);
+    if (error) { return error; }
+    this.r = r;
+    this.s = s;
+    this.v = v;
+    return;
+  }
+
   /**
    * Save to transactions
    */

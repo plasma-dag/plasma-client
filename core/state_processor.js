@@ -5,14 +5,7 @@
  */
 'use strict';
 
-const { stateDB } = require('./stateDB');
-const { StateObject } = require('./stateObject');
-const { Header } = require('./block');
-const { Block } = require('./block');
-const { applyStateTransition } = require('./state_transition');
 const { calculateHash } = require('../common/utils');
-const { Potential } = require('../core/potential');
-const { potentialDB } = require('../core/potential');
 
 const receivePotential = (stateObjcet, potential) => {
     /**
