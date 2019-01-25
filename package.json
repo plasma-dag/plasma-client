@@ -4,15 +4,19 @@
   "scripts": {
     "test": "jest",
     "start": "src/index.js",
-    "pretty": "prettier --write --tab-width 4 \"src/**/*.js\"",
+    "pretty": "prettier --write \"src/**/*.js\"",
     "precommit": "lint-staged"
   },
   "dependencies": {
     "body-parser": "^1.15.2",
     "crypto-js": "^3.1.6",
     "elliptic": "^6.4.0",
+    "ethereumjs-util": "^6.0.0",
     "express": "^4.16.4",
+    "js-sha3": "^0.8.0",
+    "merkletreejs": "0.0.22",
     "mongodb": "^3.1.12",
+    "web3": "^1.0.0-beta.37",
     "ws": "^1.1.0"
   },
   "engines": {

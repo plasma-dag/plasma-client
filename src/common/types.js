@@ -21,7 +21,7 @@ const ADDRESS_LENGTH = 40;
  * @param {string} b bytes value as string.
  */
 function bytesToHash(b) {
-    return _setBytes(b, HASH_LENGTH);
+  return _setBytes(b, HASH_LENGTH);
 }
 
 /**
@@ -29,18 +29,18 @@ function bytesToHash(b) {
  * @param {string} b bytes value as string.
  */
 function bytesToAddress(b) {
-    return _setBytes(b, ADDRESS_LENGTH);
+  return _setBytes(b, ADDRESS_LENGTH);
 }
 
 function _setBytes(b, l) {
-    if (b.length > l) {
-        b = b.slice(b.length - HASH_LENGTH, b.length);
-    }
-    let res = l - b.length > 0 ? "0".repeat(l - b.length) + b : b;
-    return res;
+  if (b.length > l) {
+    b = b.slice(b.length - HASH_LENGTH, b.length);
+  }
+  let res = l - b.length > 0 ? "0".repeat(l - b.length) + b : b;
+  return res;
 }
 
 module.exports = {
-    bytesToHash,
-    bytesToAddress
+  bytesToHash,
+  bytesToAddress
 };

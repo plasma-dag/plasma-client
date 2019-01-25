@@ -13,57 +13,57 @@
 
 // operator validation
 function validateBlock(block, signature, publicKey) {
-    let headerHash = calculateHash(block.header);
-    if (decryptSignature(headerHash, publicKey) != signature) {
-        console.log("signautre is invalid.");
-        return false;
+  let headerHash = calculateHash(block.header);
+  if (decryptSignature(headerHash, publicKey) != signature) {
+    console.log("signautre is invalid.");
+    return false;
+  }
+
+  /**
+   * TODO : verify block header.
+   */
+
+  block.transactions.forEach(function(key) {
+    if (
+      !validateTransaction(
+        block,
+        block.transactions[key],
+        block.signatures[key]
+      )
+    ) {
+      return false;
     }
-
-    /**
-     * TODO : verify block header.
-     */
-
-    block.transactions.forEach(function(key) {
-        if (
-            !validateTransaction(
-                block,
-                block.transactions[key],
-                block.signatures[key]
-            )
-        ) {
-            return false;
-        }
-    });
-    return true;
+  });
+  return true;
 }
 
 function validateTransaction(block, transaction, signature) {
-    let publicKey = getPublicKey(transaction.sender);
-    let transactionHash = calculateHash(transaction);
-    if (decryptSignature(transactionHash, publicKey) != signature) {
-        console.log("transaction signature is invalid.");
-        return false;
-    }
-    /*
+  let publicKey = getPublicKey(transaction.sender);
+  let transactionHash = calculateHash(transaction);
+  if (decryptSignature(transactionHash, publicKey) != signature) {
+    console.log("transaction signature is invalid.");
+    return false;
+  }
+  /*
     if(transaction.type != SEND_TRANSACTION && transaction.type != RECEIVE_TRANSACTION) {
         console.log("transaction type is invalid.");
         return false;
     }
     */
-    if (
-        block.state.address != transaction.sender &&
-        block.state.address != transaction.recipient
-    ) {
-        console.log("invalid transcation for block state.");
-        return false;
-    }
-    if (transaction.value <= 0) {
-        console.log("transaction value is invalid.");
-    }
-    return true;
+  if (
+    block.state.address != transaction.sender &&
+    block.state.address != transaction.recipient
+  ) {
+    console.log("invalid transcation for block state.");
+    return false;
+  }
+  if (transaction.value <= 0) {
+    console.log("transaction value is invalid.");
+  }
+  return true;
 }
 
 module.exports = {
-    validateBlock,
-    validateTransaction
+  validateBlock,
+  validateTransaction
 };

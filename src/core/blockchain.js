@@ -7,96 +7,97 @@ const { Database } = require("../db");
  * Represents the Blockchain structure
  */
 class Blockchain {
+  /**
+   * @constructor
+   *
+   * @param {Database} db         block db
+   * @param {Address} address     this blockchain's owner
+   */
+  constructor(db, address) {
+    this.db = db;
+    console.log(db);
     /**
-     * @constructor
-     *
-     * @param {Database} db         block db
-     * @param {Address} address     this blockchain's owner
+     * final checkpoint got receipt from operator
      */
-    constructor(db, address) {
-        this.db = db;
-        /**
-         * final checkpoint got receipt from operator
-         */
-        this.checkpoints = db.loadCheckpoint(address);
+    this.checkpoints = db.loadCheckpoint(address);
 
-        this.blocks = this.makeBlockChain();
-        if (this.blocks == []) {
-            return Error("No Blocks at all.");
-        }
-
-        this.genesisBlock = this.getBlockByNumber(0);
-        if (this.genesisBlock == []) {
-            return Error("No Genesis Block");
-        }
-
-        this.currentBlock = this.blocks[this.blocks.length - 1];
+    this.blocks = this.makeBlockChain();
+    if (this.blocks == []) {
+      return Error("No Blocks at all.");
     }
 
-    /**
-     * Injects a new head block into the current block chain. This method
-     * assumes that the block is indeed a true head.
-     *
-     * @param {Block} block
-     */
-    insertBlock(block) {
-        this.db.writeBlock(block);
-        this.currentBlock = block;
-        this.blocks.push(block);
+    this.genesisBlock = this.getBlockByNumber(0);
+    if (this.genesisBlock == []) {
+      return Error("No Genesis Block");
     }
 
-    /**
-     * Updates a new checkpoint received from operator
-     *
-     * @param {Object} checkpoint
-     */
-    updateCheckpoint(checkpoint) {
-        this.db.writeCheckpoint(checkpoint);
-        this.checkpoints.push(checkpoint);
-    }
+    this.currentBlock = this.blocks[this.blocks.length - 1];
+  }
 
-    /**
-     * Returns the block matching hash value or number.
-     * 나중에 header chain 집어 넣었을 때 필요.
-     *
-     * @param {String} hash
-     * @param {Number} number
-     */
-    getBlock(hash, number) {
-        if (this.blockCache[hash]) return this.blockCache[hash];
-        if (!this.blocks[number]) {
-            return null;
-        }
-        this.blockCache[hash] = block;
-        return block;
-    }
+  /**
+   * Injects a new head block into the current block chain. This method
+   * assumes that the block is indeed a true head.
+   *
+   * @param {Block} block
+   */
+  insertBlock(block) {
+    this.db.writeBlock(block);
+    this.currentBlock = block;
+    this.blocks.push(block);
+  }
 
-    getBlockByHash(hash) {
-        return;
-    }
+  /**
+   * Updates a new checkpoint received from operator
+   *
+   * @param {Object} checkpoint
+   */
+  updateCheckpoint(checkpoint) {
+    this.db.writeCheckpoint(checkpoint);
+    this.checkpoints.push(checkpoint);
+  }
 
-    /**
-     * Returns the block with block number
-     *
-     * @param {Number} number
-     */
-    getBlockByNumber(number) {
-        return this.blocks[number] ? this.blocks[number] : null;
+  /**
+   * Returns the block matching hash value or number.
+   * 나중에 header chain 집어 넣었을 때 필요.
+   *
+   * @param {String} hash
+   * @param {Number} number
+   */
+  getBlock(hash, number) {
+    if (this.blockCache[hash]) return this.blockCache[hash];
+    if (!this.blocks[number]) {
+      return null;
     }
+    this.blockCache[hash] = block;
+    return block;
+  }
 
-    /**
-     * Returns current block of this blockchain
-     */
-    getCurrentBlock() {
-        return this.currentBlock;
-    }
+  getBlockByHash(hash) {
+    return;
+  }
 
-    makeBlockChain() {
-        const blocklist = this.db.loadAllBlocks();
-        // generate list of blocks within db.
-        // 이 때, operator의 checkpoint들을 이용해서 만들어야 함.
-        return blocklist;
-    }
+  /**
+   * Returns the block with block number
+   *
+   * @param {Number} number
+   */
+  getBlockByNumber(number) {
+    return this.blocks[number] ? this.blocks[number] : null;
+  }
+
+  /**
+   * Returns current block of this blockchain
+   */
+  getCurrentBlock() {
+    return this.currentBlock;
+  }
+
+  makeBlockChain() {
+    const blocklist = this.db.loadAllBlocks();
+    // generate list of blocks within db.
+    // 이 때, operator의 checkpoint들을 이용해서 만들어야 함.
+    return blocklist;
+  }
 }
 
 /**
@@ -231,10 +232,10 @@ class Blockchain {
 // }
 
 module.exports = {
-    Blockchain
-    // generateNextBlock,
-    // getLatestBlock,
-    // getBlockchain,
-    // addBlock,
-    // replaceChain
+  Blockchain
+  // generateNextBlock,
+  // getLatestBlock,
+  // getBlockchain,
+  // addBlock,
+  // replaceChain
 };
