@@ -8,16 +8,14 @@ class Transaction {
     /**
      * @constructor
      * 
-     * @param {number}  accountNonce 
      * @param {address} receiver
      * @param {number}  value
      */
-    constructor(accountNonce, receiver, value) {
-        if (!(accountNonce || receiver || value)) {
+    constructor(receiver, value) {
+        if (!(receiver || value)) {
             return Error('Not enough parameters');
         }
         this.data = {
-            accountNonce,
             receiver,
             value,
             // data,
@@ -29,10 +27,9 @@ class Transaction {
     hash() {
         if (this.txHash) return this.txHash
         // cache hash value
-        const { accountNonce, receiver, value } = this.data;
+        const { receiver, value } = this.data;
         this.txHash = ut.calculateHash(
             {
-                accountNonce,
                 receiver,
                 value,
                 // data,
