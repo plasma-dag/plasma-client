@@ -52,7 +52,7 @@ function recoverPlain(sigHash, R, S, V) {
     }
     sig[64] = numberToBytes(V - 27);
 
-    const pub = crypto.Ecrecover(sigHash, sig);
+    const pub = crypto.ecrecover(sigHash, sig);
     // TODO: pub key validation
     return crypto.makeAddress(pub);
 }
