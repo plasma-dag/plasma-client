@@ -14,11 +14,11 @@ class Blockchain {
      */
     constructor(db, address) {
         
-        this.db             = db;
+        this.db = db;
         /**
          * final checkpoint got receipt from operator
          */
-        this.checkpoints    = db.loadCheckpoint(address);
+        this.checkpoint = db.loadCheckpoint(address);
         
         this.blocks = this.makeBlockChain();
         if (this.blocks == []) {
@@ -30,18 +30,9 @@ class Blockchain {
             return Error('No Genesis Block');
         }
 
-        this.currentBlock   = this.blocks[this.blocks.length - 1];
+        this.currentBlock = this.blocks[this.blocks.length - 1];
     }
 
-
-    /**
-     * After validation
-     * 오퍼레이터권한, 블록승인후 처리 
-     */
-    acceptBlock(){
-        
-    }
-    
     /**
      * Before validation
      * Injects a new head block into the current block chain. This method
@@ -62,7 +53,7 @@ class Blockchain {
      */
     updateCheckpoint(checkpoint) {
         this.db.writeCheckpoint(checkpoint);
-        this.checkpoints.push(checkpoint);
+        this.checkpoint.push(checkpoint);
     }
 
     /**

@@ -8,25 +8,23 @@ class Header {
   /**
    * @constructor
    * 
-   * @param {Hash[]} previousHash 
-   * @param {Object} state state of the block producer's account
-   * @param {Hash} merkleHash all transactions' hash value
+   * @param {Hash}   previousHash 
+   * @param {Hash[]} potentialHashList
+   * @param {Object} state              State of the block producer's account after apply txs and potential.
+   * @param {Hash}   merkleHash         All transactions' hash value
    * @param {Number} difficulty 
-   * @param {Number} number 
    * @param {Number} timestamp 
-   * @param {Number} nonce 
-   * @param {Object} checkpoint Operator's receipt about previous block, 꼭 직전의 블록일 이유는 없음.
+   * @param {Number} nonce
    */
-  constructor(previousHash, state, merkleHash, difficulty, number, timestamp, nonce, checkpoint) {
+  constructor(previousHash, potentialHashList, state, merkleHash, difficulty, timestamp, nonce) {
     this.data = {
         previousHash,
+        potentialHashList,
         state,
         merkleHash,
         difficulty,
-        number,
         timestamp,
         nonce,
-        checkpoint
     };
   }
 
