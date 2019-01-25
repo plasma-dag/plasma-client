@@ -85,5 +85,5 @@ class PotentialDB {
 
 module.exports = {
     Potential,
-    PotentialDB : potentialDB
+    PotentialDB
 };

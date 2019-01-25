@@ -8,9 +8,9 @@ class Header {
   /**
    * @constructor
    * 
-   * @param {String[]} previousHash 
+   * @param {Hash[]} previousHash 
    * @param {Object} state state of the block producer's account
-   * @param {String} merkleHash all transactions' hash value
+   * @param {Hash} merkleHash all transactions' hash value
    * @param {Number} difficulty 
    * @param {Number} number 
    * @param {Number} timestamp 

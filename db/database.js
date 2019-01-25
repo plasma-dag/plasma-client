@@ -22,20 +22,21 @@ class Database{
      */
     writePotential(address, hashList) {
         return new Promise((resolve,reject)=>{
-            this.db.connect(url, {useNewUrlParser: true}, (err, client) => {
+            this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
                 if (err) {
-                    console.error(err)
-                    return
+                    console.error(err);
+                    return;
                 }
-                
-                const potentials = client.db('plasma').collection('potentials')
-            
-                states.updateOne(address,hashList,{upsert:true})
+                const potentials = client.db('plasma').collection('potentials');
+                potentials.updateOne(
+                    { address },
+                    { $set: { address, hashList } },
+                    { upsert:true }
+                    )
                     .then(({result})=>resolve(result))
                     .catch((err => reject(err)));
-                }
-            )
-        })
+            });
+        });
     }
 
     /**
@@ -43,95 +44,103 @@ class Database{
      */
     readAllPotentials() {
         return new Promise((resolve, reject) => {
-            this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
+            this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
                 if (err) {
-                    console.error(err)
-                    return
+                    console.error(err);
+                    return;
                 }
-                const potentials = client.db('plasma').collection('potentials')
-
+                const potentials = client.db('plasma').collection('potentials');
                 return potentials.find().toArray()
                     .then((result) => resolve(result))
-                    .catch(err => reject(err))
-                }
-            )
-        }) 
+                    .catch(err => reject(err));
+            });
+        });
     }
 
     /**
      * update checkpoint
      * 
-     * @param {Object} checkpoint 
+     * @param {Checkpoint} checkpoint 
      * Gets checkpoint Object and update them on db, and returns a Promise object.
      * todo : blockhash => signed blockhash
      */
     writeCheckpoint(checkpoint) {
         return new Promise((resolve, reject) => {
-            this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
+            this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
                 if (err) {
-                  console.error(err)
-                  return
+                  console.error(err);
+                  return;
                 }
-
-                const checkpoints = client.db('plasma').collection('checkpoints')
-                
-                checkpoints.updateOne({_id : checkpoint.address}, 
-                                      {$set:{signedhash : checkpoint.signedhash}},
-                                      {upsert : true})
-                           .then(({result}) => resolve(result))
-                           .catch(err => reject(err));
-                }
-            )
-        })
+                const checkpoints = client.db('plasma').collection('checkpoints');
+                checkpoints.updateOne(
+                    { _id : checkpoint.operatorSig },
+                    { $set: checkpoint },
+                    { upsert : true }
+                    )
+                    .then(({result}) => resolve(result))
+                    .catch(err => reject(err));
+            });
+        });
     }
-    /**
-     * Gets address and returns matching blockhash
-     * @param {String} address 
-     */
-    readCheckpoint(address) {
 
+    /**
+     * Gets blockHash and returns matching checkpoints
+     * @param {Hash} blockHash 
+     */
+    readCheckpointWithBlockHash(blockHash) {
+        return new Promise((resolve, reject) => {
+            this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                const checkpoints = client.db('plasma').collection('checkpoints');                
+                // TODO: 필터에 signature => address 바꾸는 로직? 사실 함수 자체가 필요없을 수도 있긴 함.
+                return checkpoints.find({ blockHash }).toArray()
+                    .then((result) => resolve(result))
+                    .catch(err => reject(err));
+            });
+        });
     }
 
     /**
      * return blocklist for address
+     * 
      */
-    loadBlockswithAddress() {
+    loadBlockswithAddress(address) {
         return new Promise((resolve, reject) => {
-            this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
+            this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
                 if (err) {
-                    console.error(err)
-                    return
+                    console.error(err);
+                    return;
                 }
-                const blocks = client.db('plasma').collection('blocks')
-
-                return blocks.find().toArray()
+                const blocks = client.db('plasma').collection('blocks');
+                // TODO: 필터에 signature => address 바꾸는 로직? 사실 함수 자체가 필요없을 수도 있긴 함.
+                return blocks.find({ }).toArray()
                     .then((result) => resolve(result))
-                    .catch(err => reject(err))
-                }
-            )
-        }) 
+                    .catch(err => reject(err));
+            });
+        });
     }
 
     /**
-     * Gets hash value of a block from DB, and Returns Promise object, 
+     * Gets hash value of a block from DB, and Returns Promise object,
+     * 
      * @param {String} hash 
      */  
     readBlock(hash) {
         return new Promise((resolve, reject) => {
-            this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
+            this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
                 if (err) {
-                    console.error(err)
-                    return
+                    console.error(err);
+                    return;
                 }
-                const blocks = client.db('plasma').collection('blocks')
-
-                blocks.findOne({_id : hash})
+                const blocks = client.db('plasma').collection('blocks');
+                blocks.findOne({ _id : hash })
                     .then((result) => resolve(result) )
-                    .catch(err => reject(err))
-                }
-            )
-        })
-
+                    .catch(err => reject(err));
+            });
+        });
     }
     
     /**
@@ -140,114 +149,106 @@ class Database{
      */   
     writeBlock(block) {
         return new Promise((resolve, reject) => {
-            this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
+            this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
                 if (err) {
-                  console.error(err)
-                  return
+                  console.error(err);
+                  return;
                 }
+                // Block's hash value is always unique
                 block._id = block.hash();
-
-                const blocks = client.db('plasma').collection('blocks')
-                
+                const blocks = client.db('plasma').collection('blocks');
                 blocks.insertOne(block)
                     .then(({result}) => resolve(result))
                     .catch(err => reject(err));
-                }
-            )
-        })
+            });
+        });
     }
 
     /**
      * Gets hash value of tx, Returns Promise objects from DB
+     * 
      * @param {String} hash 
      */
-    readTx(hash){
-
+    readTx(hash) {
         return new Promise((resolve, reject) => {
-            this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
+            this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
                 if (err) {
-                    console.error(err)
-                    return
+                    console.error(err);
+                    return;
                 }
-                const transactions = client.db('plasma').collection('transactions')
-
-                transactions.findOne({_id : hash})
+                const transactions = client.db('plasma').collection('transactions');
+                transactions.findOne({ _id : hash })
                     .then((result) => resolve(result) )
-                    .catch(err => reject(err))
-                }
-            )
-        })
+                    .catch(err => reject(err));
+            });
+        });
     }
 
     /**
-     * Get a Transaction object and write it on DB, Returns Promise an object.
+     * Get a Transaction object and write it on DB, Returns Promise an object
+     * 
      * @param {Transaction} tx 
      */
-    writeTx(tx){
-
+    writeTx(tx) {
         return new Promise((resolve, reject) => {
-            this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
+            this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
                 if (err) {
-                  console.error(err)
-                  return
+                  console.error(err);
+                  return;
                 }
+                // Transaciton's hash value is always unique
                 tx._id = tx.hash();
-
-                const transactions = client.db('plasma').collection('transactions')
-                
+                const transactions = client.db('plasma').collection('transactions');
                 transactions.insertOne(tx)
                     .then(({result}) => resolve(result))
                     .catch(err => reject(err));
-                }
-            )
-        })
-
+            });
+        });
     }
+
     /**
     * Gets a State Object, Returns Promise objects from DB
+    * 
     * @param {String} address 
     */
     readState(address) {
         return new Promise((resolve, reject) => {
-            this.db.connect(url, {useNewUrlParser: true }, (err, client) => {
+            this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
                 if (err) {
-                    console.error(err)
-                    return
+                    console.error(err);
+                    return;
                 }
-                const states = client.db('plasma').collection('states')
-
-                states.findOne({_id : address})
+                const states = client.db('plasma').collection('states');
+                states.findOne({ address: address })
                     .then((result) => resolve(result) )
-                    .catch(err => reject(err))
-            }
-            )
-        })
+                    .catch(err => reject(err));
+            });
+        });
 
     }
 
     /**
     * Get a State object and update it on DB, Returns Promise an object.
+    * 
     * @param {Object} state 
     */
-    writeState(state){
+    writeState(state) {
         return new Promise((resolve,reject)=>{
-            this.db.connect(url, {useNewUrlParser: true}, (err, client) => {
+            this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
                 if (err) {
-                    console.error(err)
-                    return
+                    console.error(err);
+                    return;
                 }
-                
-                const states = client.db('plasma').collection('states')
-
-                state._id = state.address;
-            
-                states.updateOne(state._id,state,{upsert:true})
+                const states = client.db('plasma').collection('states');
+                states.updateOne(
+                    { address: state.address },
+                    { $set: state },
+                    { upsert:true }
+                    )
                     .then(({result})=>resolve(result))
                     .catch((err => reject(err)));
-                }
-            )
-        })
-
+            });
+        });
     }
  }
 

@@ -2,17 +2,21 @@
 
 class Checkpoint{
     /**
+     * @constructor
      * 
-     * @param {String} address 
-     * @param {String} signedhash 
+     * @param {Hash}    blockHash
+     * @param {Number}  operatorNonce
+     * @param {String}  operatorSig
      */
-    constructor(address, signedhash){
-        this.address   = address
-        this.signedhash = signedhash
+    constructor(blockHash, operatorNonce, operatorSig){
+        this.blockHash      = blockHash;
+        this.operatorNonce  = operatorNonce;
+        this.operatorSig    = operatorSig;
     }
 
-    validate(opAddr, merkle) {
-        // Return true or false 
+    validate(opPubkey) {
+        // Return true or false, like the code below
+        // return decodeWithPubKey(opPubkey, hash(blockHash, operatorNonce));
     }
 
 }
