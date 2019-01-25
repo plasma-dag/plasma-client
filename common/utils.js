@@ -1,14 +1,15 @@
 'use strict';
 //const { SHA256 } = require("crypto-js");
-const { SHA256 } = require("crypto");
+const { SHA256 } = require("crypto-js");
 
 /**
  * Returns calculated SHA256 hash value
  * 
- * @param {string} str 
+ * @param {Object} data 
  */
-function calculateHash(str) {
-    return SHA256(str).toString();
+function calculateHash(data) {
+    const strData = Object.entries(data).reduce((prev, curr) => prev + curr[1].toString(),'');
+    return SHA256(strData).toString();
 }
 
 function hexToBinary(s) {
