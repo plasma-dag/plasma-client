@@ -8,8 +8,8 @@ class Header {
   /**
    * @constructor
    * 
-   * @param {Hash}   previousHash 
-   * @param {Hash[]} potentialHashList
+   * @param {Hash}   previousHash       Previous Block Hash
+   * @param {Hash[]} potentialHashList  Block Hashes of blocks making potentials concerning txs in this block
    * @param {Object} state              State of the block producer's account after apply txs and potential.
    * @param {Hash}   merkleHash         All transactions' hash value
    * @param {Number} difficulty 
@@ -73,16 +73,25 @@ class Block {
   }
 
   /**
-   * Save to transactions
+   * Gets an address value and returns txhash[] with matching address as a receiver.
+   * @param {String} address 
    */
   getTransactionList(address) {
-    
+    const filteredTxs = this.transactions.filter(tx => address === tx.receiver)
+    return filteredTxs.map(tx => tx.hash())
   }
 
   /**
    * Create merkle tree using txHash
+   * TODO : MerkleTree class ?
    */
   createMerkle(){
+    const leaves = this.transactions.map(tx => tx.hash())
+    const tree = new MerkleTree(leaves, sha256)
+
+    //root type : Buffer - (Merkle Root hash as a buffer)
+    const root = tree.getRoot()
+    return root
 
   }
 
