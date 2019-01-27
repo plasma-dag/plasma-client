@@ -8,19 +8,19 @@ class Header {
   /**
    * @constructor
    * 
-   * @param {Hash}   previousHash       Previous Block Hash
-   * @param {Hash[]} potentialHashList  Block Hashes of blocks making potentials concerning txs in this block
-   * @param {Object} state              State of the block producer's account after apply txs and potential.
-   * @param {Hash}   merkleHash         All transactions' hash value
-   * @param {Number} difficulty 
-   * @param {Number} timestamp 
-   * @param {Number} nonce
+   * @param {Hash}    previousHash 
+   * @param {Hash[]}  potentialHashList
+   * @param {Account} accountState       State of the block producer's account after apply txs and potential.
+   * @param {Hash}    merkleHash         All transactions' hash value
+   * @param {Number}  difficulty 
+   * @param {Number}  timestamp 
+   * @param {Number}  nonce
    */
-  constructor(previousHash, potentialHashList, state, merkleHash, difficulty, timestamp, nonce) {
+  constructor(previousHash, potentialHashList, accountState, merkleHash, difficulty, timestamp, nonce) {
     this.data = {
         previousHash,
         potentialHashList,
-        state,
+        accountState,
         merkleHash,
         difficulty,
         timestamp,
