@@ -1,4 +1,5 @@
 'use strict';
+const { merkle } = require('../crypto');
 
 const ERROR_INVALID_PREVIOUS_HASH       = 1;
 const ERROR_INVALID_ACCOUNT_NONCE       = 2;
@@ -46,7 +47,7 @@ class BlockValidator {
             return { error: ERROR_INVALID_ACCOUNT_NONCE };
         }
         // 4
-        if (crypto.merkle(block.transactions) !== block.merkleHash) {
+        if (merkle(block.transactions) !== block.merkleHash) {
             return { error: ERROR_INVALID_MERKLE_HASH };
         }
         // 6

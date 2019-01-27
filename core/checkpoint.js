@@ -1,5 +1,6 @@
 'use-strict';
 const { calculateHash } = require('../common/utils');
+const { makeSignature } = require('../crypto');
 
 class Checkpoint{
     /**
@@ -45,7 +46,7 @@ class Checkpoint{
  */
 function signCheckpoint(cp, s, prv) {
     let h = cp.hash();
-    let { sig, error } = crypto.sign(h, prv);
+    let { sig, error } = makeSignature(h, prv);
     if (error) return error;
     return cp.withSignature(s, sig);
 }

@@ -1,3 +1,6 @@
+'use-strict';
+const { pubToAddress, ecrecover, makeSignature } = require('../crypto');
+
 class Signer {
     /**
      * Returns r, s, v values in Uint8Array
@@ -34,7 +37,7 @@ class Signer {
  */
 function signBlock(block, s, prv) {
     let h = block.hash();
-    let { sig, error } = crypto.sign(h, prv);
+    let { sig, error } = makeSignature(h, prv);
     if (error) return error;
     return block.withSignature(s, sig);
 }
@@ -53,9 +56,9 @@ function recoverPlain(sigHash, R, S, V) {
     }
     sig[64] = numberToBytes(V - 27);
 
-    const pub = crypto.ecrecover(sigHash, sig);
+    const pub = ecrecover(sigHash, sig);
     // TODO: pub key validation
-    return crypto.makeAddress(pub);
+    return pubToAddress(pub);
 }
 
 module.exports = {

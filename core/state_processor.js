@@ -90,8 +90,7 @@ const operatorStateProcess = (db, stateDB, potentialDB, bc, block, signer, prvKe
                                     blockHash,
                                     opNonce);
     const opSigCheckpoint = signCheckpoint(checkpoint, signer, prvKey);
-
-    await db.writeCheckpoint(opSigCheckpoint);
+    bc.updateCheckpoint(opSigCheckpoint);
     return opSigCheckpoint;
 }
 
@@ -110,7 +109,7 @@ async function userStateProcess(db, userState, potentialDB, bc, checkpoint, opAd
      * 2. Find block by checkpoint's block hash
      * 3. Validate target block with current blockchain 
      * 3. => 내가 만들고 오퍼레이터가 오케이한건데 내 블록체인과 안 맞는 경우가 있다?
-     * 4. If block is valid, insert the block into the blockchain
+     * 4. If block is valid, insert the block and the checkpoint into the blockchain
      * 5. If block is valid, process receiving potential through potential hash list.
      * 6. If block is valid, process txs and change user's states
      */
@@ -128,6 +127,7 @@ async function userStateProcess(db, userState, potentialDB, bc, checkpoint, opAd
     if (result.error) return result;
     // 4
     bc.insertBlock(targetBlock);
+    bc.updateCheckpoint(checkpoint);
     // 5
     const prevStateCopy = userState; // TODO: deep copy
     if (targetBlock.header.potentialHashList.length !== 0) {
