@@ -1,7 +1,8 @@
 class Signer {
     /**
+     * Returns r, s, v values in Uint8Array
      * 
-     * @param {Uint8Array} sig 
+     * @param {Number} sig 
      */
     signatureValues(sig){
         if (sig.length !== 65) return { error: Error('Wrong size for signature: should be 65, got ' + sig.length)};
