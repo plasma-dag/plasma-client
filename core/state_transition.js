@@ -1,7 +1,8 @@
 'use strict';
 
 const sendStateTransition = (stateObject, transaction) => {
-    stateObject.subBalance(transaction.value);
+    const res = stateObject.subBalance(transaction.value);
+    return res.error ? res : { error: false };
 }
 const receiveStateTransition = (stateObject, transaction) => {
     stateObject.addBalance(transaction.value);

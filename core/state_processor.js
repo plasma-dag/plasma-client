@@ -83,7 +83,10 @@ const operatorStateProcess = (db, stateDB, potentialDB, bc, block, signer, prvKe
     block.transactions.forEach(tx => {
         let receiver = tx.receiver;
         potentialDB.sendPotential(blockHash, receiver);
-        sendStateTransition(blockOwnerState, tx);
+        const res = sendStateTransition(blockOwnerState, tx);
+        if (res.error) { 
+            // TODO: send error toleration logic here
+        }
     });
     // 7
     let checkpoint = new Checkpoint(blockOwnerAddress,
@@ -144,7 +147,10 @@ async function userStateProcess(db, userState, potentialDB, bc, checkpoint, opAd
     }
     // 6
     targetBlock.transactions.forEach(tx => {;
-        sendStateTransition(userState, tx);
+        const res = sendStateTransition(userState, tx);
+        if (res.error) { 
+            // TODO: send error toleration logic here
+        }
     });
     return { error: false };
 }

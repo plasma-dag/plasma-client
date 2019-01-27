@@ -32,11 +32,15 @@ class Account {
     }
 
     addBalance(amount) {
+        // TODO: overflow check!
         this.balance += amount;
     }
 
     subBalance(amount) {
-        this.balance -= amount;
+        if (this.balance >= amount) {
+            return this.balance -= amount;
+        }
+        return { error: true };
     }
 
     getBalance() {
@@ -50,11 +54,6 @@ class Account {
 
     increaseNonce() {
         this.nonce++;
-    }
-
-    addBalance(amount) {
-        // TODO: balance overflow checking algorithm
-        this.balance += amount;
     }
 }
 

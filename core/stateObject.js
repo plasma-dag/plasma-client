@@ -72,7 +72,7 @@ class StateObject {
     }
     
     subBalance(amount) {
-        return this.account ? this.account.setBalance(amount) : undefined;
+        return this.account ? this.account.subBalance(amount) : undefined;
     }
     
     setBalance(amount) {
