@@ -13,7 +13,24 @@ class Database{
     constructor() {
         this.db = mongo;
     }
-    
+
+
+    loadLastCheckpoint ( address ) {
+        return new Promise((resolve,reject)=>{
+            this.db.connect( url, { useNewUrlParser: true }, ( err, client ) => {
+                if ( err ) {
+                    console.error( err );
+                    return;
+                }
+                const checkpoints = client.db( 'plasma' ).collection( 'checkpoints' );
+                checkpoints.find( { address: { $slice: -1 } })
+                    .then(({result})=>resolve(result))
+                    .catch((err => reject(err)));
+            });
+        });
+    }
+
+
     /**
      * write potential hash list for address
      * 

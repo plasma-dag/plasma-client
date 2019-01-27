@@ -18,8 +18,8 @@ class Blockchain {
         /**
          * final checkpoint got receipt from operator
          */
-        this.checkpoint = db.loadCheckpoint(address);
-        
+        this.checkpoint = db.loadLastCheckpoint( address );
+
         this.blocks = this.makeBlockChain();
         if (this.blocks == []) {
             return Error("No Blocks at all.");
@@ -72,7 +72,8 @@ class Blockchain {
         return block;
     }
 
-    getBlockByHash(hash) {
+    getBlockByHash ( hash ) {
+        db.readBlock(hash);
         return;
     }
 
@@ -92,11 +93,22 @@ class Blockchain {
         return this.currentBlock;
     }
 
-    makeBlockChain() {
-        const blocklist = this.db.loadAllBlocks();
+    makeBlockChain () {
+        
+        const blockHash = this.checkpoint.blockHash;
+
+        const block = getBlockByHash( blockHash );
+
+        const blockNonce = block.header.accountState.nonce;
+
+        const blockList = this.loadBlockswithAddress( this.address );
+
+
+        //const blocklist = this.db.
+        
         // generate list of blocks within db. 
         // 이 때, operator의 checkpoint들을 이용해서 만들어야 함.
-        return blocklist;
+        return blockchain;
     }
 }
 
