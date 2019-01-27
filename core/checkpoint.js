@@ -1,36 +1,59 @@
 'use-strict';
+const { calculateHash } = require('../common/utils');
+const { makeSignature } = require('../crypto');
 
 class Checkpoint{
     /**
      * @constructor
      * 
+     * @param {Address} address
      * @param {Hash}    blockHash
      * @param {String}  address
      * @param {Number}  operatorNonce
-     * @param {String}  operatorSig
      */
-    constructor ( blockHash, address, operatorNonce, operatorSig ) {
+    constructor(address, blockHash, operatorNonce){
+        this.address        = address;
         this.blockHash      = blockHash;
         this.address        = address;
         this.operatorNonce  = operatorNonce;
-        this.operatorSig    = operatorSig;
     }
 
-    validate(opPubkey) {
+    hash() {
+        if (this.opHash) return this.opHash;
+        this.opHash = calculateHash({
+            address: this.address,
+            blockHash: this.blockHash,
+            operatorNonce: this.operatorNonce,
+        });
+        return this.opHash;
+    }
+    
+    withSignature(signer, sig) {
+        const { r, s, v, error } = signer.signatureValues(sig);
+        if (error) { return error; }
+        this.r = r;
+        this.s = s;
+        this.v = v;
+        return;
+    }
+
+    validate(opAddr) {
         // Return true or false, like the code below
         // return decodeWithPubKey(opPubkey, hash(blockHash, operatorNonce));
     }
-
 }
-/** 
- * blockhash 없이 checkpoint 만으로 validate 가능?
+
+/**
  * 
  */
-function validate_checkpoint(checkpoint, publickey){
-       
-
+function signCheckpoint(cp, s, prv) {
+    let h = cp.hash();
+    let { sig, error } = makeSignature(h, prv);
+    if (error) return error;
+    return cp.withSignature(s, sig);
 }
 
-module.exports={
-    Checkpoint
+module.exports = {
+    Checkpoint,
+    signCheckpoint
 };

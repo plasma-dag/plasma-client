@@ -99,16 +99,16 @@ class Blockchain {
 
         const block = getBlockByHash( blockHash );
 
-        const blockNonce = block.header.accountState.nonce;
+       // const blockNonce = block.header.accountState.nonce;
 
-        const blockList = this.loadBlockswithAddress( this.address );
+        let blockList = this.loadBlockswithAddress( this.address );
 
 
         //const blocklist = this.db.
         
         // generate list of blocks within db. 
         // 이 때, operator의 checkpoint들을 이용해서 만들어야 함.
-        return blockchain;
+        return blockList;
     }
 }
 
