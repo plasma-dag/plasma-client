@@ -5,11 +5,13 @@ class Checkpoint{
      * @constructor
      * 
      * @param {Hash}    blockHash
+     * @param {String}  address
      * @param {Number}  operatorNonce
      * @param {String}  operatorSig
      */
-    constructor(blockHash, operatorNonce, operatorSig){
+    constructor ( blockHash, address, operatorNonce, operatorSig ) {
         this.blockHash      = blockHash;
+        this.address        = address;
         this.operatorNonce  = operatorNonce;
         this.operatorSig    = operatorSig;
     }
