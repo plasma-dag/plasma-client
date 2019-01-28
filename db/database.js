@@ -15,18 +15,19 @@ class Database{
     }
 
 
-    loadLastCheckpoint ( address ) {
+    loadLastCheckpoint ( addr ) {
         return new Promise((resolve,reject)=>{
             this.db.connect( url, { useNewUrlParser: true }, ( err, client ) => {
                 if ( err ) {
                     console.error( err );
                     return;
                 }
-                const checkpoints = client.db( 'plasma' ).collection( 'checkpoints' );
-                checkpoints.find( { address: { $slice: -1 } })
-                    .then(({result})=>resolve(result))
-                    .catch((err => reject(err)));
-            });
+                const checkpoints = client.db('plasma').collection('checkpoints');
+                
+                checkpoints.findOne( { address: addr },{$slice:-1})
+                      .then( ( result ) => resolve( result ) )
+                      .catch((err => reject(err)));
+             });
         });
     }
 
