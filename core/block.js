@@ -1,5 +1,5 @@
-'use-strict';
-const ut = require('../common/utils');
+"use-strict";
+const { hashMessage, ecrecover } = require("../crypto");
 
 /**
  * Represents the block header structure
@@ -7,73 +7,98 @@ const ut = require('../common/utils');
 class Header {
   /**
    * @constructor
-   * 
-   * @param {Hash}    previousHash 
+   *
+   * @param {Hash}    previousHash
    * @param {Hash[]}  potentialHashList
    * @param {Account} accountState       State of the block producer's account after apply txs and potential.
    * @param {Hash}    merkleHash         All transactions' hash value
-   * @param {Number}  difficulty 
-   * @param {Number}  timestamp 
+   * @param {Number}  difficulty
+   * @param {Number}  timestamp
    * @param {Number}  nonce
    */
-  constructor(previousHash, potentialHashList, accountState, merkleHash, difficulty, timestamp, nonce) {
+  constructor(
+    previousHash,
+    potentialHashList,
+    accountState,
+    merkleHash,
+    difficulty,
+    timestamp,
+    nonce
+  ) {
     this.data = {
-        previousHash,
-        potentialHashList,
-        accountState,
-        merkleHash,
-        difficulty,
-        timestamp,
-        nonce,
+      previousHash,
+      potentialHashList,
+      accountState,
+      merkleHash,
+      difficulty,
+      timestamp,
+      nonce
     };
   }
 
   hash() {
     if (this.blockHash) return this.blockHash;
-    this.blockHash = ut.calculateHash(this.data);
+    this.blockHash = hashMessage(this.data);
     return this.blockHash;
     // TODO: db storing
   }
 }
 
 /**
-* Represents the block structure
-*/
+ * Represents the block structure
+ */
 class Block {
   /**
    * @constructor
-   * 
+   *
    * @param {Header}        header        this block's header
    * @param {Transaction[]} transactions  list of txs
    */
   constructor(header, transactions) {
-      this.header       = header;
-      this.transactions = transactions;
+    this.header = header;
+    this.transactions = transactions;
   }
 
   hash() {
     if (this.blockHash) return this.blockHash;
     this.blockHash = this.header.hash();
     return this.blockHash;
-    // TODO: db storing
   }
 
   /**
-   * 
-   * @param {Signer}      signer 
-   * @param {Uint8Array}  sig 
+   *
+   * @param {Uint8Array}  sig
    */
-  withSignature(signer, sig) {
-    const { r, s, v, error } = signer.signatureValues(sig);
-    if (error) { return error; }
-    this.r = r;
-    this.s = s;
-    this.v = v;
-    return;
+  withSignature(sig) {
+    this.r = sig.r;
+    this.s = sig.s;
+    this.v = sig.v;
   }
+  /**
+   *
+   * @param {Block} block
+   */
+  sender(block) {
+    if (!block.from) {
+      block.from = ecrecover(block.hash(), block.r, block.s, block.v);
+    }
+    return block.from;
+  }
+}
+
+/**
+ *
+ * @param {Block}       block
+ * @param {PrivateKey}  prv
+ */
+function signBlock(block, prv) {
+  let h = block.hash();
+  let sig = makeSignature(h, prv);
+  return block.withSignature(sig);
 }
 
 module.exports = {
   Header,
-  Block
-}
+  Block,
+  signBlock
+};
