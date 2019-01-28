@@ -80,11 +80,8 @@ const operatorStateProcess = (
   const blockHash = block.hash();
   let blockOwnerState = stateDB.getStateObject(blockOwnerAddress);
   // backup
-<<<<<<< HEAD
   const prevStateCopy = deepCopy(blockOwnerState); // TODO: deep copy
-=======
-  const prevStateCopy = blockOwnerState; // TODO: deep copy
->>>>>>> 8fdb902273376245c027c4c48c3ac1fbe8a1f538
+
   if (block.header.potentialHashList.length !== 0) {
     const res = receivePotential(
       db,
@@ -158,11 +155,7 @@ async function userStateProcess(
   bc.insertBlock(targetBlock);
   bc.updateCheckpoint(checkpoint);
   // 5
-<<<<<<< HEAD
   const prevStateCopy = deepCopy(userState); // TODO: deep copy
-=======
-  const prevStateCopy = userState; // TODO: deep copy
->>>>>>> 8fdb902273376245c027c4c48c3ac1fbe8a1f538
   if (targetBlock.header.potentialHashList.length !== 0) {
     const res = receivePotential(
       db,
@@ -190,8 +183,4 @@ async function userStateProcess(
 module.exports = {
   operatorStateProcess,
   userStateProcess
-<<<<<<< HEAD
 };
-=======
-};
->>>>>>> 8fdb902273376245c027c4c48c3ac1fbe8a1f538

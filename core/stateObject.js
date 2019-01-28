@@ -16,17 +16,6 @@ class StateObject {
         this.db = db;
     }
 
-<<<<<<< HEAD
-=======
-    deepCopy() {
-        return {
-            address: this.address, 
-            nonce: this.account.nonce, 
-            balance: this.account.balance
-        };
-    }
-    
->>>>>>> 8fdb902273376245c027c4c48c3ac1fbe8a1f538
     isEmpty() {
         return this.account ? this.account.isEmpty() : undefined;
     }
@@ -83,7 +72,7 @@ class StateObject {
     }
 }
 
-<<<<<<< HEAD
+
 const deepCopy = function(obj) {
     if(obj === null || typeof(obj) !== 'object') return obj;
     
@@ -96,8 +85,8 @@ const deepCopy = function(obj) {
     return copy;
 }
 
-=======
->>>>>>> 8fdb902273376245c027c4c48c3ac1fbe8a1f538
+
+
 module.exports = { 
     StateObject,
     deepCopy
