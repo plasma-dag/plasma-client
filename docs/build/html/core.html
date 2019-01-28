@@ -16,6 +16,7 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Database" href="db.html" />
     <link rel="prev" title="Common" href="common.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -46,7 +47,7 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
-<li><strong>previousHash</strong> (<em>String</em>) – </li>
+<li><strong>previousHash</strong> (<em>Array.&lt;String&gt;</em>) – </li>
 <li><strong>state</strong> (<em>Object</em>) – state of the block producer’s account</li>
 <li><strong>txHash</strong> (<em>String</em>) – all transactions’ hash value</li>
 <li><strong>difficulty</strong> (<em>Number</em>) – </li>
@@ -71,7 +72,7 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
 <li><strong>header</strong> (<a class="reference internal" href="#Header" title="Header"><em>Header</em></a>) – this block’s header</li>
-<li><strong>signature</strong> (<em>Stirng</em>) – signature of block producer</li>
+<li><strong>signatures</strong> (<em>Array.&lt;Signature&gt;</em>) – list of signature</li>
 <li><strong>transactions</strong> (<em>Array.&lt;Transaction&gt;</em>) – list of txs</li>
 </ul>
 </td>
@@ -97,7 +98,6 @@
 <li><strong>recipient</strong> (<em>address</em>) – </li>
 <li><strong>sender</strong> (<em>address</em>) – </li>
 <li><strong>value</strong> (<em>number</em>) – </li>
-<li><strong>transactionSignature</strong> (<em>string</em>) – </li>
 </ul>
 </td>
 </tr>
@@ -123,8 +123,8 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Arguments:</th><td class="field-body"><ul class="first last simple">
-<li><strong>db</strong> (<em>Database</em>) – block db</li>
-<li><strong>account</strong> (<em>Account</em>) – this blockchain’s owner</li>
+<li><strong>db</strong> (<a class="reference internal" href="db.html#Database" title="Database"><em>Database</em></a>) – block db</li>
+<li><strong>address</strong> (<em>Address</em>) – this blockchain’s owner</li>
 </ul>
 </td>
 </tr>
@@ -179,8 +179,8 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="Blockchain.insert">
-<code class="descclassname">Blockchain.</code><code class="descname">insert</code><span class="sig-paren">(</span><em>block</em><span class="sig-paren">)</span><a class="headerlink" href="#Blockchain.insert" title="Permalink to this definition">¶</a></dt>
+<dt id="Blockchain.insertBlock">
+<code class="descclassname">Blockchain.</code><code class="descname">insertBlock</code><span class="sig-paren">(</span><em>block</em><span class="sig-paren">)</span><a class="headerlink" href="#Blockchain.insertBlock" title="Permalink to this definition">¶</a></dt>
 <dd><p>Injects a new head block into the current block chain. This method
 assumes that the block is indeed a true head.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -245,6 +245,7 @@ assumes that the block is indeed a true head.</p>
 <li class="toctree-l2"><a class="reference internal" href="#blockchain-js">blockchain.js</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="db.html">Database</a></li>
 </ul>
 
 <div class="relations">
@@ -252,6 +253,7 @@ assumes that the block is indeed a true head.</p>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="common.html" title="previous chapter">Common</a></li>
+      <li>Next: <a href="db.html" title="next chapter">Database</a></li>
   </ul></li>
 </ul>
 </div>

@@ -2,17 +2,45 @@
   "name": "plasma-dag-client",
   "version": "1.0.0",
   "scripts": {
-    "start": "node/main.js"
+    "test": "jest",
+    "start": "src/index.js",
+    "pretty": "prettier --write \"src/**/*.js\"",
+    "precommit": "lint-staged"
   },
   "dependencies": {
     "body-parser": "^1.15.2",
     "crypto-js": "^3.1.6",
     "elliptic": "^6.4.0",
+    "ethereumjs-util": "^6.0.0",
     "express": "^4.16.4",
+    "js-sha3": "^0.8.0",
+    "merkletreejs": "0.0.22",
+    "mongodb": "^3.1.12",
+    "web3": "^1.0.0-beta.37",
     "ws": "^1.1.0"
   },
   "engines": {
     "node": ">=4.3.2"
   },
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@babel/node": "^7.2.2",
+    "@babel/preset-env": "^7.3.1",
+    "@babel/runtime": "^7.3.1",
+    "eslint": "^5.12.1",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.15.0",
+    "husky": "^1.3.1",
+    "jest": "^23.6.0",
+    "lint-staged": "^8.1.0",
+    "prettier": "^1.16.1"
+  },
+  "lint-staged": {
+    "**/*.js": [
+      "npm run pretty",
+      "git add"
+    ]
+  }
 }

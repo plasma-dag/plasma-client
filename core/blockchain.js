@@ -1,7 +1,7 @@
 "use strict";
 
 const ut = require("../common/utils");
-
+const { Database } = require('./database');
 /**
  * Represents the Blockchain structure
  */
@@ -10,37 +10,38 @@ class Blockchain {
      * @constructor
      * 
      * @param {Database} db         block db
-     * @param {Account} account     this blockchain's owner
+     * @param {Address} address     this blockchain's owner
      */
-    constructor(db, account) {
+    constructor(db, address) {
         
-        this.db             = db.loadAccountDB(account);
+        this.db = db;
         /**
          * final checkpoint got receipt from operator
          */
-        this.checkpoints    = db.loadCheckpoints();
-        
-        this.genesisBlock = this.getBlockByNumber(0);
-        if (this.genesisBlock == []) {
-            return Error('No Genesis Block');
-        }
+        this.checkpoint = db.loadLastCheckpoint( address );
 
         this.blocks = this.makeBlockChain();
         if (this.blocks == []) {
             return Error("No Blocks at all.");
         }
 
-        this.currentBlock   = this.blocks[this.blocks.length - 1];
+        this.genesisBlock = this.getBlockByNumber(0);
+        if (this.genesisBlock == []) {
+            return Error('No Genesis Block');
+        }
+
+        this.currentBlock = this.blocks[this.blocks.length - 1];
     }
 
     /**
+     * Before validation
      * Injects a new head block into the current block chain. This method
      * assumes that the block is indeed a true head.
      * 
      * @param {Block} block 
      */
-    insert(block) {
-        this.db.writeBlock(block, block.hash()); // Not implemented function.
+    insertBlock(block) {
+        this.db.writeBlock(block);
         this.currentBlock = block;
         this.blocks.push(block);
     }
@@ -51,7 +52,8 @@ class Blockchain {
      * @param {Object} checkpoint 
      */
     updateCheckpoint(checkpoint) {
-        this.checkpoints.push(checkpoint);
+        this.db.writeCheckpoint(checkpoint);
+        this.checkpoint.push(checkpoint);
     }
 
     /**
@@ -70,7 +72,8 @@ class Blockchain {
         return block;
     }
 
-    getBlockByHash(hash) {
+    getBlockByHash ( hash ) {
+        db.readBlock(hash);
         return;
     }
 
@@ -90,9 +93,22 @@ class Blockchain {
         return this.currentBlock;
     }
 
-    makeBlockChain() {
+    makeBlockChain () {
+        
+        const blockHash = this.checkpoint.blockHash;
+
+        const block = getBlockByHash( blockHash );
+
+       // const blockNonce = block.header.accountState.nonce;
+
+        let blockList = this.loadBlockswithAddress( this.address );
+
+
+        //const blocklist = this.db.
+        
         // generate list of blocks within db. 
         // 이 때, operator의 checkpoint들을 이용해서 만들어야 함.
+        return blockList;
     }
 }
 
