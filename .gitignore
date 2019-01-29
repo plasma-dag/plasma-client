@@ -1,6 +1,8 @@
 # virtualenv settings for docs
 env/*
 
+# no more vscode
+.vscode/
 # no more wallet
 wallet/
 
