@@ -17,7 +17,7 @@ class Blockchain {
     /**
      * final checkpoint got receipt from operator
      */
-    this.checkpoint = db.loadLastCheckpoint(address);
+    this.lastCheckpoint = this.loadLastCheckpoint(address);
 
     this.blocks = this.makeBlockChain();
     if (this.blocks == []) {
@@ -52,7 +52,7 @@ class Blockchain {
    */
   updateCheckpoint(checkpoint) {
     this.db.writeCheckpoint(checkpoint);
-    this.checkpoint.push(checkpoint);
+    this.lastCheckpoint.push(checkpoint);
   }
 
   /**
@@ -93,7 +93,7 @@ class Blockchain {
   }
 
   makeBlockChain() {
-    const blockHash = this.checkpoint.blockHash;
+    const blockHash = this.lastCheckpoint.blockHash;
 
     const block = getBlockByHash(blockHash);
 

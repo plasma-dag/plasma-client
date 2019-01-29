@@ -7,13 +7,11 @@ class Checkpoint {
    *
    * @param {Address} address
    * @param {Hash}    blockHash
-   * @param {String}  address
    * @param {Number}  operatorNonce
    */
   constructor(address, blockHash, operatorNonce) {
     this.address = address;
     this.blockHash = blockHash;
-    this.address = address;
     this.operatorNonce = operatorNonce;
   }
 
