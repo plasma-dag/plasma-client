@@ -14,22 +14,28 @@ class Blockchain {
    */
   constructor(db, address) {
     this.db = db;
+    this.address = address;
+    let that = this;
     /**
      * final checkpoint got receipt from operator
      */
-    this.checkpoint = db.loadLastCheckpoint(address);
+    db.loadLastCheckpoint(address).then(res => {
+      that.checkpoint = res;
+      console.log("checkpoint:");
+      console.log(that.checkpoint);
+    });
 
-    this.blocks = this.makeBlockChain();
-    if (this.blocks == []) {
-      return Error("No Blocks at all.");
-    }
+    // this.blocks = this.makeBlockChain();
+    // if (this.blocks == []) {
+    //   return Error("No Blocks at all.");
+    // }
 
-    this.genesisBlock = this.getBlockByNumber(0);
-    if (this.genesisBlock == []) {
-      return Error("No Genesis Block");
-    }
+    // this.genesisBlock = this.getBlockByNumber(0);
+    // if (this.genesisBlock == []) {
+    //   return Error("No Genesis Block");
+    // }
 
-    this.currentBlock = this.blocks[this.blocks.length - 1];
+    // this.currentBlock = this.blocks[this.blocks.length - 1];
   }
 
   /**
@@ -72,7 +78,7 @@ class Blockchain {
   }
 
   getBlockByHash(hash) {
-    db.readBlock(hash);
+    this.db.readBlock(hash).then(res => console.log(res));
     return;
   }
 
@@ -92,16 +98,54 @@ class Blockchain {
     return this.currentBlock;
   }
 
-  makeBlockChain() {
-    const blockHash = this.checkpoint.blockHash;
+  async makeBlockChain() {
+    await this.db.loadLastCheckpoint(this.address).then(res => {
+      const lastBlockHash = res[0].blockHash;
+      this.db.readBlock(lastBlockHash).then(lastBlock => {
+        const lastBlockNonce = lastBlock.header.data.accountState.nonce;
+        this.db.loadBlockswithAddress(this.address).then(allBLockList => {
+          const filteredList = allBLockList.filter(
+            block => block.header.data.accountState.nonce <= lastBlockNonce
+          );
 
-    const block = getBlockByHash(blockHash);
+          let dict = {};
+          filteredList.map(block => (dict[block.blockHash] = block));
 
-    // const blockNonce = block.header.accountState.nonce;
+          let blockList = [];
+          blockList.push(lastBlock);
 
-    let blockList = this.loadBlockswithAddress(this.address);
+          while (
+            blockList[blockList.length - 1].header.data.previousHash !== ""
+          ) {
+            blockList.push(
+              dict[blockList[blockList.length - 1].header.data.previousHash]
+            );
+          }
+          console.log(blockList);
+        });
+      });
+    });
+    return;
+    // const lastBlockHash = this.checkpoint.blockHash;
+    // const lastBlock = this.getBlockByHash(lastBlockHash);
+    // const lastBlockNonce = lastBlock.header.data.accountState.nonce;
 
-    //const blocklist = this.db.
+    // const allBlockList = await this.db.loadBlockswithAddress(this.address);
+    // const filteredList = allBlockList.filter(
+    //   block => block.header.accountState.nonce <= lastBlockNonce
+    // );
+
+    // let dict = {};
+    // filteredList.map(block => (dict[block.blockHash] = block));
+
+    // let blockList = [];
+    // blockList.push(lastBlock);
+
+    // if (blockList[blockList.length - 1].previousHash !== "") {
+    //   blockList.push(dict[blockList[blockList.length - 1].previousHash]);
+    // }
+
+    // return blockList;
 
     // generate list of blocks within db.
     // 이 때, operator의 checkpoint들을 이용해서 만들어야 함.

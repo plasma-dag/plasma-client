@@ -24,7 +24,10 @@ class Database {
         const checkpoints = client.db("plasma").collection("checkpoints");
 
         checkpoints
-          .findOne({ address: addr }, { $slice: -1 })
+          .find({ address: addr })
+          .sort({ operatorNonce: -1 })
+          .limit(1)
+          .toArray()
           .then(result => resolve(result))
           .catch(err => reject(err));
       });
@@ -94,7 +97,7 @@ class Database {
         const checkpoints = client.db("plasma").collection("checkpoints");
         checkpoints
           .updateOne(
-            { _id: checkpoint.operatorSig },
+            { _id: checkpoint.blockHash },
             { $set: checkpoint },
             { upsert: true }
           )
