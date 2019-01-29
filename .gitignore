@@ -1,8 +1,13 @@
 # virtualenv settings for docs
 env/*
 
+# no more vscode
+.vscode/
+# no more wallet
+wallet/
+
 # OS X
-.DS_Store
+**/.DS_Store
 
 # Logs
 logs

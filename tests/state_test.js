@@ -1,15 +1,28 @@
 "use strict"
 
+<<<<<<< HEAD
+const { StateDB } = require("../core/StateDB.js");
+=======
+>>>>>>> 8fdb902273376245c027c4c48c3ac1fbe8a1f538
 const { Header } = require("../core/block.js");
 const { Block } = require("../core/block.js");
 const { Transaction } = require("../core/transaction.js");
 const { StateDB } = require("../core/stateDB.js");
+<<<<<<< HEAD
+const { 
+    StateObject, deepCopy 
+} = require("../core/stateObject.js");
+=======
 const { StateObject } = require("../core/stateObject.js")
+>>>>>>> 8fdb902273376245c027c4c48c3ac1fbe8a1f538
 const { Account } = require("../core/account.js");
 const { operatorProcess } = require("../core/state_processor.js");
 const { process } = require("../core/state_processor.js");
 const { applyStateTransition } = require("../core/state_transition.js");
 const { Database } = require('../db/database');
+<<<<<<< HEAD
+
+
 
 
 //import { Header, Block, Transaction, stateDB, StateObject, Account, operatorProcess, process, applyStateTransition } from "../core";
@@ -32,6 +45,7 @@ const testState = () => {
     
     stateDB.setState(1122, account);
     let stateObject = new StateObject(1122, account, db2);
+
 
     console.log("objects length: " + Object.keys(stateDB.stateObjects).length);
     console.log(stateObject.address + " " + stateObject.account);

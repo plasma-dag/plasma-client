@@ -1,116 +1,116 @@
 "use strict";
 
 const ut = require("../common/utils");
-const { Database } = require('./database');
+const { Database } = require("../db");
 /**
  * Represents the Blockchain structure
  */
 class Blockchain {
+  /**
+   * @constructor
+   *
+   * @param {Database} db         block db
+   * @param {Address} address     this blockchain's owner
+   */
+  constructor(db, address) {
+    this.db = db;
     /**
-     * @constructor
-     * 
-     * @param {Database} db         block db
-     * @param {Address} address     this blockchain's owner
+     * final checkpoint got receipt from operator
      */
-    constructor(db, address) {
-        
-        this.db             = db;
-        /**
-         * final checkpoint got receipt from operator
-         */
-        this.checkpoints    = db.loadCheckpoint(address);
-        
-        this.blocks = this.makeBlockChain();
-        if (this.blocks == []) {
-            return Error("No Blocks at all.");
-        }
+    this.checkpoint = db.loadLastCheckpoint(address);
 
-        this.genesisBlock = this.getBlockByNumber(0);
-        if (this.genesisBlock == []) {
-            return Error('No Genesis Block');
-        }
-
-        this.currentBlock   = this.blocks[this.blocks.length - 1];
+    this.blocks = this.makeBlockChain();
+    if (this.blocks == []) {
+      return Error("No Blocks at all.");
     }
 
-
-    /**
-     * After validation
-     * 오퍼레이터권한, 블록승인후 처리 
-     */
-    acceptBlock(){
-        
-    }
-    
-    /**
-     * Before validation
-     * Injects a new head block into the current block chain. This method
-     * assumes that the block is indeed a true head.
-     * 
-     * @param {Block} block 
-     */
-    insertBlock(block) {
-        this.db.writeBlock(block);
-        this.currentBlock = block;
-        this.blocks.push(block);
-    }
-    
-    /**
-     * Updates a new checkpoint received from operator
-     * 
-     * @param {Object} checkpoint 
-     */
-    updateCheckpoint(checkpoint) {
-        this.db.writeCheckpoint(checkpoint);
-        this.checkpoints.push(checkpoint);
+    this.genesisBlock = this.getBlockByNumber(0);
+    if (this.genesisBlock == []) {
+      return Error("No Genesis Block");
     }
 
-    /**
-     * Returns the block matching hash value or number.
-     * 나중에 header chain 집어 넣었을 때 필요.
-     * 
-     * @param {String} hash 
-     * @param {Number} number 
-     */
-    getBlock(hash, number) {
-        if (this.blockCache[hash]) return this.blockCache[hash];
-        if (!this.blocks[number]) {
-            return null;
-        }
-        this.blockCache[hash] = block;
-        return block;
-    }
+    this.currentBlock = this.blocks[this.blocks.length - 1];
+  }
 
-    getBlockByHash(hash) {
-        return;
-    }
+  /**
+   * Before validation
+   * Injects a new head block into the current block chain. This method
+   * assumes that the block is indeed a true head.
+   *
+   * @param {Block} block
+   */
+  insertBlock(block) {
+    this.db.writeBlock(block);
+    this.currentBlock = block;
+    this.blocks.push(block);
+  }
 
-    /**
-     * Returns the block with block number
-     * 
-     * @param {Number} number 
-     */
-    getBlockByNumber(number) {
-        return this.blocks[number] ? this.blocks[number] : null;
-    }
+  /**
+   * Updates a new checkpoint received from operator
+   *
+   * @param {Object} checkpoint
+   */
+  updateCheckpoint(checkpoint) {
+    this.db.writeCheckpoint(checkpoint);
+    this.checkpoint.push(checkpoint);
+  }
 
-    /**
-     * Returns current block of this blockchain
-     */
-    getCurrentBlock() {
-        return this.currentBlock;
+  /**
+   * Returns the block matching hash value or number.
+   * 나중에 header chain 집어 넣었을 때 필요.
+   *
+   * @param {String} hash
+   * @param {Number} number
+   */
+  getBlock(hash, number) {
+    if (this.blockCache[hash]) return this.blockCache[hash];
+    if (!this.blocks[number]) {
+      return null;
     }
+    this.blockCache[hash] = block;
+    return block;
+  }
 
-    makeBlockChain() {
-        const blocklist = this.db.loadAllBlocks();
-        // generate list of blocks within db. 
-        // 이 때, operator의 checkpoint들을 이용해서 만들어야 함.
-        return blocklist;
-    }
+  getBlockByHash(hash) {
+    db.readBlock(hash);
+    return;
+  }
+
+  /**
+   * Returns the block with block number
+   *
+   * @param {Number} number
+   */
+  getBlockByNumber(number) {
+    return this.blocks[number] ? this.blocks[number] : null;
+  }
+
+  /**
+   * Returns current block of this blockchain
+   */
+  getCurrentBlock() {
+    return this.currentBlock;
+  }
+
+  makeBlockChain() {
+    const blockHash = this.checkpoint.blockHash;
+
+    const block = getBlockByHash(blockHash);
+
+    // const blockNonce = block.header.accountState.nonce;
+
+    let blockList = this.loadBlockswithAddress(this.address);
+
+    //const blocklist = this.db.
+
+    // generate list of blocks within db.
+    // 이 때, operator의 checkpoint들을 이용해서 만들어야 함.
+    return blockList;
+  }
 }
 
 /**
- * 
+ *
  * TODO: 이 아래에 있는 function 들은 제 위치로 이동이 필요함.
  */
 // get new block
@@ -240,11 +240,11 @@ class Blockchain {
 //     }
 // }
 
-module.exports = { 
-    Blockchain,
-    // generateNextBlock, 
-    // getLatestBlock, 
-    // getBlockchain, 
-    // addBlock, 
-    // replaceChain 
+module.exports = {
+  Blockchain
+  // generateNextBlock,
+  // getLatestBlock,
+  // getBlockchain,
+  // addBlock,
+  // replaceChain
 };
