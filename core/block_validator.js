@@ -28,6 +28,7 @@ class BlockValidator {
    */
   async validateBlock(block) {
     /**
+     * 0. TODO: block Signature decrypt == block hash? 
      * 1. previousHash == current block hash?
      * 2. potentialHash exist in potential list? => calc bc.addr potential value.
      * 3. state.account.getNonce() == previousBlock.state.account.getNonce() + 1?

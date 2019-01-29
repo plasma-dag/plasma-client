@@ -80,19 +80,19 @@ const operatorStateProcess = (
   const blockHash = block.hash();
   let blockOwnerState = stateDB.getStateObject(blockOwnerAddress);
   // backup
-  const prevStateCopy = deepCopy(blockOwnerState); // TODO: deep copy
+  const stateCopy = deepCopy(blockOwnerState);
 
   if (block.header.potentialHashList.length !== 0) {
     const res = receivePotential(
       db,
-      blockOwnerState,
+      stateCopy,
       potentialDB,
       block.header.potentialHashList
     );
     if (res.error) {
       // rollback -> 아마 setState 메소드 좀 바꾸면 더 쉽게 만들 수 있을듯.
-      blockOwnerState.setNonce(prevStateCopy.getNonce());
-      blockOwnerState.setBalance(prevStateCopy.getBalance());
+      // blockOwnerState.setNonce(prevStateCopy.getNonce());
+      // blockOwnerState.setBalance(prevStateCopy.getBalance());
       return res;
     }
   }
@@ -100,7 +100,7 @@ const operatorStateProcess = (
   block.transactions.forEach(tx => {
     let receiver = tx.receiver;
     potentialDB.sendPotential(blockHash, receiver);
-    const res = sendStateTransition(blockOwnerState, tx);
+    const res = sendStateTransition(stateCopy, tx);
     if (res.error) {
       // TODO: send error toleration logic here
     }
@@ -109,6 +109,8 @@ const operatorStateProcess = (
   let checkpoint = new Checkpoint(blockOwnerAddress, blockHash, opNonce);
   const opSigCheckpoint = signCheckpoint(checkpoint, prvKey);
   bc.updateCheckpoint(opSigCheckpoint);
+
+  stateDB.setState(stateCopy.address, stateCopy.account);
   return opSigCheckpoint;
 };
 
@@ -121,17 +123,18 @@ const operatorStateProcess = (
  * @param {*} checkpoint
  * @param {*} opAddr
  */
-async function userStateProcess(
+function userStateProcess(
   db,
   userState,
   potentialDB,
   bc,
   checkpoint,
-  opAddr
+  opAddr,
+  targetBlock
 ) {
   /**
-   * 1. Check operator's signature is real usable one and address is user's
-   * 2. Find block by checkpoint's block hash
+   * 1. Check operator's signature is real usable one and address is user's (confirmSend 함수에서 처리하도록 수정)
+   * 2. Find block by checkpoint's block hash (confirmSend 함수에서 처리하도록 수정)
    * 3. Validate target block with current blockchain
    * 3. => 내가 만들고 오퍼레이터가 오케이한건데 내 블록체인과 안 맞는 경우가 있다?
    * 4. If block is valid, insert the block and the checkpoint into the blockchain
@@ -139,14 +142,14 @@ async function userStateProcess(
    * 6. If block is valid, process txs and change user's states
    */
   // 1
-  if (!checkpoint.validate(opAddr)) return { error: true };
-  if (checkpoint.address !== userState.address) return { error: true };
-  if (bc.checkpoint.operatorNonce >= checkpoint.operatorNonce)
-    return { error: true };
+  // if (!checkpoint.validate(opAddr)) return { error: true };
+  // if (checkpoint.address !== userState.address) return { error: true };
+  // if (bc.checkpoint.operatorNonce >= checkpoint.operatorNonce)
+  //   return { error: true };
   // 2
-  const blockHash = checkpoint.blockHash;
-  const targetBlock = await db.readBlock(blockHash);
-  if (targetBlock) return { error: true };
+  // const blockHash = checkpoint.blockHash;
+  // const targetBlock = await db.readBlock(blockHash);
+  // if (targetBlock) return { error: true };
   // 3
   const blockValidator = new BlockValidator(db, bc, potentialDB);
   const result = blockValidator.validateBlock(targetBlock);
@@ -155,28 +158,30 @@ async function userStateProcess(
   bc.insertBlock(targetBlock);
   bc.updateCheckpoint(checkpoint);
   // 5
-  const prevStateCopy = deepCopy(userState); // TODO: deep copy
+  const stateCopy = deepCopy(userState); 
   if (targetBlock.header.potentialHashList.length !== 0) {
     const res = receivePotential(
       db,
-      userState,
+      stateCopy,
       potentialDB,
       targetBlock.header.potentialHashList
     );
     if (res.error) {
-      // rollback -> 아마 setState 메소드 좀 바꾸면 더 쉽게 만들 수 있을듯.
-      userState.setNonce(prevStateCopy.getNonce());
-      userState.setBalance(prevStateCopy.getBalance());
+    //   // rollback -> 아마 setState 메소드 좀 바꾸면 더 쉽게 만들 수 있을듯.
+    //   userState.setNonce(prevStateCopy.getNonce());
+    //   userState.setBalance(prevStateCopy.getBalance());
       return res;
     }
   }
   // 6
   targetBlock.transactions.forEach(tx => {
-    const res = sendStateTransition(userState, tx);
+    const res = sendStateTransition(stateCopy, tx);
     if (res.error) {
       // TODO: send error toleration logic here
     }
   });
+
+  userState.setState(stateCopy);
   return { error: false };
 }
 
