@@ -1,6 +1,9 @@
 # virtualenv settings for docs
 env/*
 
+# no more wallet
+wallet/
+
 # OS X
 **/.DS_Store
 
