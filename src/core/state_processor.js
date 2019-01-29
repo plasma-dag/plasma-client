@@ -8,8 +8,6 @@ const {
 } = require("./state_transition");
 const { deepCopy } = require("./stateObject");
 
-
-
 /**
  *
  * @param {Database}    db
