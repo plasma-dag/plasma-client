@@ -1,163 +1,230 @@
-'use strict'
-const Database = require( "../db/database" );
-const StateDB = require( "./stateDB" );
-const StateObject = require( "./stateObject" );
-const Checkpoint = require( "./checkpoint" );
-const Blockchain = require( "./blockchain" );
-const Block = require( "./block" );
-const Transaction = require( "./transaction" );
-const { userStateProcess, operatorStateProcess }= require( "./state_processor" );
-const async = require( "async" );
+"use strict";
+const Database = require("../db/index");
+const StateDB = require("./stateDB");
+const StateObject = require("./stateObject");
+const Blockchain = require("./blockchain");
+const {userStateProcess, operatorStateProcess} = require("./state_processor");
+const Transfer = require("./transfer");
 
-//saving current work result 
-class task {
-    constructor () {
-        this.newState = new StateDB();
-        this.newHeader = new Header();
-        this.newTxsCache = [];
-        this.createAt = time(); //no definition
-    }
+//saving current work result
+
+class Task {
+	constructor() {
+		this.State; // = new StateDB();
+		this.Block; // = new Block();
+        this.TxsCache = [];
+        this.TxCount = 0;
+		this.Fee = 0;
+        this.Amount = 0;
+        this.expectedFee = 0;
+
+		//this.CreateAt = time();
+	}
 }
-class environment {
-    constructor (stateDB) {
-        this.currentState;// = stateDB.getStateObject();
-        this.signer;
-        this.lastCheckpoint;
-        this.parentBlock; //참조하는 이전 블록 중 부모 블록을 의미함 
-        this.transactions = []
-    }
 
+class Environment {
+	constructor() {
+		this.currentState;
+		this.signer;
+		this.lastCheckpoint;
+		this.parentHash; //참조하는 이전 블록 중 부모 블록을 의미함
+		this.transactions = [];
+	}
 }
 
 class Worker {
-    constructor ( address ) {
-        this.db = db;
-        this.address = address;
-        this.task;
-        this.env;
+	constructor(address) {
+		this.db = new Database();
+		this.address = address;
+		this.blockchain = new Blockchain(this.db, this.address);
+		this.env = this.makeCurrent();
 
-        //this.pending
-        //this.subscription
-    }
+		//this.pending
+		//this.subscription
+	}
 
-    makeCurrent = () => {
-        const stateDB = new StateDB( this.db );
-        const curEnv = new environment( stateDB );
-        curEnv.currentState = stateDB.getStateObject();
-        curEnv.signer = curEnv.currentState.address;
-        curEnv.lastCheckpoint = this.blockchain.getLastCheckpoint();
-        curEnv.previousBlock = this.blockchain.getCurrentBlock();
-        curEnv.transactions = [];
+	/**
+	 * set current environment
+	 */
 
-        /* TO DO : 트랜잭션 받아오는 함수 필요 */
-        
-        return curEnv;
-    }
-    newWorker = ( address ) => {
-        const worker = new Worker( address );
-        worker.db = Database();
-        const currentEnv = worker.makeCurrent();
-    
-        currentEnv.currentState;
-        currentEnv.lastCheckpoint;
-        currentEnv.previousBlock;
-    
-        worker.env = currentEnv;
-    
-        const newTask = new task();
-    
-        newTask.newState;
-        newTask.newHeader;
-        newTask.newTxsCache;
-        newTask.createAt;
-       
-        worker.task = newTask;
+	makeCurrent() {
+		const stateDB = new StateDB(this.db);
+		const curEnv = new Environment(stateDB);
+		curEnv.currentState = stateDB.getStateObject();
+		curEnv.signer = curEnv.currentState.address;
+		curEnv.lastCheckpoint = this.blockchain.getLastCheckpoint();
+		curEnv.previousBlock = this.blockchain.getCurrentBlock();
+		curEnv.transactions = []; //transfer.makeTransaction(receiver,value);
 
-        return worker;
-    
-        //const unconfirmed = this.getUnconfirmedBlock( address );
-        
-    }
+		return curEnv;
+	}
 
-    async commitNewWork = () => {
+	/**
+	 * return an indicator whether worker is running or not
+	 */
 
-        const w = this.newWorker( address );
+	isRunning(address) {}
 
-        w.task.newHeader = getNewHeader(); //no definition
-        
-        // TODO : time 계산
+	/**
+	 * getter: get address
+	 */
 
-        // TODO : subscribeEvent    
-        
-        const header = w.task.header;
-    
-        header.previousHash = new Array( 2 ).push( w.env.parentBlock.hash() );
-        
-        // TO DO : localTxs 이면 commitNewTransaction 후에 블럭생성
-        
-        w.task.newTxsCache = commitNewTransaction( w.env.transactions );
-        
-        //총 fee < balance 충분한지 사전 확인
-        if ( w.env.currentState.getBalance() = < fee) {
-            console.log( error.toString() );
-        }
-    
-        // TO DO : remoteTxs이면, blockhash값을
-
-        // w.task.newState.get
-        // w.task.createdAt
-    }
-    
+	get address() {
+		return this.address;
+	}
 }
+
+/**
+ * generate several new sealing tasks based on the parent block
+ */
+
+const commitNewWork = async (w) => {
+	const newTask = new Task();
+	const transfer = new Transfer();
     
-    async commitNewTransaction (transactions) {
+    //can change
+    const p = 100;
+
+	//get transactions
+	w.env.transactions = transfer.makeTransaction();
+
+	if (isLocalTxs(w)) {
         
-        let txCache = []; 
+        
+        //const count = w.env.transactions.length - 1;
 
-        for ( let tx of transactions ) {
-            try {
-                
-                /* TO DO : 총 value amount랑 fee 계산*/
+		commitNewTransactions(w,w.env.transactions, newTask);
 
-                let insertResult = await insert( tx );
-                txCache.push(insertResult)
-            } catch ( error ) {
-                console.log('error'+error)
-            }
+        //fee and all value amount exceed balance
+        if (w.env.currentState.getBalance() <= newTask.Amount + newTask.Fee) {
+            console.error(`fee and all value amount exceed ${w.address}'s balance`)
         }
 
-    /* sender의 balance가 transaction 전송 fee + balance 을 위해 충분한지 자체적으로도 확인 */
+		//Add parentHash to previousHash
+		newTask.Block.header.previousHash = new Array(2).push(w.env.parentHash.hash());
+
+		//create block
+		newTask.Block = transfer.makeBlock();
+
+		/* newTask.newState = newTask.Block.header.accountState;
+		 */
+    }
+
+
+};
+
+const commitNewTransactions = async (w,txs, task) => {
+    let result;
     
-        return txCache;
-    }
-
-    isRunning = () =>{
+/*TO DO : deafultFee와 한 tx당, block당 value limit을 계산하는 함수 필요 */
     
-    }
+    let defaultFee = 100;
+    
+    const valueLimit = 10000000;
 
-    isLocalTx = () => {
+	for (let tx of transactions) {
         
+        task.Fee = defaultFee;
+
+        try {
+			result = await txCheck(w, tx, task);
+
+            task.Amount += tx.value;         
+            
+			task.TxsCache.push(task.Amount);
+
+        } catch (error) {
+			console.log("error", error);
+		}
     }
+    
+    //nonce 없음??
+    //task.TxsCache.sort(tx.nonce);
+    
+	return task.TxsCache;
+};
 
-    updateSnapshot = () => {
-        
+/**
+ * calculate fee and check transaction's value, return the value
+ * if the value exceed the limit, the tx is cancled;
+ * @param {Transaction} tx 
+ * @param {Task} task 
+ */
+const txCheck = (w,tx,task) => {
+    
+    task.Fee = calculateFee(); 
+
+    if (tx.value > valueLimit) {
+        console.error("value exceed the limit");
+        /*TO DO : cancle tx logic and recommit */
     }
-
-
-    setRecommitInteval = () => {
-
+    if ( tx.value + task.Fee >= w.env.currentState.getBalance() ){
+        console.error(`value + fee exceed the ${w.address}'s balance`);
     }
-
-    getUnconfirmedBlock = ( address ) => {
-        return
-    }
-
-    setCoinbase = () => {
-        
-    }
+    
+    return tx.value;
 }
 
-example = () => {
-    commitNewWork();
+const calculateFee = () => {
 
+    //TO DO : How to calculate tx's fee or block's fee
 }
+
+const mining = (block) => {
+
+	//TO DO: get difficulty and calcultate nonce;
+};
+
+/**
+ *
+ * @param {Worker} w
+ */
+
+const isLocalTxs = (w) => {
+	//receiver가 sender 와 다르면 본인이 sender일것이라 가정.
+	if (w.env.transactions.receiver !== w.address) {
+		return true;
+	}
+};
+
+/**
+ *
+ * @param {Worker} w
+ */
+
+const isRemoteTxs = (w) => {
+	if (w.env.transactions.receiver == w.address) {
+		return true;
+	}
+};
+
+// updateSnapshot = () => {
+
+// }
+
+const setRecommitInteval = () => {};
+
+const getUnconfirmedBlock = (address) => {
+	return;
+};
+
+const mainWork = (address) => {
+	const worker = new Worker(address);
+
+    if (!worker.isRunning()) {
+        commitNewWork(worker);
+    }
+
+    /*TO DO : receiver가 되는 transaction을 event로 받음 */
+    ImReceiver() {
+        if (!worker.isRunning) {
+            console.error(`${address}'s worker is not running`);
+        }    
+        if(isRemoteTxs(worker)) {
+            //blockhash값을 previousBlock에 추가
+            worker.env.Block.hash.previousBlock.push(remoteBlockhash);
+        }
+    }
+ 
+
+};
