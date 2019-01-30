@@ -31,6 +31,19 @@ function hexToBinary(s) {
   return ret;
 }
 
+const deepCopy = function(obj) {
+  if (obj === null || typeof obj !== "object") return obj;
+
+  let copy = {};
+  for (let key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      copy[key] = deepCopy(obj[key]);
+    }
+  }
+  return copy;
+};
+
 module.exports = {
-  hexToBinary
+  hexToBinary,
+  deepCopy
 };

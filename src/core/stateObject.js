@@ -8,7 +8,6 @@ class StateObject {
    * @param {*} address
    * @param {*} account
    * @param {*} db
-   * @param {*} trie
    */
   constructor(address, account, db) {
     this.address = address;
@@ -18,25 +17,6 @@ class StateObject {
 
   isEmpty() {
     return this.account ? this.account.isEmpty() : undefined;
-  }
-
-  setState(address, nonce, balance) {
-    if (this.account === undefined) {
-      return undefined;
-    }
-    this.address = address;
-    this.account.nonce = nonce;
-    this.account.balance = balance;
-  }
-
-  getState() {
-    if (this.account === undefined) {
-      return undefined;
-    }
-    return {
-      nonce: this.account.nonce,
-      balance: this.account.balance
-    };
   }
 
   getAddress() {
@@ -72,19 +52,21 @@ class StateObject {
   }
 }
 
-const deepCopy = function(obj) {
-  if (obj === null || typeof obj !== "object") return obj;
-
-  let copy = {};
-  for (let key in obj) {
-    if (obj.hasOwnProperty(key)) {
-      copy[key] = deepCopy(obj[key]);
-    }
+const setStateObject = async function(state, address, account) {
+  if(!state) state = new StateObject(address, account);
+  else {
+    state.address = address;
+    state.account = account;
   }
-  return copy;
-};
+  return await state.db.writeState(state);
+}
+
+getStateObject = async function(db, addr) {
+  return await db.readState(addr);
+}
 
 module.exports = {
   StateObject,
-  deepCopy
+  setStateObject,
+  getStateObject
 };
