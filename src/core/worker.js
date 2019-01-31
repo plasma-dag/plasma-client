@@ -6,8 +6,12 @@ const Blockchain = require("./blockchain");
 const {userStateProcess, operatorStateProcess} = require("./state_processor");
 const Transfer = require("./transfer");
 
-//saving current work result
+// TO DO : change to Big Integer
 
+
+/**
+ * 
+ */ 
 class Task {
 	constructor() {
 		this.State; // = new StateDB();
@@ -21,7 +25,9 @@ class Task {
 		//this.CreateAt = time();
 	}
 }
-
+/**
+ * 
+ */
 class Environment {
 	constructor() {
 		this.currentState;
@@ -32,8 +38,13 @@ class Environment {
 	}
 }
 
+/**
+ *      
+ * @param {Address} address
+ */
 class Worker {
-	constructor(address) {
+
+    constructor(address) {
 		this.db = new Database();
 		this.address = address;
 		this.blockchain = new Blockchain(this.db, this.address);
@@ -76,8 +87,8 @@ class Worker {
 
 /**
  * generate several new sealing tasks based on the parent block
+ * @package {Worker} w
  */
-
 const commitNewWork = async (w) => {
 	const newTask = new Task();
 	const transfer = new Transfer();
@@ -112,7 +123,11 @@ const commitNewWork = async (w) => {
 
 
 };
-
+/**
+ * @params {Worker} w
+ *         {Transactions} txs
+ *         {Task} task
+ */
 const commitNewTransactions = async (w,txs, task) => {
     let result;
     
@@ -172,14 +187,48 @@ const calculateFee = () => {
 
 const mining = (block) => {
 
-	//TO DO: get difficulty and calcultate nonce;
+    //TO DO: get difficulty and calcultate nonce;
+    
+       
+
 };
+
+//TO DO : ethereum frontier 일부 참고했으나 difficulty가 value에 비례하도록 수정 필요.
+
+/**
+ * 
+ * @param {*} time 
+ * @param {*} prentBlock 
+ */
+const CalcDifficulty = (block, prentBlock) => {
+    
+    let diff = 0;
+    let expDiff = 0;
+    const adjust = parrentblock.difficulty / 2048  //2048 is difficultyBoundDivisor
+    const time = block.header.timestamp;
+    const parentTime = parentBlock.header.timestamp;
+    const parentDiff = parentBlock.header.difficulty;
+    const minimumDiff = 131072;
+    const durationLimit = 13;
+
+    if ((time - parentIime) < (durationLimit)) {
+        expDiff = parentDiff + adjust;
+    } else {
+        expDiff = prentDiff - adjust;
+    } 
+        
+    if (expDiff > minimumDiff) {
+        diff = minimumDiff;
+    } else
+        diff = expDiff;
+
+    return diff;
+}
 
 /**
  *
  * @param {Worker} w
  */
-
 const isLocalTxs = (w) => {
 	//receiver가 sender 와 다르면 본인이 sender일것이라 가정.
 	if (w.env.transactions.receiver !== w.address) {
@@ -191,16 +240,11 @@ const isLocalTxs = (w) => {
  *
  * @param {Worker} w
  */
-
 const isRemoteTxs = (w) => {
 	if (w.env.transactions.receiver == w.address) {
 		return true;
 	}
 };
-
-// updateSnapshot = () => {
-
-// }
 
 const setRecommitInteval = () => {};
 
@@ -208,6 +252,10 @@ const getUnconfirmedBlock = (address) => {
 	return;
 };
 
+/**
+ * 
+ * @param {Address} address
+ */
 const mainWork = (address) => {
 	const worker = new Worker(address);
 
