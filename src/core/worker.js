@@ -21,9 +21,11 @@ class Task {
 		this.Fee = 0;
         this.Amount = 0;
         this.expectedFee = 0;
-
 		//this.CreateAt = time();
-	}
+    }
+    get Block() {
+        return this.Block;
+    }
 }
 /**
  * 
@@ -35,7 +37,7 @@ class Environment {
 		this.lastCheckpoint;
 		this.parentHash; //참조하는 이전 블록 중 부모 블록을 의미함
 		this.transactions = [];
-	}
+    }
 }
 
 /**
@@ -57,7 +59,6 @@ class Worker {
 	/**
 	 * set current environment
 	 */
-
 	makeCurrent() {
 		const stateDB = new StateDB(this.db);
 		const curEnv = new Environment(stateDB);
@@ -73,13 +74,11 @@ class Worker {
 	/**
 	 * return an indicator whether worker is running or not
 	 */
-
 	isRunning(address) {}
 
 	/**
 	 * getter: get address
 	 */
-
 	get address() {
 		return this.address;
 	}
@@ -184,17 +183,25 @@ const calculateFee = () => {
 
     //TO DO : How to calculate tx's fee or block's fee
 }
-
-const mining = (block) => {
+/**
+ * 
+ * @param {*} block 
+ */
+const mine = (block) => {
 
     //TO DO: get difficulty and calcultate nonce;
-    
-       
+    const difficulty = CalcDifficulty(block, parentBlock);
+    const diff= hash(nonce) < value;
 
 };
 
-//TO DO : ethereum frontier 일부 참고했으나 difficulty가 value에 비례하도록 수정 필요.
+/*
+    TO DO : mod연산 수정
 
+    ethereum difficulty를 구하는 과정에서
+    adjust를 valueAdjust로 수정하고 uncle블록 관련과, POW줄이기위한 bombDelay는 제외함
+
+    valueAdjust, minimumDiff, durationLimit은 조정가능
 /**
  * 
  * @param {*} time 
@@ -209,14 +216,31 @@ const CalcDifficulty = (block, prentBlock) => {
     const parentTime = parentBlock.header.timestamp;
     const parentDiff = parentBlock.header.difficulty;
     const minimumDiff = 131072;
-    const durationLimit = 13;
+   // const durationLimit = 13;
+    const value = block.header.value;
+    let valueAdjust = adjust;
+    
+    //10000003은 소수 아무거나 정한거
+    let mod = 10000003 % value;  
 
+    if (mod !== 0) { 
+        valueAdjust = mod / 2048;
+    } else {
+        mod = 10000003 % (value + 1);
+        valueAdjust = (mod + 1) / 2048;
+    }
+
+    //이더리움의 경우 parentblock의 uncle block이 있으면 max 옆의 값을 1이아닌 2로 바꿔 계산
+    expDiff = (parentDiff + valueAdjust * max(1-(time- parentTime)/9, -99) );
+    
+    /* durationLimit와 비교해 조정
     if ((time - parentIime) < (durationLimit)) {
         expDiff = parentDiff + adjust;
     } else {
         expDiff = prentDiff - adjust;
     } 
-        
+      */
+    
     if (expDiff > minimumDiff) {
         diff = minimumDiff;
     } else
