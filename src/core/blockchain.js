@@ -15,27 +15,29 @@ class Blockchain {
   constructor(db, address) {
     this.db = db;
     this.address = address;
-    let that = this;
-    /**
-     * final checkpoint got receipt from operator
-     */
-    db.loadLastCheckpoint(address).then(res => {
-      that.checkpoint = res;
-      console.log("checkpoint:");
-      console.log(that.checkpoint);
-    });
 
-    // this.blocks = this.makeBlockChain();
-    // if (this.blocks == []) {
-    //   return Error("No Blocks at all.");
-    // }
+    return this.init();
+  }
 
-    // this.genesisBlock = this.getBlockByNumber(0);
-    // if (this.genesisBlock == []) {
-    //   return Error("No Genesis Block");
-    // }
+  /**
+   *  makes Promise List [last checkpoint, blocks]
+   */
 
-    // this.currentBlock = this.blocks[this.blocks.length - 1];
+  async init() {
+    const result = await Promise.all([
+      this.loadLastCheckpoint(),
+      this.makeBlockChain()
+    ]);
+    return result;
+  }
+
+  /**
+   * final checkpoint got receipt from operator
+   */
+  async loadLastCheckpoint() {
+    let r = await this.db.loadLastCheckpoint(this.address);
+    // console.log("checkpoint : ")
+    return r[0];
   }
 
   /**
@@ -68,18 +70,29 @@ class Blockchain {
    * @param {String} hash
    * @param {Number} number
    */
-  getBlock(hash, number) {
-    if (this.blockCache[hash]) return this.blockCache[hash];
-    if (!this.blocks[number]) {
-      return null;
-    }
-    this.blockCache[hash] = block;
-    return block;
-  }
 
+  /**
+   * todo
+   * @param {*} hash
+   */
+  // getBlock(hash, number) {
+  //   if (this.blockCache[hash]) return this.blockCache[hash];
+  //   if (!this.blocks[number]) {
+  //     return null;
+  //   }
+  //   this.blockCache[hash] = block;
+  //   return block;
+  // }
+
+  /**
+   * gets hash and returns block object
+   * db.readblock(hash)가 있는데 필요한가??
+   * @param {String} hash
+   */
   getBlockByHash(hash) {
-    this.db.readBlock(hash).then(res => console.log(res));
-    return;
+    this.db.readBlock(hash).then(res => {
+      return res;
+    });
   }
 
   /**
@@ -88,67 +101,93 @@ class Blockchain {
    * @param {Number} number
    */
   getBlockByNumber(number) {
-    return this.blocks[number] ? this.blocks[number] : null;
+    return this.blocks[this.blocks.length - number]
+      ? this.blocks[number]
+      : null;
   }
 
   /**
    * Returns current block of this blockchain
    */
-  getCurrentBlock() {
-    return this.currentBlock;
-  }
+  // getCurrentBlock() {
+  //   return this.currentBlock;
+  // }
+
+  //Gets all blocks by address
 
   async makeBlockChain() {
-    await this.db.loadLastCheckpoint(this.address).then(res => {
-      const lastBlockHash = res[0].blockHash;
-      this.db.readBlock(lastBlockHash).then(lastBlock => {
-        const lastBlockNonce = lastBlock.header.data.accountState.nonce;
-        this.db.loadBlockswithAddress(this.address).then(allBLockList => {
-          const filteredList = allBLockList.filter(
-            block => block.header.data.accountState.nonce <= lastBlockNonce
-          );
+    // load last checkpoint by this.address and throw the checkpoint object to last_checkpoint
+    let blockList = await this.db
+      .loadLastCheckpoint(this.address)
+      .then(last_checkpoint => {
+        // Gets blockhash of the last_checkpoint
+        const lastBlockHash = last_checkpoint[0].blockHash;
 
-          let dict = {};
-          filteredList.map(block => (dict[block.blockHash] = block));
+        // Gets block object by blockHash and throw the block object to lastBlock
+        let a = this.db.readBlock(lastBlockHash).then(lastBlock => {
+          // Gets block nonce of the last finalized block and store it in lastBlockNonce
+          const lastBlockNonce = lastBlock.header.data.accountState.nonce;
 
-          let blockList = [];
-          blockList.push(lastBlock);
+          // Gets all the blocks related to this.address and throw the list to allBlockList
+          let b = this.db
+            .loadBlockswithAddress(this.address)
+            .then(allBLockList => {
+              // Filter allBlockList by fetching only blocks of which nonce value is smaller than lastBlockNonce
+              const filteredList = allBLockList.filter(
+                block => block.header.data.accountState.nonce <= lastBlockNonce
+              );
 
-          while (
-            blockList[blockList.length - 1].header.data.previousHash !== ""
-          ) {
-            blockList.push(
-              dict[blockList[blockList.length - 1].header.data.previousHash]
-            );
-          }
-          console.log(blockList);
+              // Move the filtered list items to dictionary,
+              // key : (String) block hash & value : (Object) block object
+              let filteredDict = {};
+              filteredList.map(
+                block => (filteredDict[block.blockHash] = block)
+              );
+
+              // To ensure if blocks in the filteredList are all linked to each other by previousHash,
+              // make a new blockList , and initialize : put last finalized Block
+              let blockList = [];
+              blockList.push(lastBlock);
+
+              //check one by one, given that if a block is not the genesis block, it has its previous block
+              let count = 0;
+              while (
+                //genesis has previousHash of ""
+                blockList[blockList.length - 1].header.data.previousHash !== ""
+              ) {
+                //check if previousHash does exist
+                if (
+                  !(
+                    blockList[blockList.length - 1].header.data.previousHash in
+                    filteredDict
+                  )
+                ) {
+                  console.log(
+                    "invalid blockchain : previous block does not exist, blockhash : ",
+                    blockList[blockList.length - 1].hash()
+                  );
+                  break;
+                }
+                //check if there is a loop
+                if (count > blockList.length) {
+                  console.log("invalid blockchain : chain has a loop");
+                  break;
+                }
+                //if there is no error push the valid block into the blockList
+                blockList.push(
+                  filteredDict[
+                    blockList[blockList.length - 1].header.data.previousHash
+                  ]
+                );
+                ++count;
+              }
+              return blockList;
+            });
+
+          return b;
         });
+        return a;
       });
-    });
-    return;
-    // const lastBlockHash = this.checkpoint.blockHash;
-    // const lastBlock = this.getBlockByHash(lastBlockHash);
-    // const lastBlockNonce = lastBlock.header.data.accountState.nonce;
-
-    // const allBlockList = await this.db.loadBlockswithAddress(this.address);
-    // const filteredList = allBlockList.filter(
-    //   block => block.header.accountState.nonce <= lastBlockNonce
-    // );
-
-    // let dict = {};
-    // filteredList.map(block => (dict[block.blockHash] = block));
-
-    // let blockList = [];
-    // blockList.push(lastBlock);
-
-    // if (blockList[blockList.length - 1].previousHash !== "") {
-    //   blockList.push(dict[blockList[blockList.length - 1].previousHash]);
-    // }
-
-    // return blockList;
-
-    // generate list of blocks within db.
-    // 이 때, operator의 checkpoint들을 이용해서 만들어야 함.
     return blockList;
   }
 }
