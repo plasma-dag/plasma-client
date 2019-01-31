@@ -16,6 +16,13 @@ class Blockchain {
     this.db = db;
     this.address = address;
 
+    /**
+     * init() returns a promise of 'this', assigns values to
+     * this.checkpoint - list of checkpoint : [last checkpoint]
+     * this.blocks - list of blocks : [block n, block n-1, .... block 2, block 1]
+     * this.genesisBlock
+     * this.currentBlock
+     */
     return this.init();
   }
 
@@ -37,11 +44,12 @@ class Blockchain {
 
   /**
    * final checkpoint got receipt from operator
+   * gets address and returns a "list" which contains the lat checkpoint
    */
   async loadLastCheckpoint() {
     let r = await this.db.loadLastCheckpoint(this.address);
     // console.log("checkpoint : ")
-    return r[0];
+    return r;
   }
 
   /**
@@ -54,7 +62,7 @@ class Blockchain {
   insertBlock(block) {
     this.db.writeBlock(block);
     this.currentBlock = block;
-    this.blocks.push(block);
+    this.blocks.unshift(block);
   }
 
   /**
@@ -108,11 +116,11 @@ class Blockchain {
   /**
    * Returns current block of this blockchain
    */
-  // getCurrentBlock() {
-  //   return this.currentBlock;
-  // }
+  getCurrentBlock() {
+    return this.currentBlock;
+  }
 
-  //Gets all blocks by address
+  //Gets all blocks by address and returns Promise object
 
   async makeBlockChain() {
     // load last checkpoint by this.address and throw the checkpoint object to last_checkpoint
