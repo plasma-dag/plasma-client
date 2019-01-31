@@ -6,13 +6,15 @@ const Blockchain = require("../core/blockchain");
 const { userStateProcess, operatorStateProcess } = require("../core/state_processor");
 const Transfer = require("./transfer");
 
-/*TO DO : transfer.maketransaction(), transfer.makeBlock()을 사용, 겹치는 부분 수정 필요함.
-      	change to Big Integer
-		isRunning 
+/*TO DO : transfer의 maketransaction(), makeBlock()을 사용, 서로 보완, 수정 필요
+		  change to Big Integer
+		  Add Event and listener
+		  isRunning
+		  calculateFee
 */
 
 /**
- *
+ * Task class for worker to save current work
  */
 
 class Task {
@@ -31,8 +33,9 @@ class Task {
 		return this.Block;
 	}
 }
+
 /**
- *
+ * Environment class for worker
  */
 
 class Environment {
@@ -46,7 +49,7 @@ class Environment {
 }
 
 /**
- *
+ * Worker is set environment to commit new block work
  * @param {Address} address
  */
 
@@ -93,8 +96,25 @@ class Worker {
 }
 
 /**
- * generate several new sealing tasks based on the parent block
- * @package {Worker} w
+ * create new worker and listen to the worker's event
+ * @param {Address} address
+ */
+
+const mainWork = (address) => {
+	const worker = new Worker(address);
+
+	if (!worker.isRunning()) {
+		commitNewWork(worker);
+	}
+
+	/*TO DO : receiver가 되는 transaction을 event로 받고 receiveBlock()실행*/
+
+	receiveBlock(worker, remoteBlockhash);
+};
+
+/**
+ *
+ * @param {Worker} w
  */
 
 const commitNewWork = async (w) => {
@@ -127,10 +147,12 @@ const commitNewWork = async (w) => {
 		 */
 	}
 };
+
 /**
- * @params {Worker} w
- *         {Transactions} txs
- *         {Task} task
+ *
+ * @param {Worker} w
+ * @param {Transactions} transactions
+ * @param {Task} task
  */
 
 const commitNewTransactions = async (w, transactions, task) => {
@@ -214,6 +236,12 @@ const isRemoteTxs = (w) => {
 	}
 };
 
+/**
+ *
+ * @param {Worker} w
+ * @param {*} remoteBlockhash
+ */
+
 const receiveBlock = (w, remoteBlockhash) => {
 	if (!w.isRunning) {
 		console.error(`${w.address}'s worker is not running`);
@@ -228,21 +256,4 @@ const setRecommitInteval = () => {};
 
 const getUnconfirmedBlock = (address) => {
 	return;
-};
-
-/**
- *
- * @param {Address} address
- */
-
-const mainWork = (address) => {
-	const worker = new Worker(address);
-
-	if (!worker.isRunning()) {
-		commitNewWork(worker);
-	}
-
-	/*TO DO : receiver가 되는 transaction을 event로 받고 receiveBlock()실행*/
-
-	receiveBlock(worker, remoteBlockhash);
 };
