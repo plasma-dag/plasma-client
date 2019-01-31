@@ -8,7 +8,7 @@ const { Database } = require("../src/db/index");
 //make db instance
 const db = new Database();
 
-//make 4 blocks, 4 checkpoints
+// 4 blocks, 4 checkpoints
 const header1 = new Header("", [], new Account(1, 0, ""), "", 0, 0, 0);
 const block1 = new Block(header1, []);
 
@@ -45,28 +45,28 @@ const header4 = new Header(
 );
 const block4 = new Block(header4, []);
 
-const checkpoint1 = new Checkpoint("chan", block1.hash(), 1);
-const checkpoint2 = new Checkpoint("chan", block2.hash(), 2);
-const checkpoint3 = new Checkpoint("chan", block3.hash(), 3);
-const checkpoint4 = new Checkpoint("chan", block4.hash(), 4);
-db.writeBlock(block1);
-db.writeBlock(block2);
-db.writeBlock(block3);
-db.writeBlock(block4);
+//write blocks and checkpoints in db
+// const checkpoint1 = new Checkpoint("chan", block1.hash(), 1);
+// const checkpoint2 = new Checkpoint("chan", block2.hash(), 2);
+// const checkpoint3 = new Checkpoint("chan", block3.hash(), 3);
+// const checkpoint4 = new Checkpoint("chan", block4.hash(), 4);
+// db.writeBlock(block1);
+// db.writeBlock(block2);
+// db.writeBlock(block3);
+// db.writeBlock(block4);
 
-db.writeCheckpoint(checkpoint1);
-db.writeCheckpoint(checkpoint2);
-db.writeCheckpoint(checkpoint4);
-db.writeCheckpoint(checkpoint3);
+// db.writeCheckpoint(checkpoint1);
+// db.writeCheckpoint(checkpoint2);
+// db.writeCheckpoint(checkpoint4);
+// db.writeCheckpoint(checkpoint3);
 
 //check if it works - assign 1st value to checkpoint, 2nd value to blocks
 
-async function check(promise) {
-  let r = await promise;
-  let checkpoint = r[0];
-  let blocks = r[1];
-  console.log(checkpoint);
-  console.log("=================================================");
-  console.log(blocks);
+async function main() {
+  const sample_blockchain = await new Blockchain(db, "chan");
+  console.log(sample_blockchain.checkpoint);
+  console.log(sample_blockchain.blocks);
+  console.log(sample_blockchain.currentBlock);
+  console.log(sample_blockchain.genesisBlock);
 }
-check(new Blockchain(db, "chan"));
+main();

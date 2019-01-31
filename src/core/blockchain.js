@@ -20,7 +20,7 @@ class Blockchain {
   }
 
   /**
-   *  makes Promise List [last checkpoint, blocks]
+   *  makes Promise List [last checkpoint, blocks, genesisBlock, currentBlock]
    */
 
   async init() {
@@ -28,7 +28,11 @@ class Blockchain {
       this.loadLastCheckpoint(),
       this.makeBlockChain()
     ]);
-    return result;
+    this.checkpoint = result[0];
+    this.blocks = result[1];
+    this.genesisBlock = this.blocks[this.blocks.length - 1];
+    this.currentBlock = this.blocks[0];
+    return this;
   }
 
   /**
@@ -69,11 +73,6 @@ class Blockchain {
    *
    * @param {String} hash
    * @param {Number} number
-   */
-
-  /**
-   * todo
-   * @param {*} hash
    */
   // getBlock(hash, number) {
   //   if (this.blockCache[hash]) return this.blockCache[hash];
