@@ -1,9 +1,7 @@
 "use strict";
 const Database = require("../db/index");
 const StateDB = require("../core/stateDB");
-const StateObject = require("../core/stateObject");
 const Blockchain = require("../core/blockchain");
-const { userStateProcess, operatorStateProcess } = require("../core/state_processor");
 const Transfer = require("./transfer");
 
 /*TO DO : transfer의 maketransaction(), makeBlock()을 사용, 서로 보완, 수정 필요
@@ -256,4 +254,11 @@ const setRecommitInteval = () => {};
 
 const getUnconfirmedBlock = (address) => {
 	return;
+};
+
+module.exports = {
+	Task,
+	Environment,
+	Worker,
+	mainWork
 };
