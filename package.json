@@ -4,10 +4,9 @@
   "scripts": {
     "test": "jest",
     "start": "src/index.js",
-    "pretty": "prettier --write \"src/**/*.js\"",
-    "precommit": "lint-staged"
   },
   "dependencies": {
+    "big-integer": "^1.6.41",
     "body-parser": "^1.15.2",
     "crypto-js": "^3.1.6",
     "elliptic": "^6.4.0",
