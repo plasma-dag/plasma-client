@@ -9,14 +9,14 @@ const bigInt = require("big-integer");
  */
 
 /**
- *
  * Hashimoto() 우선 제외함
  *
  * @param {*} block
+ * @param {*} parentBlock
  */
 
-const mine = (block) => {
-	const difficulty = this.calcDifficulty(block, parentBlock);
+const mine = (block, parentBlock) => {
+	const difficulty = calcDifficulty(block, parentBlock);
 
 	const target = new bigInt(2 ** 256 / difficulty);
 	let nonce = Math.floor(Math.random() * (2 ** 64 + 1));

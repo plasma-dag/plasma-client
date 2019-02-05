@@ -55,6 +55,7 @@ class Worker {
 	constructor(address) {
 		this.db = new Database();
 		this.address = address;
+		this.isRunning = false;
 		this.blockchain = new Blockchain(this.db, this.address);
 		this.env = this.makeCurrent();
 
@@ -79,12 +80,6 @@ class Worker {
 	}
 
 	/**
-	 * return an indicator whether worker is running or not
-	 */
-
-	isRunning(address) {}
-
-	/**
 	 * getter: get address
 	 */
 
@@ -101,7 +96,8 @@ class Worker {
 const mainWork = (address) => {
 	const worker = new Worker(address);
 
-	if (!worker.isRunning()) {
+	if (!worker.isRunning) {
+		worker.isRunning = true;
 		commitNewWork(worker);
 	}
 
@@ -115,7 +111,7 @@ const mainWork = (address) => {
  * @param {Worker} w
  */
 
-const commitNewWork = async (w) => {
+const commitNewWork = (w) => {
 	const newTask = new Task();
 	const transfer = new Transfer();
 
@@ -154,19 +150,17 @@ const commitNewWork = async (w) => {
  */
 
 const commitNewTransactions = async (w, transactions, task) => {
-	let result;
-
 	/*TO DO : deafultFee와 한 tx당, block당 value limit을 계산하는 함수 필요 */
 
-	let defaultFee = 100;
+	//let defaultFee = 100;
 
 	for (let tx of transactions) {
-		task.Fee = defaultFee;
+		//task.Fee = defaultFee;
 
 		try {
-			result = await txCheck(w, tx, task);
+			let result = await txCheck(w, tx, task);
 
-			task.Amount += tx.value;
+			task.Amount += result;
 
 			task.TxsCache.push(task.Amount);
 		} catch (error) {
@@ -183,33 +177,31 @@ const commitNewTransactions = async (w, transactions, task) => {
 /**
  * calculate fee and check transaction's value, return the value
  * if the value exceed the limit, the tx is cancled;
+ * @param {Worker} w
  * @param {Transaction} tx
- * @param {Task} task
  */
 
-const txCheck = (w, tx, task) => {
-	const valueLimit = 10000000;
-
-	task.Fee = calculateFee();
-
-	if (tx.value > valueLimit) {
-		console.error("value exceed the limit");
-		/*TO DO : cancle tx logic and recommit */
-	}
-	if (tx.value + task.Fee >= w.env.currentState.getBalance()) {
-		console.error(`value + fee exceed the ${w.address}'s balance`);
-	}
-
-	return tx.value;
+const txCheck = (w, tx) => {
+	return new Promise((resolve) => {
+		const valueLimit = 10000000;
+		const fee = calculateFee();
+		if (tx.value > valueLimit) {
+			console.error("value exceed the limit");
+			/*TO DO : cancle tx logic and recommit */
+		}
+		if (tx.value + fee >= w.env.currentState.getBalance()) {
+			console.error(`value + fee exceed the ${w.address}'s balance`);
+		}
+		resolve(tx.value);
+	});
 };
+
+//TO DO : How to calculate tx's fee or block's fee
 
 const calculateFee = () => {
-	//TO DO : How to calculate tx's fee or block's fee
+	let fee = 100;
+	return fee;
 };
-/**
- *
- * @param {*} block
- */
 
 /**
  *
