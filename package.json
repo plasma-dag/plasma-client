@@ -4,6 +4,8 @@
   "scripts": {
     "test": "jest",
     "start": "src/index.js",
+    "pretty": "prettier --write \"src/**/*.js\"",		
+    "precommit": "lint-staged"
   },
   "dependencies": {
     "big-integer": "^1.6.41",
