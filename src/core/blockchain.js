@@ -124,7 +124,7 @@ class Blockchain {
 
   async makeBlockChain() {
     // load last checkpoint by this.address and throw the checkpoint object to last_checkpoint
-    let blockList = await this.db
+    let blockList = this.db
       .loadLastCheckpoint(this.address)
       .then(last_checkpoint => {
         // Gets blockhash of the last_checkpoint
@@ -138,9 +138,9 @@ class Blockchain {
           // Gets all the blocks related to this.address and throw the list to allBlockList
           let b = this.db
             .loadBlockswithAddress(this.address)
-            .then(allBLockList => {
+            .then(allBlockList => {
               // Filter allBlockList by fetching only blocks of which nonce value is smaller than lastBlockNonce
-              const filteredList = allBLockList.filter(
+              const filteredList = allBlockList.filter(
                 block => block.header.data.accountState.nonce <= lastBlockNonce
               );
 
