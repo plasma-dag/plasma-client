@@ -74,7 +74,7 @@ class Worker {
 		curEnv.signer = curEnv.currentState.address;
 		curEnv.lastCheckpoint = this.blockchain.getLastCheckpoint();
 		curEnv.previousBlock = this.blockchain.getCurrentBlock();
-		curEnv.transactions = []; //transfer.makeTransaction(receiver,value);
+		curEnv.transactions = []; 
 
 		return curEnv;
 	}
@@ -111,7 +111,7 @@ const mainWork = (address) => {
  * @param {Worker} w
  */
 
-const commitNewWork = (w) => {
+const commitNewWork = async (w) => {
 	const newTask = new Task();
 	const transfer = new Transfer();
 
@@ -119,7 +119,7 @@ const commitNewWork = (w) => {
 	const p = 100;
 
 	//get transactions
-	w.env.transactions = transfer.makeTransaction();
+	w.env.transactions = await db.readTxs();
 
 	if (isLocalTxs(w)) {
 		//const count = w.env.transactions.length - 1;
@@ -155,7 +155,7 @@ const commitNewTransactions = async (w, transactions, task) => {
 	//let defaultFee = 100;
 
 	for (let tx of transactions) {
-		//task.Fee = defaultFee;
+		//task.Fee = defaultFee;d
 
 		try {
 			let result = await txCheck(w, tx, task);
