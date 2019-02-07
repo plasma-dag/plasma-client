@@ -4,7 +4,7 @@
   "scripts": {
     "test": "jest",
     "start": "src/index.js",
-    "pretty": "prettier --write \"src/**/*.js\"",		
+    "pretty": "prettier --write \"src/**/*.js\"",
     "precommit": "lint-staged"
   },
   "dependencies": {

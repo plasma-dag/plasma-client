@@ -2,13 +2,12 @@
 const Database = require("../db/index");
 const StateDB = require("../core/stateDB");
 const Blockchain = require("../core/blockchain");
-const Transfer = require("./transfer");
 
-/*TO DO : transfer의 maketransaction(), makeBlock()을 사용, 서로 보완, 수정 필요
+/*TO DO : where is makeBlock()..? 
 		  change to Big Integer
-		  Add Event and listener
-		  isRunning
-		  calculateFee
+		  Add Event and listener 
+		  Add calculateFee()
+		  Add receiveBlock()
 */
 
 /**
@@ -17,8 +16,8 @@ const Transfer = require("./transfer");
 
 class Task {
 	constructor() {
-		this.State; // = new StateDB();
-		this.Block; // = new Block();
+		this.State;
+		this.Block;
 		this.TxsCache = [];
 		this.TxCount = 0;
 		this.Fee = 0;
@@ -37,12 +36,12 @@ class Task {
  */
 
 class Environment {
-	constructor() {
-		this.currentState;
-		this.signer;
-		this.lastCheckpoint;
-		this.parentHash; //참조하는 이전 블록 중 부모 블록을 의미함
-		this.transactions = [];
+	constructor(state, signer, lastCheckpoint, previousHash, transactions) {
+		this.currentState = state;
+		this.signer = signer;
+		this.lastCheckpoint = lastCheckpoint;
+		this.previousHash = previousHash;
+		this.transactions = transactions;
 	}
 }
 
@@ -69,12 +68,13 @@ class Worker {
 
 	makeCurrent() {
 		const stateDB = new StateDB(this.db);
-		const curEnv = new Environment(stateDB);
-		curEnv.currentState = stateDB.getStateObject();
-		curEnv.signer = curEnv.currentState.address;
-		curEnv.lastCheckpoint = this.blockchain.getLastCheckpoint();
-		curEnv.previousBlock = this.blockchain.getCurrentBlock();
-		curEnv.transactions = []; 
+		const curEnv = new Environment(
+			stateDB.getStateObject(),
+			stateDB.address,
+			this.blockchain.getLastCheckpoint(),
+			this.blockchain.getCurrentBlock(),
+			[]
+		);
 
 		return curEnv;
 	}
@@ -113,13 +113,12 @@ const mainWork = (address) => {
 
 const commitNewWork = async (w) => {
 	const newTask = new Task();
-	const transfer = new Transfer();
 
 	//can change
 	const p = 100;
 
 	//get transactions
-	w.env.transactions = await db.readTxs();
+	w.env.transactions = await this.db.readTxs();
 
 	if (isLocalTxs(w)) {
 		//const count = w.env.transactions.length - 1;
@@ -131,11 +130,11 @@ const commitNewWork = async (w) => {
 			console.error(`fee and all value amount exceed ${w.address}'s balance`);
 		}
 
-		//Add parentHash to previousHash
-		newTask.Block.header.previousHash = new Array(2).push(w.env.parentHash.hash());
+		//Add previousHash
+		newTask.Block.header.previousHash = new Array(2).push(w.env.previousHash.hash());
 
 		//create block
-		newTask.Block = transfer.makeBlock();
+		newTask.Block = makeBlock();
 
 		/* newTask.newState = newTask.Block.header.accountState;
 		 */
