@@ -52,9 +52,9 @@ class Environment {
  */
 
 class Worker {
-	constructor(address) {
-		this.db = new Database();
-		this.address = address;
+	constructor(opts) {
+		this.db = opts.db;
+		this.address = opts.address;
 		this.isRunning = false;
 		this.blockchain = new Blockchain(this.db, this.address);
 		this.env = this.makeCurrent();
@@ -78,14 +78,6 @@ class Worker {
 
 		return curEnv;
 	}
-
-	/**
-	 * getter: get address
-	 */
-
-	get address() {
-		return this.address;
-	}
 }
 
 /**
@@ -93,8 +85,8 @@ class Worker {
  * @param {Address} address
  */
 
-const mainWork = (address) => {
-	const worker = new Worker(address);
+const mainWork = (opts) => {
+	const worker = new Worker(opts);
 
 	if (!worker.isRunning) {
 		worker.isRunning = true;
@@ -131,7 +123,7 @@ const commitNewWork = async (w) => {
 		newTask.Block.header.previousHash = new Array(2).push(w.env.previousHash.hash());
 
 		//create block
-		newTask.Block = makeBlock();
+		newTask.Block = makeBlock(newTask.TxsCache);
 
 		/* newTask.newState = newTask.Block.header.accountState;
 		 */

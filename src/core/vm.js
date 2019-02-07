@@ -10,10 +10,11 @@ class VM extends EventEmitter {
 		this.opts = opts;
 		this.opts = {
 			plasma: opts.plasma ? opts.plasma : "testnet",
-			mainchain: opts.mainchain ? opts.mainchain : "byzantium"
+			mainchain: opts.mainchain ? opts.mainchain : "byzantium",
+			db: opts.db ? opts.db : Database.db,
+			address: opts.address ? opts.address : "0x00"
 		};
 		setImmediate(() => this.emit("vm", "PlasmaDAG VM Start", this.opts));
-		this.arr = [];
 	}
 }
 
