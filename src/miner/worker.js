@@ -5,9 +5,10 @@ const Blockchain = require("../core/blockchain");
 
 /*TO DO : where is makeBlock()..? 
 		  change to Big Integer
-		  Add Event and listener 
+		  Add Eventemitter
 		  Add calculateFee()
 		  Add receiveBlock()
+		  Set valueLimit
 */
 
 /**
@@ -59,7 +60,6 @@ class Worker {
 		this.env = this.makeCurrent();
 
 		//this.pending
-		//this.subscription
 	}
 
 	/**
@@ -114,9 +114,6 @@ const mainWork = (address) => {
 const commitNewWork = async (w) => {
 	const newTask = new Task();
 
-	//can change
-	const p = 100;
-
 	//get transactions
 	w.env.transactions = await this.db.readTxs();
 
@@ -148,7 +145,7 @@ const commitNewWork = async (w) => {
  * @param {Task} task
  */
 
-const commitNewTransactions = async (w, transactions, task) => {
+const commitNewTransactions = (w, transactions, task) => {
 	/*TO DO : deafultFee와 한 tx당, block당 value limit을 계산하는 함수 필요 */
 
 	//let defaultFee = 100;
@@ -157,8 +154,9 @@ const commitNewTransactions = async (w, transactions, task) => {
 		//task.Fee = defaultFee;d
 
 		try {
-			let result = await txCheck(w, tx, task);
+			let result = txCheck(w, tx, task);
 
+			//Add all txs value
 			task.Amount += result;
 
 			task.TxsCache.push(task.Amount);
@@ -167,31 +165,34 @@ const commitNewTransactions = async (w, transactions, task) => {
 		}
 	}
 
-	//nonce 없음??
-	//task.TxsCache.sort(tx.nonce);
-
 	return task.TxsCache;
 };
 
 /**
  * calculate fee and check transaction's value, return the value
- * if the value exceed the limit, the tx is cancled;
+ * if the value exceed the limit, the tx is cancled.
+ * if the value and the fee exceed the address's balance, the tx is cancled.
  * @param {Worker} w
  * @param {Transaction} tx
  */
 
 const txCheck = (w, tx) => {
 	return new Promise((resolve) => {
+		// TO DO : get valueLimit
 		const valueLimit = 10000000;
 		const fee = calculateFee();
+
+		//Check the valueLimit
 		if (tx.value > valueLimit) {
 			console.error("value exceed the limit");
-			/*TO DO : cancle tx logic and recommit */
+			/*TO DO : cancle tx logic or recommit */
 		}
+
+		//Check the balance
 		if (tx.value + fee >= w.env.currentState.getBalance()) {
 			console.error(`value + fee exceed the ${w.address}'s balance`);
 		}
-		resolve(tx.value);
+		return tx.value;
 	});
 };
 
@@ -209,9 +210,7 @@ const calculateFee = () => {
 
 const isLocalTxs = (w) => {
 	//receiver가 sender 와 다르면 본인이 sender일것이라 가정.
-	if (w.env.transactions.receiver !== w.address) {
-		return true;
-	}
+	return w.env.transactions[0].receiver !== w.address;
 };
 
 /**
@@ -220,9 +219,7 @@ const isLocalTxs = (w) => {
  */
 
 const isRemoteTxs = (w) => {
-	if (w.env.transactions.receiver == w.address) {
-		return true;
-	}
+	return w.env.transactions[0].receiver === w.address;
 };
 
 /**
