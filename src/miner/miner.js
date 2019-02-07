@@ -12,11 +12,11 @@ const bigInt = require("big-integer");
  * Hashimoto() 우선 제외함
  *
  * @param {*} block
- * @param {*} parentBlock
+ * @param {*} previousBlock
  */
 
-const mine = (block, parentBlock) => {
-	const difficulty = calcDifficulty(block, parentBlock);
+const mine = (block, previousBlock) => {
+	const difficulty = calcDifficulty(block, previousBlock);
 
 	const target = new bigInt(2 ** 256 / difficulty);
 	let nonce = Math.floor(Math.random() * (2 ** 64 + 1));
@@ -36,16 +36,16 @@ const mine = (block, parentBlock) => {
 
     valueAdjust, minimumDiff, durationLimit은 조정가능
  * @param {*} block
- * @param {*} parentBlock
+ * @param {*} previousBlock
  */
 
-const calcDifficulty = (block, parentBlock) => {
+const calcDifficulty = (block, previousBlock) => {
 	let diff = 0;
 	let expDiff = 0;
-	const adjust = parentBlock.difficulty / 2048; //2048 is difficultyBoundDivisor
+	const adjust = previousBlock.difficulty / 2048; //2048 is difficultyBoundDivisor
 	const time = block.header.timestamp;
-	const parentTime = parentBlock.header.timestamp;
-	const parentDiff = parentBlock.header.difficulty;
+	const previousTime = previousBlock.header.timestamp;
+	const previousDiff = previousBlock.header.difficulty;
 	const minimumDiff = 131072;
 
 	// const durationLimit = 13;
@@ -62,12 +62,12 @@ const calcDifficulty = (block, parentBlock) => {
 		valueAdjust = (mod + 1) / 2048;
 	}
 
-	//이더리움의 경우 parentblock의 uncle block이 있으면 max 옆의 값을 1이아닌 2로 바꿔 계산
-	expDiff = parentDiff + valueAdjust * Math.max(1 - (time - parentTime) / 9, -99);
+	//이더리움의 경우 previousblock의 uncle block이 있으면 max 옆의 값을 1이아닌 2로 바꿔 계산
+	expDiff = previousDiff + valueAdjust * Math.max(1 - (time - previousTime) / 9, -99);
 
 	/* durationLimit와 비교해 조정
-    if ((time - parentIime) < (durationLimit)) {
-        expDiff = parentDiff + adjust;
+    if ((time - previousIime) < (durationLimit)) {
+        expDiff = previousDiff + adjust;
     } else {
         expDiff = prentDiff - adjust;
     } 
