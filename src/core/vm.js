@@ -29,4 +29,6 @@ const exOpts = {
 const vm = new VM(exOpts);
 vm.on("vm", (str, opts) => console.log(str, opts));
 
-test_event.on("transfer", mainWork(vm.opts));
+//test_event.on("transfer", mainWork(vm.opts));
+
+test_event.emit("mainWork", mainWork(vm.opts));

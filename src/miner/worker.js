@@ -1,7 +1,7 @@
 "use strict";
-const Database = require("../db/index");
 const StateDB = require("../core/stateDB");
 const Blockchain = require("../core/blockchain");
+const em = require("../../tests/event_test").emitter;
 
 /*TO DO : where is makeBlock()..? 
 		  change to Big Integer
@@ -9,10 +9,11 @@ const Blockchain = require("../core/blockchain");
 		  Add calculateFee()
 		  Add receiveBlock()
 		  Set valueLimit
+		  Set defaultFee
 */
 
 /**
- * Task class for worker to save current work
+ * Task class for worker save current work information
  */
 
 class Task {
@@ -20,10 +21,8 @@ class Task {
 		this.State;
 		this.Block;
 		this.TxsCache = [];
-		this.TxCount = 0;
 		this.Fee = 0;
-		this.Amount = 0;
-		this.expectedFee = 0;
+		this.TotalAmount = 0;
 
 		//this.CreateAt = time();
 	}
@@ -32,17 +31,27 @@ class Task {
 	}
 }
 
-/**
- * Environment class for worker
- */
-
+//Environment is the worker's current environment information
 class Environment {
-	constructor(state, signer, lastCheckpoint, previousHash, transactions) {
+	/**
+	 *
+	 * @param {StateDB} state
+	 * @param {*} lastCheckpoint
+	 * @param {*} previousHash
+	 * @param {*} transactions
+	 * @param {*} defaultFee
+	 * @param {*} valueLimit
+	 * @param {*} txCount
+	 */
+
+	constructor(state, lastCheckpoint, previousHash, transactions) {
 		this.currentState = state;
-		this.signer = signer;
 		this.lastCheckpoint = lastCheckpoint;
 		this.previousHash = previousHash;
 		this.transactions = transactions;
+		this.defaultFee = defaultFee();
+		this.valueLimit = valueLimit();
+		this.txCount = 0;
 	}
 }
 
@@ -62,18 +71,14 @@ class Worker {
 		//this.pending
 	}
 
-	/**
-	 * set current environment
-	 */
-
-	makeCurrent() {
+	//set current environment
+	async makeCurrent() {
 		const stateDB = new StateDB(this.db);
 		const curEnv = new Environment(
 			stateDB.getStateObject(),
-			stateDB.address,
 			this.blockchain.getLastCheckpoint(),
 			this.blockchain.getCurrentBlock(),
-			[]
+			await this.db.readTxs()
 		);
 
 		return curEnv;
@@ -86,6 +91,7 @@ class Worker {
  */
 
 const mainWork = (opts) => {
+	em.on("mainWork", () => console.log(`mainWork start!`));
 	const worker = new Worker(opts);
 
 	if (!worker.isRunning) {
@@ -106,23 +112,20 @@ const mainWork = (opts) => {
 const commitNewWork = async (w) => {
 	const newTask = new Task();
 
-	//get transactions
-	w.env.transactions = await this.db.readTxs();
-
 	if (isLocalTxs(w)) {
 		//const count = w.env.transactions.length - 1;
 
 		commitNewTransactions(w, w.env.transactions, newTask);
 
 		//fee and all value amount exceed balance
-		if (w.env.currentState.getBalance() <= newTask.Amount + newTask.Fee) {
-			console.error(`fee and all value amount exceed ${w.address}'s balance`);
+		if (w.env.currentState.getBalance() <= newTask.TotalAmount + newTask.Fee) {
+			console.error(`fee and all total value exceed the ${w.address}'s balance`);
 		}
 
 		//Add previousHash
 		newTask.Block.header.previousHash = new Array(2).push(w.env.previousHash.hash());
 
-		//create block
+		//create and mine block
 		newTask.Block = makeBlock(newTask.TxsCache);
 
 		/* newTask.newState = newTask.Block.header.accountState;
@@ -138,20 +141,16 @@ const commitNewWork = async (w) => {
  */
 
 const commitNewTransactions = (w, transactions, task) => {
-	/*TO DO : deafultFee와 한 tx당, block당 value limit을 계산하는 함수 필요 */
-
-	//let defaultFee = 100;
-
 	for (let tx of transactions) {
-		//task.Fee = defaultFee;d
+		task.Fee = 0;
 
 		try {
-			let result = txCheck(w, tx, task);
+			let validTx = txCheck(w, tx, task);
 
-			//Add all txs value
-			task.Amount += result;
+			//save all txs value
+			task.TotalAmount += validTx.value;
 
-			task.TxsCache.push(task.Amount);
+			task.TxsCache.push(validTx);
 		} catch (error) {
 			console.log("error", error);
 		}
@@ -162,30 +161,25 @@ const commitNewTransactions = (w, transactions, task) => {
 
 /**
  * calculate fee and check transaction's value, return the value
- * if the value exceed the limit, the tx is cancled.
- * if the value and the fee exceed the address's balance, the tx is cancled.
+ * if the value exceed the limit, the tx is cancelled.
+ * if the value and the fee exceed the address's balance, the tx is cancelled.
  * @param {Worker} w
  * @param {Transaction} tx
  */
 
-const txCheck = (w, tx) => {
-	return new Promise((resolve) => {
-		// TO DO : get valueLimit
-		const valueLimit = 10000000;
-		const fee = calculateFee();
+const txCheck = (w, tx, task) => {
+	task.Fee = calculateFee();
 
-		//Check the valueLimit
-		if (tx.value > valueLimit) {
-			console.error("value exceed the limit");
-			/*TO DO : cancle tx logic or recommit */
-		}
+	//Check the minimum fee
+	task.Fee = task.Fee > w.env.defaultFee ? task.Fee : w.env.defaultFee;
 
-		//Check the balance
-		if (tx.value + fee >= w.env.currentState.getBalance()) {
-			console.error(`value + fee exceed the ${w.address}'s balance`);
-		}
-		return tx.value;
-	});
+	//Check the valueLimit
+	if (tx.value > w.env.valueLimit) {
+		console.error("value exceed the limit");
+		/*TO DO : cancle tx logic or recommit */
+	}
+
+	return tx;
 };
 
 //TO DO : How to calculate tx's fee or block's fee
@@ -228,6 +222,14 @@ const receiveBlock = (w, remoteBlockhash) => {
 		//blockhash값을 previousBlock에 추가
 		w.env.Block.hash.previousBlock.push(remoteBlockhash);
 	}
+};
+
+const defaultFee = () => {
+	return 100;
+};
+
+const valueLimit = () => {
+	return 10000000;
 };
 
 const setRecommitInteval = () => {};
