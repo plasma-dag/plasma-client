@@ -72,7 +72,7 @@ class Blockchain {
    */
   updateCheckpoint(checkpoint) {
     this.db.writeCheckpoint(checkpoint);
-    this.checkpoint.push(checkpoint);
+    this.lastCheckpoint.push(checkpoint);
   }
 
   /**
