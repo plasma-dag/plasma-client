@@ -139,7 +139,10 @@ async function userStateProcess(
   // 1
   if (!checkpoint.validate(opAddr)) return { error: true };
   if (checkpoint.address !== userState.address) return { error: true };
-  if (bc.checkpoint.operatorNonce >= checkpoint.operatorNonce)
+  if (
+    bc.checkpoint[bc.checkpoint.length - 1].operatorNonce >=
+    checkpoint.operatorNonce
+  )
     return { error: true };
   // 2
   const blockHash = checkpoint.blockHash;
