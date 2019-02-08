@@ -77,7 +77,7 @@ class Worker {
 		const curEnv = new Environment(
 			stateDB.getStateObject(),
 			this.blockchain.getLastCheckpoint(),
-			this.blockchain.getCurrentBlock(),
+			this.blockchain.getCurrentBlock().hash(),
 			await this.db.readTxs()
 		);
 
@@ -123,7 +123,7 @@ const commitNewWork = async (w) => {
 		}
 
 		//Add previousHash
-		newTask.Block.header.previousHash = new Array(2).push(w.env.previousHash.hash());
+		newTask.Block.header.data.previousHash = w.env.previousHash;
 
 		//create and mine block
 		newTask.Block = makeBlock(newTask.TxsCache);
@@ -219,8 +219,7 @@ const receiveBlock = (w, remoteBlockhash) => {
 		console.error(`${w.address}'s worker is not running`);
 	}
 	if (isRemoteTxs(w)) {
-		//blockhash값을 previousBlock에 추가
-		w.env.Block.hash.previousBlock.push(remoteBlockhash);
+		w.env.Block.header.data.potentialHashList.push(remoteBlockhash);
 	}
 };
 
