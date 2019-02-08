@@ -17,42 +17,42 @@ const em = require("../../tests/event_test").emitter;
  */
 
 class Task {
-	constructor() {
-		this.State;
-		this.Block;
-		this.TxsCache = [];
-		this.Fee = 0;
-		this.TotalAmount = 0;
+  constructor() {
+    this.State;
+    this.Block;
+    this.TxsCache = [];
+    this.Fee = 0;
+    this.TotalAmount = 0;
 
-		//this.CreateAt = time();
-	}
-	get Block() {
-		return this.Block;
-	}
+    //this.CreateAt = time();
+  }
+  get Block() {
+    return this.Block;
+  }
 }
 
 //Environment is the worker's current environment information
 class Environment {
-	/**
-	 *
-	 * @param {StateDB} state
-	 * @param {*} lastCheckpoint
-	 * @param {*} previousHash
-	 * @param {*} transactions
-	 * @param {*} defaultFee
-	 * @param {*} valueLimit
-	 * @param {*} txCount
-	 */
+  /**
+   *
+   * @param {StateDB} state
+   * @param {*} lastCheckpoint
+   * @param {*} previousHash
+   * @param {*} transactions
+   * @param {*} defaultFee
+   * @param {*} valueLimit
+   * @param {*} txCount
+   */
 
-	constructor(state, lastCheckpoint, previousHash, transactions) {
-		this.currentState = state;
-		this.lastCheckpoint = lastCheckpoint;
-		this.previousHash = previousHash;
-		this.transactions = transactions;
-		this.defaultFee = defaultFee();
-		this.valueLimit = valueLimit();
-		this.txCount = 0;
-	}
+  constructor(state, lastCheckpoint, previousHash, transactions) {
+    this.currentState = state;
+    this.lastCheckpoint = lastCheckpoint;
+    this.previousHash = previousHash;
+    this.transactions = transactions;
+    this.defaultFee = defaultFee();
+    this.valueLimit = valueLimit();
+    this.txCount = 0;
+  }
 }
 
 /**
@@ -61,28 +61,28 @@ class Environment {
  */
 
 class Worker {
-	constructor(opts) {
-		this.db = opts.db;
-		this.address = opts.address;
-		this.isRunning = false;
-		this.blockchain = new Blockchain(this.db, this.address);
-		this.env = this.makeCurrent();
+  constructor(opts) {
+    this.db = opts.db;
+    this.address = opts.address;
+    this.isRunning = false;
+    this.blockchain = new Blockchain(this.db, this.address);
+    this.env = this.makeCurrent();
 
-		//this.pending
-	}
+    //this.pending
+  }
 
-	//set current environment
-	async makeCurrent() {
-		const stateDB = new StateDB(this.db);
-		const curEnv = new Environment(
-			stateDB.getStateObject(),
-			this.blockchain.getLastCheckpoint(),
-			this.blockchain.getCurrentBlock().hash(),
-			await this.db.readTxs()
-		);
+  //set current environment
+  async makeCurrent() {
+    const stateDB = new StateDB(this.db);
+    const curEnv = new Environment(
+      stateDB.getStateObject(),
+      this.blockchain.getLastCheckpoint(),
+      this.blockchain.getCurrentBlock().hash(),
+      await this.db.readTxs()
+    );
 
-		return curEnv;
-	}
+    return curEnv;
+  }
 }
 
 /**
@@ -90,18 +90,18 @@ class Worker {
  * @param {Address} address
  */
 
-const mainWork = (opts) => {
-	em.on("mainWork", () => console.log(`mainWork start!`));
-	const worker = new Worker(opts);
+const mainWork = opts => {
+  em.on("mainWork", () => console.log(`mainWork start!`));
+  const worker = new Worker(opts);
 
-	if (!worker.isRunning) {
-		worker.isRunning = true;
-		commitNewWork(worker);
-	}
+  if (!worker.isRunning) {
+    worker.isRunning = true;
+    commitNewWork(worker);
+  }
 
-	/*TO DO : receiver가 되는 transaction을 event로 받고 receiveBlock()실행*/
+  /*TO DO : receiver가 되는 transaction을 event로 받고 receiveBlock()실행*/
 
-	receiveBlock(worker, remoteBlockhash);
+  receiveBlock(worker, remoteBlockhash);
 };
 
 /**
@@ -109,28 +109,30 @@ const mainWork = (opts) => {
  * @param {Worker} w
  */
 
-const commitNewWork = async (w) => {
-	const newTask = new Task();
+const commitNewWork = async w => {
+  const newTask = new Task();
 
-	if (isLocalTxs(w)) {
-		//const count = w.env.transactions.length - 1;
+  if (isLocalTxs(w)) {
+    //const count = w.env.transactions.length - 1;
 
-		commitNewTransactions(w, w.env.transactions, newTask);
+    commitNewTransactions(w, w.env.transactions, newTask);
 
-		//fee and all value amount exceed balance
-		if (w.env.currentState.getBalance() <= newTask.TotalAmount + newTask.Fee) {
-			console.error(`fee and all total value exceed the ${w.address}'s balance`);
-		}
+    //fee and all value amount exceed balance
+    if (w.env.currentState.getBalance() <= newTask.TotalAmount + newTask.Fee) {
+      console.error(
+        `fee and all total value exceed the ${w.address}'s balance`
+      );
+    }
 
-		//Add previousHash
-		newTask.Block.header.data.previousHash = w.env.previousHash;
+    //Add previousHash
+    newTask.Block.header.data.previousHash = w.env.previousHash;
 
-		//create and mine block
-		newTask.Block = makeBlock(newTask.TxsCache);
+    //create and mine block
+    newTask.Block = makeBlock(newTask.TxsCache);
 
-		/* newTask.newState = newTask.Block.header.accountState;
-		 */
-	}
+    /* newTask.newState = newTask.Block.header.accountState;
+     */
+  }
 };
 
 /**
@@ -141,22 +143,22 @@ const commitNewWork = async (w) => {
  */
 
 const commitNewTransactions = (w, transactions, task) => {
-	for (let tx of transactions) {
-		task.Fee = 0;
+  for (let tx of transactions) {
+    task.Fee = 0;
 
-		try {
-			let validTx = txCheck(w, tx, task);
+    try {
+      let validTx = txCheck(w, tx, task);
 
-			//save all txs value
-			task.TotalAmount += validTx.value;
+      //save all txs value
+      task.TotalAmount += validTx.value;
 
-			task.TxsCache.push(validTx);
-		} catch (error) {
-			console.log("error", error);
-		}
-	}
+      task.TxsCache.push(validTx);
+    } catch (error) {
+      console.log("error", error);
+    }
+  }
 
-	return task.TxsCache;
+  return task.TxsCache;
 };
 
 /**
@@ -168,25 +170,25 @@ const commitNewTransactions = (w, transactions, task) => {
  */
 
 const txCheck = (w, tx, task) => {
-	task.Fee = calculateFee();
+  task.Fee = calculateFee();
 
-	//Check the minimum fee
-	task.Fee = task.Fee > w.env.defaultFee ? task.Fee : w.env.defaultFee;
+  //Check the minimum fee
+  task.Fee = task.Fee > w.env.defaultFee ? task.Fee : w.env.defaultFee;
 
-	//Check the valueLimit
-	if (tx.value > w.env.valueLimit) {
-		console.error("value exceed the limit");
-		/*TO DO : cancle tx logic or recommit */
-	}
+  //Check the valueLimit
+  if (tx.value > w.env.valueLimit) {
+    console.error("value exceed the limit");
+    /*TO DO : cancle tx logic or recommit */
+  }
 
-	return tx;
+  return tx;
 };
 
 //TO DO : How to calculate tx's fee or block's fee
 
 const calculateFee = () => {
-	let fee = 100;
-	return fee;
+  let fee = 100;
+  return fee;
 };
 
 /**
@@ -194,9 +196,9 @@ const calculateFee = () => {
  * @param {Worker} w
  */
 
-const isLocalTxs = (w) => {
-	//receiver가 sender 와 다르면 본인이 sender일것이라 가정.
-	return w.env.transactions[0].receiver !== w.address;
+const isLocalTxs = w => {
+  //receiver가 sender 와 다르면 본인이 sender일것이라 가정.
+  return w.env.transactions[0].receiver !== w.address;
 };
 
 /**
@@ -204,8 +206,8 @@ const isLocalTxs = (w) => {
  * @param {Worker} w
  */
 
-const isRemoteTxs = (w) => {
-	return w.env.transactions[0].receiver === w.address;
+const isRemoteTxs = w => {
+  return w.env.transactions[0].receiver === w.address;
 };
 
 /**
@@ -215,31 +217,31 @@ const isRemoteTxs = (w) => {
  */
 
 const receiveBlock = (w, remoteBlockhash) => {
-	if (!w.isRunning) {
-		console.error(`${w.address}'s worker is not running`);
-	}
-	if (isRemoteTxs(w)) {
-		w.env.Block.header.data.potentialHashList.push(remoteBlockhash);
-	}
+  if (!w.isRunning) {
+    console.error(`${w.address}'s worker is not running`);
+  }
+  if (isRemoteTxs(w)) {
+    w.env.Block.header.data.potentialHashList.push(remoteBlockhash);
+  }
 };
 
 const defaultFee = () => {
-	return 100;
+  return 100;
 };
 
 const valueLimit = () => {
-	return 10000000;
+  return 10000000;
 };
 
 const setRecommitInteval = () => {};
 
-const getUnconfirmedBlock = (address) => {
-	return;
+const getUnconfirmedBlock = address => {
+  return;
 };
 
 module.exports = {
-	Task,
-	Environment,
-	Worker,
-	mainWork
+  Task,
+  Environment,
+  Worker,
+  mainWork
 };
