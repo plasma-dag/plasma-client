@@ -75,4 +75,5 @@ function addBalance(account, amount) {
 
 module.exports = {
   Account
+  
 };

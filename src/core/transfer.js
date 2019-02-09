@@ -1,16 +1,11 @@
 "use-strict"
 
-const { Header, Block, signBlock } = require("./block");
+const { signBlock } = require("./block");
 const { BlockValidator } = require("./block_validator");
 const { Blockchain } = require("./blockchain");
-const { Checkpoint } = require("./checkpoint");
-const { Potential, PotentialDB } = require("./potential");
-const { operateStateProcess, userStateProcess } = require("./state_processor");
-const { StateObject } = require("./stateObject");
 const { Transaction } = require("./transaction");
 const { Worker } = require("./worker");
-const { Database } = require("../db/database");
-const { merkle, merkleProof, verifyMerkle } = require("../crypto/index");
+const { merkle, verifyMerkle } = require("../crypto/index");
 
 class Operator {    
 
@@ -21,6 +16,7 @@ class Operator {
         this.state = state;
         this.bc = new Blockchain(db, state.address);   
         this.blockValidator = new BlockValidator(db, bc, potentialDB);
+        this.submittedBlock = [];
     }
 
     // deposit phase 1
@@ -74,6 +70,8 @@ class UserTransfer {
         this.state = state;
         this.potential = potential;
         this.blockValidator = new BlockValidator(db, bc, potential); // need potential db?
+        this.confirmedCheckpoints = [];
+        this.checkpoints = [];
     }
 
     /**
@@ -91,7 +89,7 @@ class UserTransfer {
      * @param {*} opAddr 
      */
     // cover making deposit block?
-    makeBlock(prvKey, opAddr) {
+    makeBlock(prvKey) {
         const previousHash = this.bc.getCurrentBlock().hash();
         const potentialHashList = this.potential.readPotentialList(); // TODO
         const accountState = this.state;
@@ -110,10 +108,10 @@ class UserTransfer {
         
         // transfer block, signature to operator
         const sig = signBlock(newBlock, prvKey);
-        transfer( opAddr, { // TODO: network
-            block: newBlock, 
-            sig: sig
-        });
+        // transfer( opAddr, { // TODO: network
+        //     block: newBlock, 
+        //     sig: sig
+        // });
 
         this.db.writeBlock(newBlock);
         return { error: false };
@@ -140,15 +138,15 @@ class UserTransfer {
         if(result.error) return { error: true };
 
         // transfer checkpoint, header, proof and root and tx for merkle proof to each receiver        
-        const deps = block.transactions.length;        
-        block.transactions.forEach( (tx, index) => transfer(tx.receiver, { // TODO: network
-            checkpoint: checkpoint, 
-            header: block.header, 
-            deps: deps, 
-            proof: merkleProof(this.leaves, index), 
-            root: block.header.merkleHash, 
-            tx: tx
-        }));
+        // const deps = block.transactions.length;        
+        // block.transactions.forEach( (tx, index) => transfer(tx.receiver, { // TODO: network
+        //     checkpoint: checkpoint, 
+        //     header: block.header, 
+        //     deps: deps, 
+        //     proof: merkleProof(this.leaves, index), 
+        //     root: block.header.merkleHash, 
+        //     tx: tx
+        // }));
 
         // initialize leaves
         this.leaves = [];
@@ -193,9 +191,12 @@ class UserTransfer {
  * @param {*} opAddr 
  */
 const validateCheckpoint = function(bc, sender, checkpoint, opAddr) {
-    if(!checkpoint.validate(opAddr)) return { error: true };
-    if(checkpoint.address !== sender) return { error: true };
-    if(bc.checkpoint.operatorNonce >= checkpoint.operatorNonce)
+    if (!checkpoint.validate(opAddr)) return { error: true };
+    if (checkpoint.address !== sender) return { error: true };
+    if (
+        bc.checkpoint[bc.checkpoint.length - 1].operatorNonce >= 
+        checkpoint.operatorNonce
+    )
         return { error: true };
 }
 

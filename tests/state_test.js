@@ -1,26 +1,16 @@
 "use strict"
 
-<<<<<<< HEAD
-const { StateDB } = require("../core/StateDB.js");
-=======
->>>>>>> 8fdb902273376245c027c4c48c3ac1fbe8a1f538
-const { Header } = require("../core/block.js");
-const { Block } = require("../core/block.js");
-const { Transaction } = require("../core/transaction.js");
-const { StateDB } = require("../core/stateDB.js");
-<<<<<<< HEAD
+const { Header } = require("../core/block");
+const { Block } = require("../core/block");
+const { StateDB } = require("../core/stateDB");
 const { 
     StateObject, deepCopy 
-} = require("../core/stateObject.js");
-=======
-const { StateObject } = require("../core/stateObject.js")
->>>>>>> 8fdb902273376245c027c4c48c3ac1fbe8a1f538
-const { Account } = require("../core/account.js");
-const { operatorProcess } = require("../core/state_processor.js");
-const { process } = require("../core/state_processor.js");
-const { applyStateTransition } = require("../core/state_transition.js");
+} = require("../core/stateObject");
+const { StateObject } = require("../core/stateObject")
+const { Account } = require("../core/account");
+const { operatorProcess } = require("../core/state_processor");
 const { Database } = require('../db/database');
-<<<<<<< HEAD
+
 
 
 

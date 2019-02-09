@@ -148,10 +148,21 @@ function userStateProcess(
    * 6. If block is valid, process txs and change user's states
    */
   // 1
+
   // if (!checkpoint.validate(opAddr)) return { error: true };
   // if (checkpoint.address !== userState.address) return { error: true };
   // if (bc.checkpoint.operatorNonce >= checkpoint.operatorNonce)
   //   return { error: true };
+
+  // transfer.js에 validateCheckpoint() 함수에 포함
+  // if (!checkpoint.validate(opAddr)) return { error: true };
+  // if (checkpoint.address !== userState.address) return { error: true };
+  // if (
+  //   bc.checkpoint[bc.checkpoint.length - 1].operatorNonce >=
+  //   checkpoint.operatorNonce
+  // )
+  //   return { error: true };
+
   // 2
   // const blockHash = checkpoint.blockHash;
   // const targetBlock = await db.readBlock(blockHash);

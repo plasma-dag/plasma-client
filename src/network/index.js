@@ -3,20 +3,42 @@ const WebSocket = require("ws");
 
 const bc = require("../core/blockchain");
 
+
 // set environment variable
 const p2p_port = process.env.P2P_PORT || 6001; // > $env:P2P_PORT=6003 (windows) || export P2P_PORT=3003 (mac)
 
 const MessageType = {
   QUERY_LATEST: 0,
   QUERY_ALL: 1,
-  RESPONSE_BLOCKCHAIN: 2
+  RESPONSE_BLOCKCHAIN: 2,
+  PROCESS_BLOCK: 3,
+  CONFIRM_SEND: 4,
+  CONFIRM_RECEIVE: 5
 };
 
 // sockets
 var sockets = [];
 
+var submittedBlocks = [];
+var checkpoints = {};
+var confirmedCheckpoints = {};
+var operator;
+var userTransfers = {};
+
 function getSockets() {
   return sockets;
+}
+
+function getSubmittedBlocks(ws) {
+  return submittedBlocks[ws];
+}
+
+function getCheckpoints(ws) {
+  return checkpoints[ws];
+}
+
+function getCofirmedCheckpoints(ws) {
+  return confirmedCheckpoints[ws];
 }
 
 function initP2PServer() {
@@ -34,6 +56,16 @@ function initConnection(ws) {
   write(ws, queryChainLengthMsg());
 }
 
+function initSet(ws, userTransfer) {
+  checkpoints[ws] = [];
+  confirmedCheckpoint[ws] = [];
+  userTransfers[ws] = userTransfer;
+}
+
+function initOpSet(operator) {
+  operator = operator;
+}
+
 function initMessageHandler(ws) {
   ws.on("message", function(data) {
     const message = JSON.parse(data);
@@ -48,6 +80,21 @@ function initMessageHandler(ws) {
       case MessageType.RESPONSE_BLOCKCHAIN:
         handleBlockchainResponse(message);
         break;
+      case MessageType.PROCESS_BLOCK:
+        if(ws === sockets[0]) {
+          processBlock(message, prvKey, operator); // TODO: should receive private key
+          submittedBlocks.push(message.data);
+        }
+        break;
+      case MessageType.CONFIRM_SEND:
+        confirmSend(message, userTransfers[ws].userTransfer);
+        checkpoints.ws.push(message.data);
+        break;
+      case MessageType.CONFIRM_RECEIVE:
+        confirmReceive(message, userTransfers[ws].userTransfer);
+        confirmedCheckpoints.ws.push(message.data);
+        break;
+      
     }
   });
 }
@@ -135,10 +182,74 @@ function broadcast(message) {
   sockets.forEach(socket => write(socket, message));
 }
 
+
+
+function processBlock(message, prvKey, operator) {
+  const block = message.data.block;
+  const checkpoint = operator.blockProcess(block, prvKey);
+  const ws = getWebsocket(block.header.state.address);
+  const message = {
+    type: CONFIRM_SEND,
+    data: {
+      checkpoint: checkpoint
+    }
+  };
+  write(ws, message);
+}
+
+function confirmSend(message, userTransfer) {
+  const checkpoint = message.data.checkpoint;
+  const opAddr = getOpAddr();
+  const block = userTransfer.confirmSend(checkpoint, opAddr);
+  if(block.error) console.log("send confirmation error");
+  else {
+    const deps = block.transactions.length;        
+    block.transactions.forEach( (tx, index) => {
+      let ws = getWebsocket(tx.receiver);
+      let message = {
+        type: CONFIRM_RECEIVE,
+        data: {
+          checkpoint: checkpoint, 
+          header: block.header, 
+          deps: deps, 
+          proof: merkleProof(userTransfer.leaves, index), 
+          root: block.header.merkleHash, 
+          tx: tx
+        }
+      };
+      write(ws, message);
+    });
+  }
+}
+
+function confirmReceive(message, userTransfer) {
+  const data = message.data;
+  const opAddr = getOpAddr();
+  userTransfer.confirmReceive(data.checkpoint, data.header, data.deps, data.proof, data.root, data.tx, opAddr);     
+}
+
+function getWebsocket(addr) { // TODO
+
+}
+
+function getOpAddr() { // TODO
+
+}
+
+
+
+
 module.exports = {
   connectToPeers,
   getSockets,
   broadcast,
   responseLatestMsg,
-  initP2PServer
+  initP2PServer,
+  initSet,
+  initOpSet,
+  getWebsocket,
+  getOpAddr,
+  getSubmittedBlocks,
+  getCheckpoints,
+  getCofirmedCheckpoints
 };
