@@ -26,12 +26,12 @@ var operator;
 function initHttpServer() {
   
   const db = new DataBase();
-  const addr = wl.getAddr(); // TODO: getAddr() in wallet
+  const addr = wl.getPublicFromWallet().toString();
   const bc = new Blockchain(db, addr); 
   const state = new StateObject(addr, new Account(0, 0, undefined), db);
   const potential = new Potential(db, addr, []);
   //const miner = new Miner(db, bc, state, potential);
-  const worker = new Worker(); // opts?
+  const worker = new Worker(); // TODO: opts?
   userTransfer = new UserTransfer(db, bc, state, potential);
 
   if(op) { // TODO: file or option
@@ -85,7 +85,7 @@ function initHttpServer() {
     // console.log("Block added: " + JSON.stringify(newBlock));
     // res.send();
   });
-  // app.post("/processBlock", function(req, res) {
+  // app.post("/processBlock", function(req, res) { 
     
   // });
   // app.post("/confirmSend", function(req, res) {
@@ -166,7 +166,7 @@ nw.connectToPeers(initialPeers);
 // init Wallet before init Http server
 wl.initWallet();
 initHttpServer();
-nw.initSet(userTransfer);
-if(op) nw.initOpSet(operator);
+nw.initSet(ws, addr, userTransfer);
+if(op) nw.initOpSet(operator, addr);
 nw.initP2PServer();
 

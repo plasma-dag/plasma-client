@@ -32,7 +32,7 @@ class Operator {
      * @param {*} block 
      * @param {*} prvKey 
      */
-    BlockProcess(block, prvKey) {
+    processBlock(block, prvKey) {
         let result = this.blockValidator.validateBlock(block); // TODO: have to cover validating deposit block(deposit block has no tx)
         if (result.error) return result;
         // block process
@@ -46,12 +46,6 @@ class Operator {
             this.state.getNonce()
         );                    
 
-        // transfer chceckpoint to block provider
-        transfer( // TODO: network
-            block.header.state.address, {
-                checkpoint: opSigCheckpoint
-            }
-        );
         return { error: false };
     }
 }
@@ -108,10 +102,6 @@ class UserTransfer {
         
         // transfer block, signature to operator
         const sig = signBlock(newBlock, prvKey);
-        // transfer( opAddr, { // TODO: network
-        //     block: newBlock, 
-        //     sig: sig
-        // });
 
         this.db.writeBlock(newBlock);
         return { error: false };
