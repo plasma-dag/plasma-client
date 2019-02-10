@@ -1,31 +1,82 @@
 "use strict";
 
-//const SHA256 = require("crypto-js/sha256");
-const bigInt = require("big-integer");
+const SHA256 = require("crypto-js/sha256");
+const Block = require("../core/block");
+const Transaction = require("../core/transaction");
+const merkle = require("../crypto/index").merkle;
+
+let txlist = [];
+let curBlock;
+let leaves = [];
+let pendingBlock;
+let pendingTxlist = [];
+
+const refresh = () => {
+	//deep copy
+	pendingBlock = JSON.parse(JSON.stringify(curBlock));
+	pendingTxlist = Array.prototype.slice.call(txlist);
+	txlist = [];
+	curBlock = null;
+};
+
+//makeTransaction 할때마다 block에 추가
+const makeTx = (receiver, value) => {
+	let tx = new Transaction(receiver, value);
+	txlist.push(tx);
+	return txlist;
+};
 
 /**
- * ethash.go, miner.go sealer.go api.go참고
- algorithm.go
+ *
+ * @param {*} previousHash
+ * @param {StateObject} state
+ * @param {*} transactions
+ * @param {*} totalAmount
+ * @param {*} prvKey
  */
 
+const mineBlock = (previousHash, state, transactions, totalAmount, prvKey) => {
+	// for merkle proof
+
+	transactions.forEach((tx) => leaves.push(tx.hash()));
+	const merkleHash = merkle(leaves);
+
+	const timestamp = Math.round(new Date().getTime() / 1000);
+
+	const difficulty = calcDifficulty(timestamp, previousHash, totalAmount);
+
+	const nonce = mine(difficulty);
+
+	const newBlock = new Block(previousHash, [], state, merkleHash, difficulty, timestamp, nonce);
+
+	Block.signBlock(newBlock, prvKey);
+	this.db.writeBlock(newBlock);
+
+	//deepcopy
+	curBlock = JSON.parse(JSON.stringify(newBlock));
+	return newBlock;
+};
+
 /**
+ *
+ * ethash.go, miner.go sealer.go api.go참고
+  algorithm.go
+ *
  * Hashimoto() 우선 제외함
  *
  * @param {*} block
  * @param {*} previousBlock
  */
 
-const mine = (block, previousBlock) => {
-  const difficulty = calcDifficulty(block, previousBlock);
+const mine = (difficulty) => {
+	const target = 2 ** 256 / difficulty;
+	let nonce = Math.floor(Math.random() * (2 ** 64 + 1));
 
-  const target = new bigInt(2 ** 256 / difficulty);
-  let nonce = Math.floor(Math.random() * (2 ** 64 + 1));
-
-  //while(hashimoto()>target)
-  while (nonce > target) {
-    nonce = (nonce + 1) % 2 ** 64;
-  }
-  return nonce;
+	//while(hashimoto()>target)
+	while (nonce > target) {
+		nonce = (nonce + 1) % 2 ** 64;
+	}
+	return SHA256(nonce);
 };
 
 /**
@@ -74,15 +125,17 @@ const calcDifficulty = (block, previousBlock) => {
     } 
       */
 
-  if (expDiff > minimumDiff) {
-    diff = minimumDiff;
-  } else diff = expDiff;
+	if (expDiff > minimumDiff) {
+		diff = minimumDiff;
+	} else diff = expDiff;
 
-  return diff;
+	return diff;
 };
 
 const hashrate = () => {};
 
 module.exports = {
-  mine
+	mineBlock,
+	makeTx,
+	refresh
 };

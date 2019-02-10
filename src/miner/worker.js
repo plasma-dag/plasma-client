@@ -1,6 +1,8 @@
 "use strict";
 const StateDB = require("../core/stateDB");
+const StateObject = require("../core/stateObject");
 const Blockchain = require("../core/blockchain");
+const miner = require("./miner");
 const em = require("../../tests/event_test").emitter;
 
 /*TO DO : where is makeBlock()..? 
@@ -17,42 +19,42 @@ const em = require("../../tests/event_test").emitter;
  */
 
 class Task {
-  constructor() {
-    this.State;
-    this.Block;
-    this.TxsCache = [];
-    this.Fee = 0;
-    this.TotalAmount = 0;
+	constructor() {
+		this.State;
+		this.Block;
+		this.TxsCache = [];
+		this.Fee = 0;
+		this.TotalAmount = 0;
 
-    //this.CreateAt = time();
-  }
-  get Block() {
-    return this.Block;
-  }
+		//this.CreateAt = time();
+	}
+	get Block() {
+		return this.Block;
+	}
 }
 
 //Environment is the worker's current environment information
 class Environment {
-  /**
-   *
-   * @param {StateDB} state
-   * @param {*} lastCheckpoint
-   * @param {*} previousHash
-   * @param {*} transactions
-   * @param {*} defaultFee
-   * @param {*} valueLimit
-   * @param {*} txCount
-   */
+	/**
+	 *
+	 * @param {StateDB} state
+	 * @param {*} lastCheckpoint
+	 * @param {*} previousBlock
+	 * @param {*} transactions
+	 * @param {*} defaultFee
+	 * @param {*} valueLimit
+	 * @param {*} txCount
+	 */
 
-  constructor(state, lastCheckpoint, previousHash, transactions) {
-    this.currentState = state;
-    this.lastCheckpoint = lastCheckpoint;
-    this.previousHash = previousHash;
-    this.transactions = transactions;
-    this.defaultFee = defaultFee();
-    this.valueLimit = valueLimit();
-    this.txCount = 0;
-  }
+	constructor(state, lastCheckpoint, previousBlock, transactions) {
+		this.currentState = state;
+		this.lastCheckpoint = lastCheckpoint;
+		this.previousBlock = previousBlock;
+		this.transactions = transactions;
+		this.defaultFee = defaultFee();
+		this.valueLimit = valueLimit();
+		this.txCount = 0;
+	}
 }
 
 /**
@@ -61,28 +63,28 @@ class Environment {
  */
 
 class Worker {
-  constructor(opts) {
-    this.db = opts.db;
-    this.address = opts.address;
-    this.isRunning = false;
-    this.blockchain = new Blockchain(this.db, this.address);
-    this.env = this.makeCurrent();
+	constructor(opts) {
+		this.db = opts.db;
+		this.address = opts.address;
+		this.isRunning = false;
+		this.blockchain = new Blockchain(this.db, this.address);
+		this.env = this.makeCurrent();
 
-    //this.pending
-  }
+		//this.pending
+	}
 
-  //set current environment
-  async makeCurrent() {
-    const stateDB = new StateDB(this.db);
-    const curEnv = new Environment(
-      stateDB.getStateObject(),
-      this.blockchain.getLastCheckpoint(),
-      this.blockchain.getCurrentBlock().hash(),
-      await this.db.readTxs()
-    );
+	//set current environment
+	async makeCurrent() {
+		const stateDB = new StateDB(this.db);
+		const curEnv = new Environment(
+			stateDB.getStateObject(),
+			this.blockchain.getLastCheckpoint(),
+			this.blockchain.getCurrentBlock(),
+			await this.db.readTxs()
+		);
 
-    return curEnv;
-  }
+		return curEnv;
+	}
 }
 
 /**
@@ -109,30 +111,38 @@ const mainWork = opts => {
  * @param {Worker} w
  */
 
-const commitNewWork = async w => {
-  const newTask = new Task();
+const commitNewWork = async (w) => {
+	const newTask = new Task();
 
-  if (isLocalTxs(w)) {
-    //const count = w.env.transactions.length - 1;
+	if (isLocalTxs(w)) {
+		//const count = w.env.transactions.length - 1;
 
-    commitNewTransactions(w, w.env.transactions, newTask);
+		commitNewTransactions(w, w.env.transactions, newTask);
 
-    //fee and all value amount exceed balance
-    if (w.env.currentState.getBalance() <= newTask.TotalAmount + newTask.Fee) {
-      console.error(
-        `fee and all total value exceed the ${w.address}'s balance`
-      );
-    }
+		//fee and all value amount exceed balance
+		if (w.env.currentState.getBalance() <= newTask.TotalAmount + newTask.Fee) {
+			console.error(`fee and all total value exceed the ${w.address}'s balance`);
+		}
 
-    //Add previousHash
-    newTask.Block.header.data.previousHash = w.env.previousHash;
+		//Add previousHash
+		newTask.Block.header.data.previousHash = w.env.previousBlock.hash();
 
-    //create and mine block
-    newTask.Block = makeBlock(newTask.TxsCache);
+		//Check: w.address.account???
+		newTask.State = new StateObject(w.address, w.address.account, w.db);
 
-    /* newTask.newState = newTask.Block.header.accountState;
-     */
-  }
+		//create and mine block
+		newTask.Block = miner.mineBlock(
+			newTask.Block,
+			w.env.previousBlock,
+			newTask.State,
+			newTask.TxsCache,
+			newTask.TotalAmount,
+			prv
+		);
+
+		/* newTask.newState = newTask.Block.header.accountState;
+		 */
+	}
 };
 
 /**
