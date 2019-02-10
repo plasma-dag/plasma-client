@@ -1,13 +1,82 @@
 "use strict";
 
-const { Account } = require("./account.js");
-const { StateObject } = require("./stateObject.js");
+const { Account } = require("./account");
+
+class StateObject {
+  /**
+   * @constructor
+   * @param {*} address
+   * @param {*} account
+   * @param {*} db
+   */
+  constructor(address, account, db) {
+    this.address = address;
+    this.account = account;
+    this.db = db;
+  }
+
+  isEmpty() {
+    return this.account ? this.account.isEmpty() : undefined;
+  }
+
+  setState(address, nonce, balance) {
+    if(this.account === undefined) { 
+        return undefined;
+    }
+    this.address = address;
+    this.account.nonce = nonce;
+    this.account.balance = balance;
+  }
+
+  getState() {
+      if(this.account === undefined) { 
+          return undefined;
+      }
+      return {
+          nonce: this.account.nonce,
+          balance: this.account.balance
+      };
+  }
+
+  getAddress() {
+    return this.address;
+  }
+
+  getNonce() {
+    return this.account ? this.account.getNonce() : undefined;
+  }
+
+  setNonce(nonce) {
+    return this.account ? this.account.setNonce(nonce) : undefined;
+  }
+
+  increaseNonce() {
+    return this.account ? this.account.increaseNonce() : undefined;
+  }
+
+  getBalance() {
+    return this.account ? this.account.getBalance() : undefined;
+  }
+
+  addBalance(amount) {
+    return this.account ? this.account.addBalance(amount) : undefined;
+  }
+
+  subBalance(amount) {
+    return this.account ? this.account.subBalance(amount) : undefined;
+  }
+
+  setBalance(amount) {
+    return this.account ? this.account.setBalance(amount) : undefined;
+  }
+}
 
 class StateDB {
   /**
    * @constructor
    *
    * @param {*} db
+   * @param {*} stateObjects
    */
 
   constructor(db) {
@@ -33,12 +102,6 @@ class StateDB {
     return await this.db.writeState(newState);
   }
 
-  makeNewState(addr) {
-    const newAccount = new Account(0, 0, "");
-    state = new StateObject(addr, newAccount);
-    this.setState(addr, newAccount);
-    return state;
-  }
   /* 
 	updateStateObject(stateObject) {
 		let addr = stateObject.address;
@@ -100,5 +163,6 @@ class StateDB {
 }
 
 module.exports = {
+  StateObject,
   StateDB
 };

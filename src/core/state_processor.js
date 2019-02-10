@@ -1,6 +1,5 @@
 "use strict";
 
-const { BlockValidator } = require("./block_validator");
 const { Checkpoint, signCheckpoint } = require("./checkpoint");
 const {
   sendStateTransition,
@@ -69,20 +68,17 @@ const operatorStateProcess = (
    * TODO: State object의 카피본으로 모든 과정 진행하고 마지막에 rollback 할지
    * 변동사항 쓸지 결정해서 이를 setState 방식으로 저장하도록 바꾸기
    */
-  // 3
-  // const blockValidator = new BlockValidator(db, bc, potentialDB);
-  // const result = blockValidator.validateBlock(block);
-  // if (result.error) return result;
-  // 4
   bc.insertBlock(block);
   // 5
   //const blockOwnerAddress = bc.address;
   const blockOwner = block.header.state.address;
   const blockHash = block.hash();
-  let blockOwnerState = stateDB.getStateObject(blockOwner);
+  //let blockOwnerState = stateDB.getStateObject(blockOwner);
+  
   // backup
+  const blockOwnerState = stateDB.stateObjects[blockOwner];
   const stateCopy = deepCopy(blockOwnerState);
-  const potential = potentialDB.potentials[blockOwner];
+  const potential = potentialDB.potentials[blockOwner]; 
   const potentialCopy = deepCopy(potential);
 
   if (block.header.potentialHashList.length !== 0) {
@@ -109,33 +105,38 @@ const operatorStateProcess = (
       // TODO: send error toleration logic here
     }
   });
+  
+  // 현재 operator는 유저가 제출한 블록의 potential을 먼저 받고 블록에 tx들의 state transition을 처리하는데,
+  // block의 header에 포함된 accountState에는 블록에 담긴 tx들만 처리한 state의 결과가 저장되어 있기 때문에 두 state는 다름.
+  // send를 먼저 처리한후 두 state를 비교하는 로직을 추가하고 포텐셜을 받을지?
+
   // 7
   let checkpoint = new Checkpoint(blockOwner, blockHash, opNonce);
   const opSigCheckpoint = signCheckpoint(checkpoint, prvKey);
   bc.updateCheckpoint(opSigCheckpoint);
 
   stateDB.setState(stateCopy.address, stateCopy.account);
-  potentialDB.update(potentialCopy); // TODO
+  potentialDB.makeNewPotential(potentialCopy.address); // TODO: 지금은 potential처리하고 나면 래퍼런스된 모든 블록을 처리한다고 생각하고 새로 만드는 로직, 하지만 potential 처리시 없는 block hash가 생길 수도 있음.. setPotential() 필요?
   return opSigCheckpoint;
 };
 
 /**
- *
- * @param {*} db
- * @param {*} userState
- * @param {*} potential
- * @param {*} bc
- * @param {*} checkpoint
- * @param {*} targetBlock
+ * 
+ * @param {*} db 
+ * @param {*} stateDB 
+ * @param {*} potentialDB 
+ * @param {*} bc 
+ * @param {*} checkpoint 
+ * @param {*} targetBlock 
  */
-function userStateProcess(
+const userStateProcess = (
   db,
-  userState,
-  potential,
+  stateDB,
+  potentialDB,
   bc,
   checkpoint,
   targetBlock
-) {
+) => {
   /**
    * 1. Check operator's signature is real usable one and address is user's (confirmSend 함수에서 처리하도록 수정)
    * 2. Find block by checkpoint's block hash (confirmSend 함수에서 처리하도록 수정)
@@ -145,36 +146,15 @@ function userStateProcess(
    * 5. If block is valid, process receiving potential through potential hash list.
    * 6. If block is valid, process txs and change user's states
    */
-  // 1
-
-  // if (!checkpoint.validate(opAddr)) return { error: true };
-  // if (checkpoint.address !== userState.address) return { error: true };
-  // if (bc.checkpoint.operatorNonce >= checkpoint.operatorNonce)
-  //   return { error: true };
-
-  // transfer.js에 validateCheckpoint() 함수에 포함
-  // if (!checkpoint.validate(opAddr)) return { error: true };
-  // if (checkpoint.address !== userState.address) return { error: true };
-  // if (
-  //   bc.checkpoint[bc.checkpoint.length - 1].operatorNonce >=
-  //   checkpoint.operatorNonce
-  // )
-  //   return { error: true };
-
-  // 2
-  // const blockHash = checkpoint.blockHash;
-  // const targetBlock = await db.readBlock(blockHash);
-  // if (targetBlock) return { error: true };
-  // 3
-  // const blockValidator = new BlockValidator(db, bc, potentialDB);
-  // const result = blockValidator.validateBlock(targetBlock);
-  // if (result.error) return result;
-  // 4
+  
   bc.insertBlock(targetBlock);
   bc.updateCheckpoint(checkpoint);
   // 5
-  const stateCopy = deepCopy(userState);
-  const potentialCopy = deepCopy(potential);
+  //const stateCopy = deepCopy(stateDB.stateObjects[checkpoint.address]);
+
+  // user는 block을 만들고나서 자신의 변경된 state를 block에 담았으므로 포텐셜을 받기만 하면됨
+  const stateCopy = targetBlock.header.accountState; 
+  const potentialCopy = deepCopy(potentialDB.potentials[checkpoint.address]);
   if (targetBlock.header.potentialHashList.length !== 0) {
     const res = receivePotential(
       db,
@@ -197,8 +177,8 @@ function userStateProcess(
     }
   });
 
-  setState(userState, stateCopy.address, stateCopy.account);
-  potential.update(potentialCopy); // TODO
+  stateDB.setState(stateCopy.address, stateCopy.account);
+  potentialDB.makeNewPotential(potentialCopy.address);
   return { error: false };
 }
 
