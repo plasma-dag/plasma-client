@@ -3,7 +3,6 @@ const WebSocket = require("ws");
 
 const bc = require("../core/blockchain");
 
-
 // set environment variable
 const p2p_port = process.env.P2P_PORT || 6001; // > $env:P2P_PORT=6003 (windows) || export P2P_PORT=3003 (mac)
 
@@ -34,7 +33,6 @@ function getSubmittedBlocks(ws) {
 
 function getCheckpoints(ws) {
   return userTransfers[ws].checkpoints;
-  
 }
 
 function getCofirmedCheckpoints(ws) {
@@ -81,7 +79,7 @@ function initMessageHandler(ws) {
         handleBlockchainResponse(message);
         break;
       case MessageType.PROCESS_BLOCK:
-        if(ws === sockets[0]) {
+        if (ws === sockets[0]) {
           processBlock(message, prvKey, operator); // TODO: should receive private key
           operator.submittedBlocks.push(message.data);
         }
@@ -94,7 +92,6 @@ function initMessageHandler(ws) {
         confirmReceive(message, userTransfers[ws]);
         userTransfer[ws].confirmedCheckpoints.push(message.data);
         break;
-      
     }
   });
 }
@@ -182,13 +179,11 @@ function broadcast(message) {
   sockets.forEach(socket => write(socket, message));
 }
 
-
-
 function processBlock(message, prvKey, operator) {
   const block = message.data.block;
   const checkpoint = operator.processBlock(block, prvKey);
-  if(checkpoint.error) return { error: true };
-  
+  if (checkpoint.error) return { error: true };
+
   const ws = getWebsocket(block.header.state.address);
   const message = {
     type: CONFIRM_SEND,
@@ -205,19 +200,19 @@ function confirmSend(message, userTransfer) {
   const checkpoint = message.data.checkpoint;
   const opAddr = getOpAddr();
   const block = userTransfer.confirmSend(checkpoint, opAddr);
-  if(block.error) return { error: true };
-  
-  const deps = block.transactions.length;        
-  block.transactions.forEach( (tx, index) => {
+  if (block.error) return { error: true };
+
+  const deps = block.transactions.length;
+  block.transactions.forEach((tx, index) => {
     let ws = getWebsocket(tx.receiver);
     let message = {
       type: CONFIRM_RECEIVE,
       data: {
-        checkpoint: checkpoint, 
-        header: block.header, 
-        deps: deps, 
-        proof: merkleProof(userTransfer.leaves, index), 
-        root: block.header.merkleHash, 
+        checkpoint: checkpoint,
+        header: block.header,
+        deps: deps,
+        proof: merkleProof(userTransfer.leaves, index),
+        root: block.header.merkleHash,
         tx: tx
       }
     };
@@ -230,16 +225,24 @@ function confirmSend(message, userTransfer) {
 function confirmReceive(message, userTransfer) {
   const data = message.data;
   const opAddr = getOpAddr();
-  const result = userTransfer.confirmReceive(data.checkpoint, data.header, data.deps, data.proof, data.root, data.tx, opAddr);     
-  if(result.error) return { error: true };
+  const result = userTransfer.confirmReceive(
+    data.checkpoint,
+    data.header,
+    data.deps,
+    data.proof,
+    data.root,
+    data.tx,
+    opAddr
+  );
+  if (result.error) return { error: true };
   return { error: false };
 }
 
-function getWebsocket(addr) { 
+function getWebsocket(addr) {
   return websockets[addr];
 }
 
-function getOpAddr() { 
+function getOpAddr() {
   return opAddr;
 }
 

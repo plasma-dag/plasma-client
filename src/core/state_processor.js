@@ -8,8 +8,6 @@ const {
 } = require("./state_transition");
 const { deepCopy } = require("../common/utils");
 
-
-
 /**
  *
  * @param {Database}    db
@@ -93,7 +91,7 @@ const operatorStateProcess = (
       stateCopy,
       //potentialDB,
       potentialCopy,
-      block.header.potentialHashList 
+      block.header.potentialHashList
     );
     if (res.error) {
       // rollback -> 아마 setState 메소드 좀 바꾸면 더 쉽게 만들 수 있을듯.
@@ -122,13 +120,13 @@ const operatorStateProcess = (
 };
 
 /**
- * 
- * @param {*} db 
- * @param {*} userState 
- * @param {*} potential 
- * @param {*} bc 
- * @param {*} checkpoint 
- * @param {*} targetBlock 
+ *
+ * @param {*} db
+ * @param {*} userState
+ * @param {*} potential
+ * @param {*} bc
+ * @param {*} checkpoint
+ * @param {*} targetBlock
  */
 function userStateProcess(
   db,
@@ -175,7 +173,7 @@ function userStateProcess(
   bc.insertBlock(targetBlock);
   bc.updateCheckpoint(checkpoint);
   // 5
-  const stateCopy = deepCopy(userState); 
+  const stateCopy = deepCopy(userState);
   const potentialCopy = deepCopy(potential);
   if (targetBlock.header.potentialHashList.length !== 0) {
     const res = receivePotential(
@@ -185,9 +183,9 @@ function userStateProcess(
       targetBlock.header.potentialHashList
     );
     if (res.error) {
-    //   // rollback -> 아마 setState 메소드 좀 바꾸면 더 쉽게 만들 수 있을듯.
-    //   userState.setNonce(prevStateCopy.getNonce());
-    //   userState.setBalance(prevStateCopy.getBalance());
+      //   // rollback -> 아마 setState 메소드 좀 바꾸면 더 쉽게 만들 수 있을듯.
+      //   userState.setNonce(prevStateCopy.getNonce());
+      //   userState.setBalance(prevStateCopy.getBalance());
       return res;
     }
   }

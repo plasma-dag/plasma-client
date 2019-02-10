@@ -1,6 +1,4 @@
 "use strict";
-const db = require("../db/database");
-
 /**
  * potential Data at DB
  * {
@@ -71,7 +69,13 @@ class PotentialDB {
     if (this.potentials[receiver]) {
       return this.potentials[receiver].isExist(blockHash);
     }
-    return Error("No potentials for this receiver");
+    return false;
+  }
+  makeNewPotential(addr) {
+    const newPotential = new Potential(this.db, addr, []);
+    this.potentials[addr] = newPotential;
+    newPotential.save();
+    return newPotential;
   }
   /**
    *
