@@ -1,13 +1,36 @@
 "use strict";
-
-//const SHA256 = require("crypto-js/sha256");
 const bigInt = require("big-integer");
 
-/**
- * ethash.go, miner.go sealer.go api.go참고
- algorithm.go
- */
+class Miner {
+  constructor(bc, stateObj, potential) {
+    if (bc.address !== state.address) return Error("Address should be equal");
+    this.bc = bc;
+    this.state = stateObj;
+    this.potential = potential;
+    this.newTxs = [];
+    this.isRunning = false;
+  }
 
+  get newTxList() {
+    return this.newTxs;
+  }
+
+  addNewTx(tx) {
+    this.newTxs.push(tx);
+  }
+
+  start() {
+    this.isRunning = true;
+  }
+
+  stop() {
+    this.isRunning = false;
+  }
+
+  mineBlock() {
+    while (this.isRunning) {}
+  }
+}
 /**
  * Hashimoto() 우선 제외함
  *
@@ -84,5 +107,6 @@ const calcDifficulty = (block, previousBlock) => {
 const hashrate = () => {};
 
 module.exports = {
+  Miner,
   mine
 };

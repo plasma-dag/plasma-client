@@ -1,5 +1,6 @@
 "use strict";
 
+const { Account } = require("./account.js");
 const { StateObject } = require("./stateObject.js");
 
 class StateDB {
@@ -7,8 +8,6 @@ class StateDB {
    * @constructor
    *
    * @param {*} db
-   * @param {*} trie
-   * @param {*} stateObjects
    */
 
   constructor(db) {
@@ -34,6 +33,12 @@ class StateDB {
     return await this.db.writeState(newState);
   }
 
+  makeNewState(addr) {
+    const newAccount = new Account(0, 0, "");
+    state = new StateObject(addr, newAccount);
+    this.setState(addr, newAccount);
+    return state;
+  }
   /* 
 	updateStateObject(stateObject) {
 		let addr = stateObject.address;

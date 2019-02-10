@@ -23,7 +23,7 @@ class Blockchain {
      * this.genesisBlock
      * this.currentBlock
      */
-    return this.init();
+    this.init();
   }
 
   /**
@@ -39,7 +39,6 @@ class Blockchain {
     this.blocks = result[1];
     this.genesisBlock = this.blocks[this.blocks.length - 1];
     this.currentBlock = this.blocks[0];
-    return this;
   }
 
   /**
@@ -108,16 +107,23 @@ class Blockchain {
    * @param {Number} number
    */
   getBlockByNumber(number) {
-    return this.blocks[this.blocks.length - number]
-      ? this.blocks[number]
+    return this.blocks[this.blocks.length - number - 1]
+      ? this.blocks[this.blocks.length - number - 1]
       : null;
   }
 
   /**
    * Returns current block of this blockchain
    */
-  getCurrentBlock() {
+  get currentBlock() {
     return this.currentBlock;
+  }
+
+  /**
+   * Returns block list of the blockchain
+   */
+  get blockchain() {
+    return this.blocks;
   }
 
   //Gets all blocks by address and returns Promise object

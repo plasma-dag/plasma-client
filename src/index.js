@@ -3,16 +3,16 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 
-
 const nw = require("./network");
 const wl = require("./client/wallet");
 
-const DataBase = require("./db/index");
+const DataBase = require("./db");
 const Blockchain = require("./core/blockchain");
 const StateDB = require("./core/stateDB");
 const StateObject = require("./core/stateObject");
 const Account = require("./core/account");
 const Worker = require("./miner/worker");
+const Miner = require("./miner/miner");
 const { PotentialDB, Potential } = require("./core/potential");
 const { Operator, UserTransfer } = require("./core/transfer");
 
@@ -23,29 +23,36 @@ const initialPeers = process.env.PEERS ? process.env.PEERS.split(",") : []; // >
 var userTransfer;
 var operator;
 // REST API
-function initHttpServer() {
-  
+function initPlasmaClient(opAddr) {
+  // Make Database Instance connected to local Mongo database
   const db = new DataBase();
   const addr = wl.getPublicFromWallet().toString();
-  const bc = new Blockchain(db, addr); 
-  const state = new StateObject(addr, new Account(0, 0, undefined), db);
-  const potential = new Potential(db, addr, []);
-  //const miner = new Miner(db, bc, state, potential);
-  const worker = new Worker(); // TODO: opts?
-  userTransfer = new UserTransfer(db, bc, state, potential);
-
-  if(op) { // TODO: file or option
-    const stateDB = new StateDB(db);
-    const potentialDB = new PotentialDB(db);
-    operator = new Operator(db, stateDB, potentialDB, state);
+  // Make blockchian object and initiate it.
+  const bc = new Blockchain(db, addr);
+  // Make stateDB object
+  const stateDB = new StateDB(db);
+  // TODO: If state object doesn't exist in user's database, should user ask it to op?
+  if (!stateDB.isExist(addr)) {
+    stateDB.makeNewState(addr);
   }
-
+  // Make potentialDB object
+  const potentialDB = new PotentialDB(db);
+  // If potential for user addr doesn't exist make blank potential object
+  if (!potentialDB.potentials[addr]) {
+    potentialDB.makeNewPotential(addr);
+  }
+  // Set miner object for user address
+  const miner = new Miner(
+    bc,
+    stateDB.getStateObject(addr),
+    potentialDB.potentials[addr]
+  );
 
   const app = express();
   app.use(bodyParser.json());
 
-  app.get("/blocks", function(req, res) {
-    res.send(bc.getBlockchain());
+  app.get("/blockchain", function(req, res) {
+    res.send(bc.blockchain());
   });
   app.get("/checkpoints", function(req, res) {
     userTransfer.checkpoints = nw.getCheckpoints();
@@ -85,25 +92,25 @@ function initHttpServer() {
     // console.log("Block added: " + JSON.stringify(newBlock));
     // res.send();
   });
-  // app.post("/processBlock", function(req, res) { 
-    
+  // app.post("/processBlock", function(req, res) {
+
   // });
   // app.post("/confirmSend", function(req, res) {
   //   const checkpoint = req.checkpoint;
   //   const block = userTransfer.confirmSend(checkpoint, opAddr);
   //   if(block.error) console.log("send confirmation error");
   //   else {
-  //     const deps = block.transactions.length;        
+  //     const deps = block.transactions.length;
   //     block.transactions.forEach( (tx, index) => {
   //       let ws = nw.getWs(tx.receiver);
   //       let message = {
   //         type: CONFIRM_RECEIVE,
   //         data: {
-  //           checkpoint: checkpoint, 
-  //           header: block.header, 
-  //           deps: deps, 
-  //           proof: merkleProof(this.leaves, index), 
-  //           root: block.header.merkleHash, 
+  //           checkpoint: checkpoint,
+  //           header: block.header,
+  //           deps: deps,
+  //           proof: merkleProof(this.leaves, index),
+  //           root: block.header.merkleHash,
   //           tx: tx
   //         }
   //       };
@@ -165,8 +172,11 @@ function initHttpServer() {
 nw.connectToPeers(initialPeers);
 // init Wallet before init Http server
 wl.initWallet();
-initHttpServer();
+initPlasmaClient("0xdfdfdfdfdfdddffdf");
 nw.initSet(ws, addr, userTransfer);
-if(op) nw.initOpSet(operator, addr);
-nw.initP2PServer();
+if (process.env.OPERATOR) {
+  nw.initOpSet();
+} else {
+}
 
+nw.initP2PServer();
