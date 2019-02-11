@@ -78,7 +78,7 @@ class Proof {
       this.proof.blockHeader.hash(),
       this.proof.tx.receiver
     );
-    proofList.push(proof);
+    proofList.push(this.proof);
     return { error: false };
   }
 }
