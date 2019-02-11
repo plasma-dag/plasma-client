@@ -6,10 +6,10 @@ const bodyParser = require("body-parser");
 const nw = require("./network");
 const wl = require("./client/wallet");
 
-const DataBase = require("./db");
-const Blockchain = require("./core/blockchain");
-const StateDB = require("./core/stateDB");
-const Miner = require("./miner/miner");
+const { Database } = require("./db");
+const { Blockchain } = require("./core/blockchain");
+const { StateDB } = require("./core/stateDB");
+const { Miner } = require("./miner/miner");
 const { PotentialDB } = require("./core/potential");
 
 // set environment variable
@@ -19,7 +19,7 @@ const initialPeers = process.env.PEERS ? process.env.PEERS.split(",") : []; // >
 // REST API
 function initPlasmaClient(opAddr) {
   // Make Database Instance connected to local Mongo database
-  const db = new DataBase();
+  const db = new Database();
   const addr = wl.getPublicFromWallet().toString();
   // Make blockchian object and initiate it.
   const bc = new Blockchain(db, addr);

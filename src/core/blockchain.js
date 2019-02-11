@@ -15,15 +15,6 @@ class Blockchain {
   constructor(db, address) {
     this.db = db;
     this.address = address;
-
-    /**
-     * init() returns a promise of 'this', assigns values to
-     * this.checkpoint - list of checkpoint : [last checkpoint]
-     * this.blocks - list of blocks : [block n, block n-1, .... block 2, block 1]
-     * this.genesisBlock
-     * this.currentBlock
-     */
-    this.init();
   }
 
   /**
@@ -110,13 +101,6 @@ class Blockchain {
     return this.blocks[this.blocks.length - number - 1]
       ? this.blocks[this.blocks.length - number - 1]
       : null;
-  }
-
-  /**
-   * Returns current block of this blockchain
-   */
-  get currentBlock() {
-    return this.currentBlock;
   }
 
   /**
