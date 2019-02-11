@@ -41,13 +41,15 @@ class Potential {
     }
     return Error("No matching blockHash in potential");
   }
+  getHashList() {
+    return Array.prototype.slice.call(this.blockHashList);
+  }
 }
 
 class PotentialDB {
   constructor(db) {
     this.db = db;
     this.potentials = {};
-    this.populate();
   }
 
   async populate() {
