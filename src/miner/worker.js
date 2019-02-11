@@ -5,18 +5,18 @@
  */
 
 class Task {
-	constructor(state, block, txsCache = [], fee = 0, totalAmount = 0) {
-		this.state = state;
-		this.block = block;
-		this.txsCache = txsCache;
-		this.fee = fee;
-		this.totalAmount = totalAmount;
+  constructor(state, block, txsCache = [], fee = 0, totalAmount = 0) {
+    this.state = state;
+    this.block = block;
+    this.txsCache = txsCache;
+    this.fee = fee;
+    this.totalAmount = totalAmount;
 
-		//this.createAt = time();
-	}
-	get block() {
-		return this.block;
-	}
+    //this.createAt = time();
+  }
+  get block() {
+    return this.block;
+  }
 }
 
 /**
@@ -25,16 +25,22 @@ class Task {
  */
 
 class Environment {
-	constructor(stateDB, potentialDB, lastCheckpoint, previousHash, transactions) {
-		this.stateDB = stateDB; // apply state changes here
-		this.potentialDB = potentialDB;
-		this.lastCheckpoint = lastCheckpoint;
-		this.previousHash = previousHash;
-		this.transactions = transactions;
-		this.defaultFee = defaultFee();
-		this.valueLimit = valueLimit();
-		this.txCount = 0;
-	}
+  constructor(
+    stateDB,
+    potentialDB,
+    lastCheckpoint,
+    previousHash,
+    transactions
+  ) {
+    this.stateDB = stateDB; // apply state changes here
+    this.potentialDB = potentialDB;
+    this.lastCheckpoint = lastCheckpoint;
+    this.previousHash = previousHash;
+    this.transactions = transactions;
+    this.defaultFee = defaultFee();
+    this.valueLimit = valueLimit();
+    this.txCount = 0;
+  }
 }
 
 /**
@@ -44,14 +50,14 @@ class Environment {
  */
 
 class Worker {
-	constructor(bc) {
-		this.bc = bc;
-		this.newTxs = [];
-	}
+  constructor(bc) {
+    this.bc = bc;
+    this.newTxs = [];
+  }
 }
 
 module.exports = {
-	Task,
-	Environment,
-	Worker
+  Task,
+  Environment,
+  Worker
 };
