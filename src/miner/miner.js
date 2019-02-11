@@ -79,6 +79,13 @@ class Miner {
 			return newBlock;
 		}
 	}
+	getCurrentBlock() {
+		return this.pendingBlock;
+	}
+
+	getTxs() {
+		return this.pendingTxlist;
+	}
 
 	/**
  *
