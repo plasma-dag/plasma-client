@@ -1,18 +1,14 @@
 "use strict";
 
-const { Account } = require("./account.js");
-
 class StateObject {
   /**
    * @constructor
    * @param {*} address
    * @param {*} account
-   * @param {*} db
    */
-  constructor(address, account, db) {
+  constructor(address, account) {
     this.address = address;
     this.account = account;
-    this.db = db;
   }
 
   isEmpty() {
@@ -52,21 +48,6 @@ class StateObject {
   }
 }
 
-const setStateObject = async function(state, address, account) {
-  if(!state) state = new StateObject(address, account);
-  else {
-    state.address = address;
-    state.account = account;
-  }
-  return await state.db.writeState(state);
-}
-
-getStateObject = async function(db, addr) {
-  return await db.readState(addr);
-}
-
 module.exports = {
-  StateObject,
-  setStateObject,
-  getStateObject
+  StateObject
 };
