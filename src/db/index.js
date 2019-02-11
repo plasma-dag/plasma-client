@@ -239,6 +239,25 @@ class Database {
       });
     });
   }
+  /**
+   * reads all states from db, and then returns them
+   */
+  readAllStates() {
+    return new Promise((resolve, reject) => {
+      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        const potentials = client.db("plasma").collection("states");
+        return potentials
+          .find()
+          .toArray()
+          .then(result => resolve(result))
+          .catch(err => reject(err));
+      });
+    });
+  }
 
   /**
    * Gets a State Object, Returns Promise objects from DB

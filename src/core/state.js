@@ -85,6 +85,17 @@ class StateDB {
     this.stateObjects = {};
   }
 
+  async populate() {
+    const allStates = await this.db.readAllStates();
+    for (p in allStates) {
+      this.stateObjects[p.address] = new StateObject(
+        p.address,
+        p.account,
+        this.db
+      );
+    }
+  }
+
   isExist(addr) {
     return Boolean(this.getStateObject(addr));
   }
