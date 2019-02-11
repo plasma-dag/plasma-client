@@ -1,53 +1,54 @@
 "use strict";
 
 class StateObject {
-  /**
-   * @constructor
-   * @param {*} address
-   * @param {*} account
-   */
-  constructor(address, account) {
-    this.address = address;
-    this.account = account;
-  }
+	/**
+	 * @constructor
+	 * @param {*} address
+	 * @param {*} account
+	 */
 
-  isEmpty() {
-    return this.account ? this.account.isEmpty() : undefined;
-  }
+	constructor(address, account) {
+		this.address = address;
+		this.account = account;
+	}
 
-  getAddress() {
-    return this.address;
-  }
+	isEmpty() {
+		return this.account ? this.account.isEmpty() : undefined;
+	}
 
-  getNonce() {
-    return this.account ? this.account.getNonce() : undefined;
-  }
+	getAddress() {
+		return this.address;
+	}
 
-  setNonce(nonce) {
-    return this.account ? this.account.setNonce(nonce) : undefined;
-  }
+	getNonce() {
+		return this.account ? this.account.getNonce() : undefined;
+	}
 
-  increaseNonce() {
-    return this.account ? this.account.increaseNonce() : undefined;
-  }
+	setNonce(nonce) {
+		return this.account ? this.account.setNonce(nonce) : undefined;
+	}
 
-  getBalance() {
-    return this.account ? this.account.getBalance() : undefined;
-  }
+	increaseNonce() {
+		return this.account ? this.account.increaseNonce() : undefined;
+	}
 
-  addBalance(amount) {
-    return this.account ? this.account.addBalance(amount) : undefined;
-  }
+	getBalance() {
+		return this.account ? this.account.getBalance() : undefined;
+	}
 
-  subBalance(amount) {
-    return this.account ? this.account.subBalance(amount) : undefined;
-  }
+	addBalance(amount) {
+		return this.account ? this.account.addBalance(amount) : undefined;
+	}
 
-  setBalance(amount) {
-    return this.account ? this.account.setBalance(amount) : undefined;
-  }
+	subBalance(amount) {
+		return this.account ? this.account.subBalance(amount) : undefined;
+	}
+
+	setBalance(amount) {
+		return this.account ? this.account.setBalance(amount) : undefined;
+	}
 }
 
 module.exports = {
-  StateObject
+	StateObject
 };
