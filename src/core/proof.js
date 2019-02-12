@@ -91,7 +91,6 @@ class Proof {
  * @param {*} stateDB
  * @param {*} potentialDB
  * @param {*} bc
- * @param {*} blockValidator
  * @param {*} opAddr
  */
 async function makeProof(
@@ -101,7 +100,6 @@ async function makeProof(
   stateDB,
   potentialDB,
   bc,
-  blockValidator,
   opAddr
 ) {
   const sender = checkpoint.address;
@@ -122,13 +120,14 @@ async function makeProof(
     bc.checkpoint[bc.checkpoint.length - 1].operatorNonce >=
     checkpoint.operatorNonce
   )
-    // // 2. 블록 read(db에서 읽지 않고 miner pending block에서 가져옴)
-    // const block = await db.readBlock(checkpoint.blockHash);
-    // if (!block) return { error: true };
+    return { error: true };
+  // // 2. 블록 read(db에서 읽지 않고 miner pending block에서 가져옴)
+  // const block = await db.readBlock(checkpoint.blockHash);
+  // if (!block) return { error: true };
 
-    // 3. validate block
-    result = blockValidator.validateBlock(block);
-  if (result.error) return { error: true };
+  // 3. validate block(블록을 만드는 단계에서 검증하기)
+  // result = blockValidator.validateBlock(block);
+  // if (result.error) return { error: true };
 
   // state transition
   result = userStateProcess(db, stateDB, potentialDB, bc, checkpoint, block);
