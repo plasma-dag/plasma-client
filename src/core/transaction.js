@@ -32,7 +32,7 @@ class Transaction {
       receiver,
       value
       // data,
-    });
+    }).toString();
     return this.txHash;
   }
 }

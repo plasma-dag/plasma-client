@@ -10,6 +10,8 @@ const { Header, Block } = require("../src/core/block");
 
 const db = new Database();
 
+// insert 4 blocks, 4 checkpoints
+
 // const header1 = new Header("", [], new Account(1, 0, ""), "", 0, 0, 0);
 // const block1 = new Block(header1, []);
 
@@ -38,7 +40,7 @@ const db = new Database();
 // const header4 = new Header(
 // block3.hash(),
 // [],
-// new Account(4, 0, ""),
+// new Account(4, 300, ""),
 // "",
 // 0,
 // 0,
@@ -55,13 +57,12 @@ const db = new Database();
 // db.writeBlock(block2);
 // db.writeBlock(block3);
 // db.writeBlock(block4);
-
 // db.writeCheckpoint(checkpoint1);
 // db.writeCheckpoint(checkpoint2);
 // db.writeCheckpoint(checkpoint4);
 // db.writeCheckpoint(checkpoint3);
 
-const account = new Account(5, 200, "");
+const account = new Account(5, 210, "");
 const state = new StateObject("dog", account, db);
 
 const bc = new Blockchain(db, "dog");
@@ -69,14 +70,17 @@ const potential = new Potential(db, "dog", []);
 
 const miner = new Miner(bc, state, potential);
 
-miner.makeTx("dog", 30);
-miner.makeTx("dog", 40);
+// make txs that will be included in block #5  => include in newTxs
+miner.makeTx("human", 30);
+miner.makeTx("human", 40);
 miner.makeTx("cat", 20);
 
 const prvKey = "pvk";
 
+// mine 5th blocks with newTxs made above
 async function main() {
   miner.start();
   const minedBlock = await miner.mineBlock(prvKey);
+  console.log(minedBlock);
 }
 main();

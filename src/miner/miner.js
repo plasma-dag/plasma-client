@@ -58,7 +58,7 @@ class Miner {
     const accountState = this.state.account;
     this.pendTx();
     const newTxs = this.pendingTxList;
-    const leaves = newTxs.map(tx => tx.hash().toString());
+    const leaves = newTxs.map(tx => tx.hash());
     const merkleHash = merkle(leaves);
     const difficulty = 2; // For test.
     const timestamp = Math.round(new Date().getTime() / 1000);
@@ -79,8 +79,8 @@ class Miner {
     newHeader.data = result;
     const minedBlock = new Block(newHeader, newTxs);
     signBlock(minedBlock, prvKey);
-    console.log(minedBlock);
-    // this.bc.db.writeBlock(minedBlock);
+    this.bc.db.writeBlock(minedBlock);
+
     //deepcopy
     this.curBlock = JSON.parse(JSON.stringify(minedBlock));
     return minedBlock;
