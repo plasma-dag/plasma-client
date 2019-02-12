@@ -249,8 +249,8 @@ class Database {
           console.error(err);
           return;
         }
-        const potentials = client.db("plasma").collection("states");
-        return potentials
+        const states = client.db("plasma").collection("states");
+        return states
           .find()
           .toArray()
           .then(result => resolve(result))

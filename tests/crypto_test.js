@@ -7,20 +7,20 @@ const {
   merkle,
   merkleProof,
   verifyMerkle
-} = require("../crypto");
+} = require("../src/crypto");
 const SHA256 = require("crypto-js/sha256");
-const ut = require("../common/utils");
+const ut = require("../src/common/utils");
 
 const prv =
   "0xc6cbd7d76bc5baca530c875663711b947efa6a86a900a9e8645ce32e5821484e";
 console.log(merkle([SHA256("hello"), SHA256("world")]));
-console.log(merkle([ut.calculateSHA256("hello"), ut.calculateSHA256("world")]));
+console.log(merkle([hashMessage({ hello: "hello" }), hashMessage("world")]));
 console.log(
   verifyMerkle(
     2,
-    merkleProof([SHA256("hello"), SHA256("world")], 1),
-    SHA256("world"),
-    merkle([SHA256("hello"), SHA256("world")])
+    merkleProof([hashMessage("hello"), hashMessage("world")], 1),
+    hashMessage("world"),
+    merkle([hashMessage("hello"), hashMessage("world")])
   )
 );
 const sig = makeSignature("hello", prv);

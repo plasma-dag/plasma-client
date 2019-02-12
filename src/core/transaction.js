@@ -1,5 +1,5 @@
 "use-strict";
-const { calculateSHA256 } = require("../crypto");
+const { hashMessage } = require("../crypto");
 
 /**
  * Transaction
@@ -28,7 +28,7 @@ class Transaction {
     if (this.txHash) return this.txHash;
     // cache hash value
     const { receiver, value } = this.data;
-    this.txHash = calculateSHA256({
+    this.txHash = hashMessage({
       receiver,
       value
       // data,

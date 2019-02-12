@@ -1,5 +1,5 @@
 "use-strict";
-const { hashMessage, ecrecover } = require("../crypto");
+const { hashMessage, ecrecover, makeSignature } = require("../crypto");
 
 /**
  * Represents the block header structure
