@@ -42,16 +42,15 @@ class Proof {
   /**
    *
    * @param {*} proofList
-   * @param {*} bc
    * @param {*} potentialDB
    * @param {*} opAddr
    */
-  validate(proofList, bc, potentialDB, opAddr) {
+  validate(proofList, potentialDB, opAddr) {
     // checkpoint 검증
     let result = validateCheckpoint(
-      bc,
       this.proof.blockHeader.accountState.address,
       this.proof.checkpoint,
+      this.proof.blockHeader.hash(),
       opAddr
     );
     if (result.error) return { error: true };
@@ -87,6 +86,7 @@ class Proof {
 /**
  *
  * @param {*} checkpoint
+ * @param {*} pendingBlock
  * @param {*} db
  * @param {*} stateDB
  * @param {*} potentialDB
@@ -96,6 +96,7 @@ class Proof {
  */
 async function makeProof(
   checkpoint,
+  pendingBlock,
   db,
   stateDB,
   potentialDB,
@@ -104,16 +105,29 @@ async function makeProof(
   opAddr
 ) {
   const sender = checkpoint.address;
-  // 1.checkpoint 검증
-  let result = validateCheckpoint(bc, sender, checkpoint, opAddr);
-  if (result.error) return { error: true };
+  if (!sender) return { error: true };
 
-  // 2. 블록 read
-  const block = await db.readBlock(checkpoint.blockHash);
+  const block = pendingBlock;
   if (!block) return { error: true };
 
-  // 3. validate block
-  result = blockValidator.validateBlock(block);
+  // 1.checkpoint 검증
+  let result = validateCheckpoint(
+    sender,
+    checkpoint,
+    block.header.hash(),
+    opAddr
+  );
+  if (result.error) return { error: true };
+  if (
+    bc.checkpoint[bc.checkpoint.length - 1].operatorNonce >=
+    checkpoint.operatorNonce
+  )
+    // // 2. 블록 read(db에서 읽지 않고 miner pending block에서 가져옴)
+    // const block = await db.readBlock(checkpoint.blockHash);
+    // if (!block) return { error: true };
+
+    // 3. validate block
+    result = blockValidator.validateBlock(block);
   if (result.error) return { error: true };
 
   // state transition
