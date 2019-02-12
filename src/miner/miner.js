@@ -2,11 +2,11 @@
 
 const { Block, Header, signBlock } = require("../core/block");
 const { Transaction } = require("../core/transaction");
-const { merkle, calculateSHA256 } = require("../crypto/index");
+const { merkle, hashMessage } = require("../crypto/index");
 const { Database } = require("../db/index");
 
 class Miner {
-  constructor(bc, stateObj, potential) {
+  constructor(db, bc, stateObj, potential) {
     if (bc.address !== stateObj.address)
       return Error("Address should be equal");
     this.bc = bc;
@@ -14,6 +14,7 @@ class Miner {
     this.potential = potential;
     this.newTxs = [];
     this.isRunning = false;
+    this.db = db;
   }
   /**
    * Enable mining
@@ -33,11 +34,8 @@ class Miner {
    */
   mine(data) {
     while (this.isRunning) {
-      const hash = calculateSHA256(data);
-      if (
-        hash.toString().slice(0, data.difficulty) ===
-        "0".repeat(data.difficulty)
-      ) {
+      const hash = hashMessage(data);
+      if (hash.slice(2, data.difficulty + 2) === "0".repeat(data.difficulty)) {
         return data;
       }
       data.nonce += 1;
@@ -60,7 +58,7 @@ class Miner {
     const newTxs = this.pendingTxList;
     const leaves = newTxs.map(tx => tx.hash());
     const merkleHash = merkle(leaves);
-    const difficulty = 2; // For test.
+    const difficulty = 1; // For test.
     const timestamp = Math.round(new Date().getTime() / 1000);
     const data = {
       previousHash,
@@ -79,7 +77,7 @@ class Miner {
     newHeader.data = result;
     const minedBlock = new Block(newHeader, newTxs);
     signBlock(minedBlock, prvKey);
-    this.bc.db.writeBlock(minedBlock);
+    this.db.writeBlock(minedBlock);
 
     //deepcopy
     this.curBlock = JSON.parse(JSON.stringify(minedBlock));

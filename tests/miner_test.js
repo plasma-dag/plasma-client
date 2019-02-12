@@ -68,7 +68,7 @@ const state = new StateObject("dog", account, db);
 const bc = new Blockchain(db, "dog");
 const potential = new Potential(db, "dog", []);
 
-const miner = new Miner(bc, state, potential);
+const miner = new Miner(db, bc, state, potential);
 
 // make txs that will be included in block #5  => include in newTxs
 miner.makeTx("human", 30);
