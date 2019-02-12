@@ -24,7 +24,7 @@ class Operator {
   async init() {
     this.stateDB = new StateDB(this.db);
     this.potentialDB = new PotentialDB(this.db);
-    await this.stateDB.populate(); // TODO
+    await this.stateDB.populate();
     await this.potentialDB.populate();
     this.userList = await this.db.getUserList(); // TODO: user = peer?
     // For each user in userList make their own blockchain instance in
