@@ -17,7 +17,7 @@ class Operator {
    */
   constructor(db, opNonce = 0) {
     this.db = db;
-    this.opNonce = 0;
+    this.opNonce = opNonce;
     this.blockchains = {};
   }
 
@@ -44,6 +44,8 @@ class Operator {
   }
 
   /**
+   * If operator receives block, this function validates it and make checkpoint
+   * and state transition.
    *
    * @param {*} block
    * @param {*} prvKey

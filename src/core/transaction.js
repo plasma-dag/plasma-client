@@ -37,30 +37,6 @@ class Transaction {
   }
 }
 
-/**
- * TODO: this part is for cli, not about transaction itself. Should be moved to other files.
- */
-
-/*
-function sendTransaction(nonce, receiver, sender, value) {
-	let Transaction = new Transaction(nonce, receiver, sender, value);
-	//transfer(Transaction, );
-}
-
-function receiveTransaction(sender, receiver, value) {
-	let Transaction = new Transaction(nonce, receiver, sender, value);
-	//trasfer(Transaction, )
-}
-
-function addTransaction(account, newTransaction) {
-	if(isValidTransaction(newTransaction)) {
-		Transaction.push(newTransaction);
-		return true;
-	} 
-	return false;
-}
-*/
-
 module.exports = {
   Transaction
 };
