@@ -111,7 +111,7 @@ const validateCheckpoint = function(
   if (!checkpoint.validate(opAddr)) return { error: true };
   if (checkpoint.address !== sender) return { error: true };
   if (checkpoint.blockHash !== blockHeaderHash) return { error: true };
-  return { error: true };
+  return { error: false };
 };
 
 module.exports = {
