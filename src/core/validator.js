@@ -98,18 +98,15 @@ function sumReceiveTx(block, addr) {
 /**
  *
  * @param {*} bc
- * @param {*} sender
  * @param {*} checkpoint
  * @param {*} opAddr
  */
-const validateCheckpoint = function(bc, sender, checkpoint, opAddr) {
+const validateCheckpoint = function(bc, checkpoint, opAddr) {
   if (!checkpoint.validate(opAddr)) return { error: true };
-  if (checkpoint.address !== sender) return { error: true };
-  if (
-    bc.checkpoint[bc.checkpoint.length - 1].operatorNonce >=
-    checkpoint.operatorNonce
-  )
+  if (checkpoint.address !== bc.address) return { error: true };
+  if (bc.checkpoint.operatorNonce >= checkpoint.operatorNonce)
     return { error: true };
+  return { error: false };
 };
 
 module.exports = {
