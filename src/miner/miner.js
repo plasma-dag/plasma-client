@@ -3,6 +3,7 @@
 const { Block, Header, signBlock } = require("../core/block");
 const { Transaction } = require("../core/transaction");
 const { merkle, calculateSHA256 } = require("../crypto/index");
+const { Database } = require("../db/index");
 
 class Miner {
   constructor(bc, stateObj, potential) {
@@ -33,11 +34,15 @@ class Miner {
   mine(data) {
     while (this.isRunning) {
       const hash = calculateSHA256(data);
-      if (hash.slice(0, data.difficulty) === "0".repeat(data.difficulty)) {
+      if (
+        hash.toString().slice(0, data.difficulty) ===
+        "0".repeat(data.difficulty)
+      ) {
         return data;
       }
       data.nonce += 1;
     }
+
     return -1;
   }
   /**
@@ -46,13 +51,14 @@ class Miner {
    *
    * @param {*} prvKey
    */
-  mineBlock(prvKey) {
-    const previousHash = this.bc.currentBlock.hash();
+  async mineBlock(prvKey) {
+    await this.bc.init();
+    const previousHash = this.bc.currentBlock.blockHash;
     const potentialHashList = this.potential.getHashList();
-    const accountState = this.stateObj.getState();
+    const accountState = this.state.account;
     this.pendTx();
     const newTxs = this.pendingTxList;
-    const leaves = newTxs.reduce((prev, curr) => prev.push(curr.hash()), []);
+    const leaves = newTxs.map(tx => tx.hash().toString());
     const merkleHash = merkle(leaves);
     const difficulty = 2; // For test.
     const timestamp = Math.round(new Date().getTime() / 1000);
@@ -65,15 +71,16 @@ class Miner {
       timestamp,
       nonce: 0
     };
-    const result = mine(data);
+    const result = this.mine(data);
     if (result === -1) {
       return Error("Miner is not enabled");
     }
     const newHeader = new Header();
     newHeader.data = result;
-    const minedBlock = new Block(newHeader, this.newTxs);
+    const minedBlock = new Block(newHeader, newTxs);
     signBlock(minedBlock, prvKey);
-    this.db.writeBlock(minedBlock);
+    console.log(minedBlock);
+    // this.bc.db.writeBlock(minedBlock);
     //deepcopy
     this.curBlock = JSON.parse(JSON.stringify(minedBlock));
     return minedBlock;
@@ -86,7 +93,7 @@ class Miner {
    * @param {*} value
    */
   makeTx(receiver, value) {
-    const index = this.newTxs.findIndex(tx => tx.receiver === receiver);
+    const index = this.newTxs.findIndex(tx => tx.data.receiver === receiver);
     if (index !== -1) {
       // update exist tx's value
       return (this.newTxs[index].data.value += value);
