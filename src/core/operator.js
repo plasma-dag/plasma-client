@@ -2,7 +2,8 @@
 
 const Blockchain = require("./blockchain");
 const BlockValidator = require("./validator");
-const worker = require("../miner.js");
+const operatorStateProcess = require("./state_processor");
+//const worker = require("../miner.js");
 
 class Operator {
   /**
@@ -40,7 +41,7 @@ class Operator {
     let result = this.blockValidator.validateBlock(block); // TODO: have to cover validating deposit block(deposit block has no tx)
     if (result.error) return result;
     // block process
-    const opSigCheckpoint = operatorStateProcess(
+    return operatorStateProcess(
       this.db,
       this.stateDB,
       this.potentialDB,
@@ -49,8 +50,6 @@ class Operator {
       prvKey,
       this.state.getNonce()
     );
-
-    return { error: false };
   }
 }
 
