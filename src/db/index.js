@@ -1,7 +1,7 @@
 // levelDB, DB related APIs...
 "use-strict";
 const mongo = require("mongodb").MongoClient;
-const url = "mongodb://localhost:27017";
+var url = "mongodb://localhost:27017";
 
 /**
  * Represent database structure
@@ -10,13 +10,18 @@ class Database {
   /**
    * @constructor
    */
-  constructor() {
+  constructor(another_url) {
     this.db = mongo;
+    if (another_url) {
+      this.url = another_url;
+    } else {
+      this.url = url;
+    }
   }
 
   loadLastCheckpoint(addr) {
     return new Promise((resolve, reject) => {
-      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+      this.db.connect(this.url, { useNewUrlParser: true }, (err, client) => {
         if (err) {
           console.error(err);
           return;
@@ -42,7 +47,7 @@ class Database {
    */
   writePotential(address, hashList) {
     return new Promise((resolve, reject) => {
-      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+      this.db.connect(this.url, { useNewUrlParser: true }, (err, client) => {
         if (err) {
           console.error(err);
           return;
@@ -65,7 +70,7 @@ class Database {
    */
   readAllPotentials() {
     return new Promise((resolve, reject) => {
-      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+      this.db.connect(this.url, { useNewUrlParser: true }, (err, client) => {
         if (err) {
           console.error(err);
           return;
@@ -89,7 +94,7 @@ class Database {
    */
   writeCheckpoint(checkpoint) {
     return new Promise((resolve, reject) => {
-      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+      this.db.connect(this.url, { useNewUrlParser: true }, (err, client) => {
         if (err) {
           console.error(err);
           return;
@@ -113,7 +118,7 @@ class Database {
    */
   readCheckpointWithBlockHash(blockHash) {
     return new Promise((resolve, reject) => {
-      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+      this.db.connect(this.url, { useNewUrlParser: true }, (err, client) => {
         if (err) {
           console.error(err);
           return;
@@ -135,7 +140,7 @@ class Database {
    */
   loadBlockswithAddress(address) {
     return new Promise((resolve, reject) => {
-      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+      this.db.connect(this.url, { useNewUrlParser: true }, (err, client) => {
         if (err) {
           console.error(err);
           return;
@@ -159,7 +164,7 @@ class Database {
 
   readBlock(hash) {
     return new Promise((resolve, reject) => {
-      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+      this.db.connect(this.url, { useNewUrlParser: true }, (err, client) => {
         if (err) {
           console.error(err);
           return;
@@ -180,7 +185,7 @@ class Database {
 
   writeBlock(block) {
     return new Promise((resolve, reject) => {
-      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+      this.db.connect(this.url, { useNewUrlParser: true }, (err, client) => {
         if (err) {
           console.error(err);
           return;
@@ -203,7 +208,7 @@ class Database {
    */
   readTx(hash) {
     return new Promise((resolve, reject) => {
-      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+      this.db.connect(this.url, { useNewUrlParser: true }, (err, client) => {
         if (err) {
           console.error(err);
           return;
@@ -224,7 +229,7 @@ class Database {
    */
   writeTx(tx) {
     return new Promise((resolve, reject) => {
-      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+      this.db.connect(this.url, { useNewUrlParser: true }, (err, client) => {
         if (err) {
           console.error(err);
           return;
@@ -244,7 +249,7 @@ class Database {
    */
   readAllStates() {
     return new Promise((resolve, reject) => {
-      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+      this.db.connect(this.url, { useNewUrlParser: true }, (err, client) => {
         if (err) {
           console.error(err);
           return;
@@ -266,7 +271,7 @@ class Database {
    */
   readState(address) {
     return new Promise((resolve, reject) => {
-      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+      this.db.connect(this.url, { useNewUrlParser: true }, (err, client) => {
         if (err) {
           console.error(err);
           return;
@@ -287,7 +292,7 @@ class Database {
    */
   writeState(state) {
     return new Promise((resolve, reject) => {
-      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+      this.db.connect(this.url, { useNewUrlParser: true }, (err, client) => {
         if (err) {
           console.error(err);
           return;

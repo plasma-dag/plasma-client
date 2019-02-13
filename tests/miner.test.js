@@ -29,10 +29,7 @@ describe("miner", () => {
   let db;
 
   beforeAll(async () => {
-    connection = await MongoClient.connect(global.__MONGO_URI__, {
-      useNewUrlParser: true
-    });
-    db = await connection.db(global.__MONGO_DB_NAME__);
+    db = new Database(global.__MONGO_URI__);
   });
 
   afterAll(async () => {
@@ -75,20 +72,20 @@ describe("miner", () => {
     );
     const block4 = new Block(header4, []);
 
-    await writeBlock(block1, db);
-    await writeBlock(block2, db);
-    await writeBlock(block3, db);
-    await writeBlock(block4, db);
+    db.writeBlock(block1);
+    db.writeBlock(block2);
+    db.writeBlock(block3);
+    db.writeBlock(block4);
 
     const checkpoint1 = new Checkpoint("dog", block1.hash(), 1);
     const checkpoint2 = new Checkpoint("dog", block2.hash(), 2);
     const checkpoint3 = new Checkpoint("dog", block3.hash(), 3);
     const checkpoint4 = new Checkpoint("dog", block4.hash(), 4);
 
-    await writeCheckpoint(checkpoint3, db);
-    await writeCheckpoint(checkpoint2, db);
-    await writeCheckpoint(checkpoint4, db);
-    await writeCheckpoint(checkpoint1, db);
+    db.writeCheckpoint(checkpoint1);
+    db.writeCheckpoint(checkpoint2);
+    db.writeCheckpoint(checkpoint3);
+    db.writeCheckpoint(checkpoint4);
 
     const account = new Account(5, 210, "");
     const state = new StateObject("dog", account, db);
@@ -97,20 +94,18 @@ describe("miner", () => {
     const potential = new Potential(db, "dog", []);
 
     const miner = new Miner(db, bc, state, potential);
-
     // make txs that will be included in block #5  => include in newTxs
     miner.makeTx("human", 30);
     miner.makeTx("human", 40);
     miner.makeTx("cat", 20);
 
     const prvKey = "pvk";
-
     // mine 5th blocks with newTxs made above
-    // miner.start();
-    // const minedBlock = await miner.mineBlock(prvKey);
-    // db.writeBlock(minedBlock)
+    miner.start();
+    const minedBlock = await miner.mineBlock(prvKey);
+    db.writeBlock(minedBlock);
 
-    // const newBlock = await db.collection("checkpoints").findOne({_id:minedBlock.blockHash});
-    // expect(newBlock).toEqual(minedBlock);
+    const newBlock = await db.readBlock(minedBlock.blockHash);
+    expect(newBlock).toEqual(minedBlock);
   });
 });
