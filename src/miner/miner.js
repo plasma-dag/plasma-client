@@ -77,7 +77,7 @@ class Miner {
     newHeader.data = result;
     const minedBlock = new Block(newHeader, newTxs);
     signBlock(minedBlock, prvKey);
-    this.db.writeBlock(minedBlock);
+    // this.db.writeBlock(minedBlock);
 
     //deepcopy
     this.curBlock = JSON.parse(JSON.stringify(minedBlock));
