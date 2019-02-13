@@ -1,8 +1,6 @@
 "use-strict";
 
-const { merkle, merkleProof, verifyMerkle } = require("../crypto/index.js");
-const validateCheckpoint = require("../core/validator");
-const userStateProcess = require("../core/state_processor");
+const { merkleProof, verifyMerkle } = require("../crypto/index.js");
 
 class Proof {
   /**
@@ -40,8 +38,8 @@ class Proof {
   // receiver의 검증
   // proofList = receiver가 지금까지 검증한 proof의 리스트
   validate() {
-    for (value of this.proof) {
-      if (!value) return { error: true };
+    for (key in this.proof) {
+      if (!this.proof[key]) return { error: true };
     }
 
     return { error: false };
@@ -80,15 +78,15 @@ function makeProof(checkpoint, block) {
   // 5. 각 tx마다 proof를 생성하여 리스트에 추가
   let proofs = [];
   txs.forEach((tx, index) => {
-    let proof = {
-      tx: tx,
-      merkleProof: merkleProof(leaves, index),
-      merkleRoot: block.header.merkleHash,
-      merkleDeps: block.transactions.length,
-      checkpoint: checkpoint,
-      blockHeader: block.header
-    };
-    proofs.push(new Proof(proof));
+    let proof = new Proof(
+      tx,
+      merkleProof(leaves, index),
+      block.header.merkleHash,
+      block.transactions.length,
+      checkpoint,
+      block.header
+    );
+    proofs.push(proof);
   });
   return proofs;
 }

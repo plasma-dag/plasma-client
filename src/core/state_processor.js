@@ -148,9 +148,6 @@ const preStateProcess = function(db, state, potential, block) {
       block.header.potentialHashList
     );
     if (res.error) {
-      //   // rollback -> 아마 setState 메소드 좀 바꾸면 더 쉽게 만들 수 있을듯.
-      //   userState.setNonce(prevStateCopy.getNonce());
-      //   userState.setBalance(prevStateCopy.getBalance());
       return res;
     }
   }
@@ -167,10 +164,6 @@ const preStateProcess = function(db, state, potential, block) {
 
   // state copy return(원래 state는 그대로 유지)
   return stateCopy;
-
-  // stateDB.setState(stateCopy.address, stateCopy.account);
-  // potentialDB.makeNewPotential(potentialCopy.address);
-  // return { error: false };
 };
 
 module.exports = {
