@@ -39,28 +39,15 @@ class Proof {
 
   // receiver의 검증
   // proofList = receiver가 지금까지 검증한 proof의 리스트
-  /**
-   *
-   * @param {*} proofList
-   * @param {*} potentialDB
-   * @param {*} opAddr
-   */
-  validate(proofList, potentialDB, opAddr) {
-    // checkpoint 검증
-    let result = validateCheckpoint(
-      this.proof.blockHeader.accountState.address,
-      this.proof.checkpoint,
-      this.proof.blockHeader.hash(),
-      opAddr
-    );
-    if (result.error) return { error: true };
+  validate() {
+    for (value of this.proof) {
+      if (!value) return { error: true };
+    }
 
-    // 이미 전에 추가된 증명인지 확인
-    result = proofList.find(proof => {
-      proof.blockHeader.hash() === this.proof.blockHeader.hash();
-    });
-    if (result) return { error: true };
+    return { error: false };
+  }
 
+  merkleProof() {
     // 머클 증명을 통한 tx 포함 여부 확인
     if (
       !verifyMerkle(
@@ -71,74 +58,24 @@ class Proof {
       )
     )
       return { error: true };
-
-    // receive potential
-    potentialDB.sendPotential(
-      this.proof.blockHeader.hash(),
-      this.proof.tx.receiver
-    );
-    proofList.push(this.proof);
     return { error: false };
   }
 }
 
-// sender의 증명
 /**
  *
  * @param {*} checkpoint
- * @param {*} pendingBlock
- * @param {*} db
- * @param {*} stateDB
- * @param {*} potentialDB
- * @param {*} bc
- * @param {*} opAddr
+ * @param {*} block
  */
-async function makeProof(
-  checkpoint,
-  pendingBlock,
-  db,
-  stateDB,
-  potentialDB,
-  bc,
-  opAddr
-) {
-  const sender = checkpoint.address;
-  if (!sender) return { error: true };
-
-  const block = pendingBlock;
-  if (!block) return { error: true };
-
-  // 1.checkpoint 검증
-  let result = validateCheckpoint(
-    sender,
-    checkpoint,
-    block.header.hash(),
-    opAddr
-  );
-  if (result.error) return { error: true };
-  if (
-    bc.checkpoint[bc.checkpoint.length - 1].operatorNonce >=
-    checkpoint.operatorNonce
-  )
-    return { error: true };
-  // // 2. 블록 read(db에서 읽지 않고 miner pending block에서 가져옴)
-  // const block = await db.readBlock(checkpoint.blockHash);
-  // if (!block) return { error: true };
-
-  // 3. validate block(블록을 만드는 단계에서 검증하기)
-  // result = blockValidator.validateBlock(block);
-  // if (result.error) return { error: true };
-
-  // state transition
-  result = userStateProcess(db, stateDB, potentialDB, bc, checkpoint, block);
-  if (result.error) return { error: true };
-
+// sender의 증명
+function makeProof(checkpoint, block) {
   // 4. merkle tree 생성
   const txs = block.transactions;
+
   let leaves = [];
   txs.forEach(tx => leaves.push(tx.hash()));
-  const root = merkle(leaves);
-  const deps = leaves.length;
+  //const root = merkle(leaves);
+  //const deps = leaves.length;
 
   // 5. 각 tx마다 proof를 생성하여 리스트에 추가
   let proofs = [];
@@ -146,8 +83,8 @@ async function makeProof(
     let proof = {
       tx: tx,
       merkleProof: merkleProof(leaves, index),
-      merkleRoot: root,
-      merkleDeps: deps,
+      merkleRoot: block.header.merkleHash,
+      merkleDeps: block.transactions.length,
       checkpoint: checkpoint,
       blockHeader: block.header
     };

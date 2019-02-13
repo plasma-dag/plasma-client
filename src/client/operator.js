@@ -3,7 +3,7 @@
 const { Blockchain } = require("../core/blockchain");
 const { BlockValidator } = require("../core/validator");
 const { PotentialDB } = require("../core/potential");
-const { operatorStateProcess } = require("../core/state_processor");
+const { stateProcess } = require("../core/state_processor");
 
 /**
  * This class manages the information of plasma network and methods
@@ -59,11 +59,11 @@ class Operator {
     let result = validator.validateBlock(block); // TODO: have to cover validating deposit block(deposit block has no tx)
     if (result.error) return result;
     // block process
-    const opSigCheckpoint = operatorStateProcess(
+    const opSigCheckpoint = stateProcess(
       this.db,
       this.stateDB,
       this.potentialDB,
-      this.bc,
+      this.blockchains[block.sender()],
       block,
       prvKey,
       this.opNonce

@@ -50,11 +50,58 @@ api.post("/requestCheckpoint", async function(req, res) {
   res.send(checkpoint);
 });
 api.post("/sendProof", async function(req, res) {
-  const nw = req.app.locals.nw;
-  const { receiver, txHash } = req.body;
-  const txProof = "txproof"; // Make tx proof with tx, block header, checkpoint
-  const result = await nw.sendTxProof(txProof); // TODO
-  res.send(result);
+  //  const nw = req.app.locals.nw;
+
+  const { checkpoint } = req.body;
+  const sender = checkpoint.address;
+  if (!sender) throw new Error("ERROR");
+
+  const miner = req.app.locals.miner;
+  const block = miner.pendingBlock;
+  if (!block) throw new Error("ERROR");
+
+  // checkpoint 검증
+  let result = validateCheckpoint(
+    sender,
+    checkpoint,
+    block.header.hash(),
+    opAddr // TODO: getOpAddr
+  );
+  if (result.error) throw new Error("ERROR");
+
+  // checkpoint operator nonce 확인
+  const bc = req.app.locals.bc;
+  if (
+    bc.checkpoint[bc.checkpoint.length - 1].operatorNonce >=
+    checkpoint.operatorNonce
+  )
+    throw new Error("ERROR");
+
+  // bc update
+  const bc = req.app.locals.bc;
+  bc.insertBlock(targetBlock);
+  bc.updateCheckpoint(checkpoint);
+
+  // block header에 있는 accountState로 state 반영
+  const stateDB = req.app.locals.stateDB;
+  stateDB.setState(
+    block.header.accountState.address,
+    block.header.accountState.account
+  );
+
+  // potential clear(모든 block hash list 다 받았기 때문에, block header에 포텐셜의 blockHashList 모두 넣지 않았을 경우 문제 발생)
+  const potentialDB = req.app.locals.potentialDB;
+  potentialDB.makeNewPotential(sender);
+
+  // proof 생성
+  const proofs = makeProof(checkpoint, block);
+
+  // TODO: 각 receiver에게 생성한 proof 전송
+
+  // const { receiver, txHash } = req.body;
+  // const txProof = "txproof"; // Make tx proof with tx, block header, checkpoint
+  // const result = await nw.sendTxProof(txProof); // TODO
+  res.send(proofs);
 });
 api.get("/currentTxs", function(req, res) {
   const miner = req.app.locals.miner;

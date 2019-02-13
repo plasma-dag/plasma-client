@@ -16,9 +16,6 @@ const { deepCopy } = require("../common/utils");
  */
 // contract block process
 async function receivePotential(db, stateObject, potential, blockHashList) {
-  if (stateObject.address != potential.address) {
-    return { error: true };
-  }
   const owner = stateObject.address;
   const promises = blockHashList.map(hash => db.readBlock(hash));
   const blocks = await Promise.all(promises);
@@ -28,7 +25,6 @@ async function receivePotential(db, stateObject, potential, blockHashList) {
     transactions
       .filter(tx => tx.receiver === owner)
       .forEach(tx => receiveStateTransition(stateObject, tx));
-
     //potentialDB.receivePotential(blk.hash(), owner);
     potential.remove(blk.hash());
   });
@@ -48,7 +44,7 @@ async function receivePotential(db, stateObject, potential, blockHashList) {
  * @param {Number}          opNonce
  */
 
-const operatorStateProcess = (
+const stateProcess = function(
   db,
   stateDB,
   potentialDB,
@@ -56,7 +52,7 @@ const operatorStateProcess = (
   block,
   prvKey,
   opNonce
-) => {
+) {
   /**
    * Before this function call,
    * 1. Check block owner's address
@@ -90,8 +86,6 @@ const operatorStateProcess = (
     const res = receivePotential(
       db,
       stateCopy,
-
-      //potentialDB,
       potentialCopy,
       block.header.potentialHashList
     );
@@ -110,12 +104,10 @@ const operatorStateProcess = (
     const res = sendStateTransition(stateCopy, tx);
     if (res.error) {
       // TODO: send error toleration logic here
+
+      return res;
     }
   });
-
-  // 현재 operator는 유저가 제출한 블록의 potential을 먼저 받고 블록에 tx들의 state transition을 처리하는데,
-  // block의 header에 포함된 accountState에는 블록에 담긴 tx들만 처리한 state의 결과가 저장되어 있기 때문에 두 state는 다름.
-  // send를 먼저 처리한후 두 state를 비교하는 로직을 추가하고 포텐셜을 받을지?
 
   // 7
   let checkpoint = new Checkpoint(blockOwner, blockHash, opNonce);
@@ -130,21 +122,11 @@ const operatorStateProcess = (
 /**
  *
  * @param {*} db
- * @param {*} stateDB
- * @param {*} potentialDB
- * @param {*} bc
- * @param {*} checkpoint
- * @param {*} targetBlock
+ * @param {stateObject} state
+ * @param {potentialObject} potential
+ * @param {*} block
  */
-
-const userStateProcess = (
-  db,
-  stateDB,
-  potentialDB,
-  bc,
-  checkpoint,
-  targetBlock
-) => {
+const preStateProcess = function(db, state, potential, block) {
   /**
    * 1. Check operator's signature is real usable one and address is user's (confirmSend 함수에서 처리하도록 수정)
    * 2. Find block by checkpoint's block hash (confirmSend 함수에서 처리하도록 수정)
@@ -155,21 +137,15 @@ const userStateProcess = (
    * 6. If block is valid, process txs and change user's states
    */
 
-  bc.insertBlock(targetBlock);
-  bc.updateCheckpoint(checkpoint);
-
-  // 5
-  //const stateCopy = deepCopy(stateDB.stateObjects[checkpoint.address]);
-
-  // user는 block을 만들고나서 자신의 변경된 state를 block에 담았으므로 포텐셜을 받기만 하면됨
-  const stateCopy = targetBlock.header.accountState;
-  const potentialCopy = deepCopy(potentialDB.potentials[checkpoint.address]);
+  // 5 state, potential copy로 potential을 받을 받아서 state copy를 update
+  const stateCopy = deepCopy(state);
+  const potentialCopy = deepCopy(potential);
   if (targetBlock.header.potentialHashList.length !== 0) {
     const res = receivePotential(
       db,
       stateCopy,
       potentialCopy,
-      targetBlock.header.potentialHashList
+      block.header.potentialHashList
     );
     if (res.error) {
       //   // rollback -> 아마 setState 메소드 좀 바꾸면 더 쉽게 만들 수 있을듯.
@@ -179,20 +155,25 @@ const userStateProcess = (
     }
   }
 
-  // 6
-  targetBlock.transactions.forEach(tx => {
+  // 6 state copy로 block에 포함된 tx를 처리하여 update
+  block.transactions.forEach(tx => {
     const res = sendStateTransition(stateCopy, tx);
     if (res.error) {
       // TODO: send error toleration logic here
+
+      return res;
     }
   });
 
-  stateDB.setState(stateCopy.address, stateCopy.account);
-  potentialDB.makeNewPotential(potentialCopy.address);
-  return { error: false };
+  // state copy return(원래 state는 그대로 유지)
+  return stateCopy;
+
+  // stateDB.setState(stateCopy.address, stateCopy.account);
+  // potentialDB.makeNewPotential(potentialCopy.address);
+  // return { error: false };
 };
 
 module.exports = {
-  operatorStateProcess,
-  userStateProcess
+  stateProcess,
+  preStateProcess
 };

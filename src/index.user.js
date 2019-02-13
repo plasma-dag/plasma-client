@@ -13,6 +13,7 @@ const { StateDB } = require("./core/stateDB");
 const { Miner } = require("./miner/miner");
 const { PotentialDB } = require("./core/potential");
 const { User } = require("./network/user");
+const { validateCheckpoint } = require("./core/validator");
 
 // set environment variable
 const http_port = process.env.HTTP_PORT || 3001; // > $env:HTTP_PORT=3003 (windows) || export HTTP_PORT=3003 (mac)
@@ -45,6 +46,7 @@ async function initPlasmaClient() {
     potentialDB.potentials[addr]
   );
   let userList = await this.db.getUserList();
+  const proofList = [];
 
   const app = express();
 
@@ -70,12 +72,49 @@ async function initPlasmaClient() {
   app.post("/proof", function(req, res) {
     /**
      * 1. Proof 객체를 받으면 proof의 valid 여부를 검증
-     * 2. Proof가 기존에 받았던 proof list에 존재하는지도 검증
-     * 3. Proof 검증이 끝나면 potentialDB를 업데이트. 문제점: potential에는 value 값이
+     * 2. checkpoint 검증
+     * 3. Proof가 기존에 받았던 proof list에 존재하는지도 검증
+     * 4. merkleProof
+     * 5. Proof 검증이 끝나면 potentialDB를 업데이트. 문제점: potential에는 value 값이
      *    안들어가있는 형태이다. 따라서 불완전한 형태의 block을 db에 저장해둬야함. 이때 그 블록
      *    은 receiver에게 유효한 tx 하나를 갖고 있는 구조가 될 것이다.
+     * 6. prooflist에 proof 추가
      */
+
     const { proof } = req.body;
+    // 1
+    let result = proof.validate();
+    if (result.error) throw new Error("ERROR");
+
+    // 2
+    result = validateCheckpoint(
+      proof.blockHeader.accountState.address,
+      proof.checkpoint,
+      proof.blockHeader.hash(),
+      opAddr // TODO: getOpAddr
+    );
+    if (result.error) throw new Error("ERROR");
+
+    // 3
+    result = proofList.find(proof => {
+      proof.blockHeader.hash() === proof.blockHeader.hash();
+    });
+    if (result.error) throw new Error("ERROR");
+
+    // 4
+    result = proof.merkleProof();
+    if (result.error) throw new Error("ERROR");
+
+    // 5
+    result = potentialDB.sendPotential(
+      proof.blockHeader.hash(),
+      proof.tx.receiver
+    );
+    if (result.error) throw new Error("ERROR");
+
+    // 6
+    proofList.push(proof);
+    res.send(proof);
   });
   app.get("/blockchain", function(req, res) {
     res.send(bc);
