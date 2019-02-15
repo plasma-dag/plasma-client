@@ -3,6 +3,8 @@
 const express = require("express");
 const api = express.Router();
 
+const { User } = require("../network/user");
+
 // Return block list
 api.get("/blockchain", function(req, res) {
   const bc = req.app.locals.bc;

@@ -96,6 +96,7 @@ function deleteWallet() {
 
 module.exports = {
   initWallet,
+  getPrivateFromWallet,
   getPublicFromWallet,
   createWallet,
   deleteWallet
