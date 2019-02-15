@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "test": "jest",
-    "start": "src/index.js",
+    "start": "src/index.user.js",
+    "operator": "src/index.operator.js",
     "pretty": "prettier --write \"src/**/*.js\"",
     "precommit": "lint-staged"
   },

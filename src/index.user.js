@@ -12,12 +12,10 @@ const { Blockchain } = require("./core/blockchain");
 const { StateDB } = require("./core/stateDB");
 const { Miner } = require("./miner/miner");
 const { PotentialDB } = require("./core/potential");
-const { User } = require("./network/user");
 const { validateCheckpoint } = require("./core/validator");
 
 // set environment variable
 const http_port = process.env.HTTP_PORT || 3001; // > $env:HTTP_PORT=3003 (windows) || export HTTP_PORT=3003 (mac)
-const initialPeers = process.env.PEERS ? process.env.PEERS.split(",") : []; // > $env:PEERS = "ws://127.0.0.1:6001, ws://127.0.0.1:6002"
 
 // REST API
 async function initPlasmaClient() {
