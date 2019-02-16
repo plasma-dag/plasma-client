@@ -44,17 +44,17 @@ async function initPlasmaOperator() {
   });
   // TODO: Mutex lock for opNonce may needed
   app.post(
-    "/sendBlock",
+    "/makeCheckpoint",
     function(req, res, next) {
-      if (req.body) {
-        const block = req.body;
+      const block = req.body;
+      if (block) {
         next();
       }
     },
     //send checkpoint to sender
     async () => {
       const checkpoint = operator.processBlock(
-        req.body,
+        block,
         wl.getPrivateFromWallet()
       );
       await request.post(senderUrl, { form: ckeckpoint }),

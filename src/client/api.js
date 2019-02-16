@@ -38,16 +38,10 @@ api.post("/makeTx", function(req, res) {
 });
 
 api.use("/sendToOperator", async function(req, res) {
-  /**
-   * 1. miner 객체에서 최신 블록을 갖고 온다.
-   * 2. nw 객체에 구현된 sendToOperator(block) 함수 호출 (TODO)
-   * 3. websocket의 response를 기다린 후, 성공, 실패 로직을 각각 실행한다.
-   */
   const { miner, nw } = req.app.locals;
   const currentBlock = miner.getCurrentBlock();
-  //const checkpoint = await nw.requestCheckpoint(currentBlock);
-  const opsendUrl = "http://localhost:3001/sendBlock";
-
+  const opsendUrl = "http://localhost:3001/makeCheckpoint";
+  //send block to operator
   await request.post(
     opsendUrl,
     { form: currentBlock },
