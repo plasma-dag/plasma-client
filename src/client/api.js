@@ -82,7 +82,7 @@ api.post("/sendProof", async function(req, res) {
     throw new Error("ERROR");
 
   // bc update
-  const bc = req.app.locals.bc;
+  bc = req.app.locals.bc;
   bc.insertBlock(targetBlock);
   bc.updateCheckpoint(checkpoint);
 

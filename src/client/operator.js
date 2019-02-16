@@ -4,6 +4,7 @@ const { Blockchain } = require("../core/blockchain");
 const { BlockValidator } = require("../core/validator");
 const { PotentialDB } = require("../core/potential");
 const { stateProcess } = require("../core/state_processor");
+const { StateDB } = require("../core/state");
 
 /**
  * This class manages the information of plasma network and methods

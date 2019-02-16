@@ -54,7 +54,7 @@ class PotentialDB {
 
   async populate() {
     const res = await this.db.readAllPotentials();
-    for (p in res) {
+    for (let p in res) {
       this.potentials[p.address] = new Potential(
         this.db,
         p.address,
