@@ -2,7 +2,7 @@
 "use strict";
 const express = require("express");
 const bodyParser = require("body-parser");
-
+const request = require("request");
 const wl = require("./client/wallet");
 
 const { Database } = require("./db");
@@ -18,6 +18,7 @@ async function initPlasmaOperator() {
   const operator = new Operator(db); // TODO: operator nonce management
   await operator.init();
   const app = express();
+  const senderUrl = "http://localhost:3000/sendProof";
 
   app.use(bodyParser.json());
   app.get("/blockchains", function(req, res) {
@@ -42,9 +43,31 @@ async function initPlasmaOperator() {
     res.send(operator.opNonce);
   });
   // TODO: Mutex lock for opNonce may needed
-  app.post("/sendBlock", function(req, res) {
-    res.send(operator.processBlock(req.body, wl.getPrivateFromWallet()));
-  });
+  app.post(
+    "/sendBlock",
+    function(req, res, next) {
+      if (req.body) {
+        const block = req.body;
+        next();
+      }
+    },
+    //send checkpoint to sender
+    async () => {
+      const checkpoint = operator.processBlock(
+        req.body,
+        wl.getPrivateFromWallet()
+      );
+      await request.post(senderUrl, { form: ckeckpoint }),
+        (err, response, body) => {
+          if (err) {
+            console.error(err);
+            throw err;
+          }
+          //console.log(body);
+        };
+    }
+  );
+
   app.listen(http_port, function() {
     console.log("Listening http port on: " + http_port);
   });

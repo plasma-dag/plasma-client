@@ -60,21 +60,18 @@ api.use("/sendToOperator", async function(req, res) {
     }
   );
 
-  //TO DO : checkpoint
-
-  if (checkpoint) {
-    // Reset miner's data.
-    miner.refresh();
-  }
-  res.send(checkpoint);
+  //res.send(body);
 });
 
 api.post("/sendProof", async function(req, res) {
-  //  const nw = req.app.locals.nw;
-
-  // checkpoint 다루는 부분(proof생성까지) requestCheckpoint(sendBlock)로 이동 필요
-  // sendBlock에서 블록 제출하고 operator부터 checkpoint return 받은 후 아래 logic 수행
-  const { checkpoint } = req.body;
+  if (req.body) {
+    //receive checkpoint form operator
+    const checkpoint = req.body;
+    if (checkpoint) {
+      // Reset miner's data.
+      miner.refresh();
+    }
+  }
   const sender = checkpoint.address;
   if (!sender) throw new Error("ERROR");
 
