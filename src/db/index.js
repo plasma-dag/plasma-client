@@ -13,6 +13,92 @@ class Database {
   constructor() {
     this.db = mongo;
   }
+  writeProof(proof_list) {
+    return new Promise((resolve, reject) => {
+      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        const proofs = client.db("plasma").collection("proofs");
+        proofs
+          .updateOne(
+            { _id: proof_list[0].proof.blockHeader.hash() },
+            { $set: { proof_list } },
+            { upsert: true }
+          )
+          .then(({ result }) => resolve(result))
+          .catch(err => reject(err));
+      });
+    });
+  }
+  //todo
+  readProof(blocknum, receiver) {
+    return new Promise((resolve, reject) => {
+      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        const proofs = client.db("plasma").collection("proofs");
+
+        proofs
+          .findOne({ _id: blockHash })
+          .then(result => resolve(result))
+          .catch(err => reject(err));
+      });
+    });
+  }
+
+  writeUser(user) {
+    return new Promise((resolve, reject) => {
+      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        const users = client.db("plasma").collection("users");
+        users
+          .updateOne({ _id: user.address }, { $set: user }, { upsert: true })
+          .then(({ result }) => resolve(result))
+          .catch(err => reject(err));
+      });
+    });
+  }
+
+  readUserbyId(id) {
+    return new Promise((resolve, reject) => {
+      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        const users = client.db("plasma").collection("users");
+
+        users
+          .findOne({ id: id })
+          .then(result => resolve(result))
+          .catch(err => reject(err));
+      });
+    });
+  }
+
+  readUserbyAddress(address) {
+    return new Promise((resolve, reject) => {
+      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        const users = client.db("plasma").collection("users");
+
+        users
+          .findOne({ _id: address })
+          .then(result => resolve(result))
+          .catch(err => reject(err));
+      });
+    });
+  }
 
   loadLastCheckpoint(addr) {
     return new Promise((resolve, reject) => {
