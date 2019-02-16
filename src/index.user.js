@@ -9,7 +9,7 @@ const wl = require("./client/wallet");
 const api = require("./client/api");
 const { Database } = require("./db");
 const { Blockchain } = require("./core/blockchain");
-const { StateDB } = require("./core/stateDB");
+const { StateDB } = require("./core/state");
 const { Miner } = require("./miner/miner");
 const { PotentialDB } = require("./core/potential");
 const { validateCheckpoint } = require("./core/validator");
@@ -126,7 +126,3 @@ async function initPlasmaClient() {
 wl.initWallet();
 // Initiate plasma client
 initPlasmaClient();
-// Set network config with operator IP address
-nw.setUserConfig(process.env.OPERATOR_IP);
-// Initiate WebSocket server
-nw.initP2PServer();

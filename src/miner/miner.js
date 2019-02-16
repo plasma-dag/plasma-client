@@ -121,6 +121,10 @@ class Miner {
     this.pendingBlock = JSON.parse(JSON.stringify(this.curBlock));
     this.curBlock = undefined;
   }
+  confirmBlock() {
+    this.pendingBlock = undefined;
+    this.pendingTxlist = [];
+  }
   /**
    * Recovers temporarily saved block and its tx list
    */

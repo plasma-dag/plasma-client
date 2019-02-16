@@ -1,6 +1,7 @@
 "use-strict";
 
 const express = require("express");
+const axios = require("axios");
 const api = express.Router();
 
 const { User } = require("../network/user");
@@ -36,36 +37,35 @@ api.post("/makeTx", function(req, res) {
   const tx = miner.makeTx(receiver, value);
   res.send(tx);
 });
-api.post("/requestCheckpoint", async function(req, res) {
+api.post("/sendBlock", async function(req, res) {
   /**
    * 1. miner 객체에서 최신 블록을 갖고 온다.
    * 2. nw 객체에 구현된 sendToOperator(block) 함수 호출 (TODO)
    * 3. websocket의 response를 기다린 후, 성공, 실패 로직을 각각 실행한다.
    */
-  const { miner, nw } = req.app.locals;
-  const currentBlock = miner.getCurrentBlock();
-  const checkpoint = await nw.requestCheckpoint(currentBlock);
-  if (checkpoint) {
-    // Reset miner's data.
-    miner.refresh();
-  }
-  res.send(checkpoint);
-});
-api.post("/sendProof", async function(req, res) {
-  //  const nw = req.app.locals.nw;
+  const miner = req.app.locals.miner;
+  const block = miner.getCurrentBlock();
 
-  // checkpoint 다루는 부분(proof생성까지) requestCheckpoint(sendBlock)로 이동 필요
-  // sendBlock에서 블록 제출하고 operator부터 checkpoint return 받은 후 아래 logic 수행
-  const { checkpoint } = req.body;
+  const db = req.app.locals.db;
+  const operator = db.readUserById("operator");
+
+  miner.pendBlock();
+  let result = await axios.post(operator.ip + "/block", block);
+  const checkpoint = result.body;
+  if (checkpoint.error) {
+    // Reset miner's data.
+    throw new Error("ERROR");
+  }
+  miner.confirmBlock();
+
   const sender = checkpoint.address;
   if (!sender) throw new Error("ERROR");
 
   const miner = req.app.locals.miner;
-  const block = miner.pendingBlock;
   if (!block) throw new Error("ERROR");
 
   // checkpoint 검증
-  let result = validateCheckpoint(
+  result = validateCheckpoint(
     sender,
     checkpoint,
     block.header.hash(),
@@ -99,13 +99,29 @@ api.post("/sendProof", async function(req, res) {
 
   // proof 생성
   const proofs = makeProof(checkpoint, block);
+  result = await db.writeProof(proofs);
+  if (result.error) throw new Error("ERROR");
+
+  res.send(proofs);
+});
+api.post("/sendProof", async function(req, res) {
+  //  const nw = req.app.locals.nw;
+
+  // checkpoint 다루는 부분(proof생성까지) requestCheckpoint(sendBlock)로 이동 필요
+  // sendBlock에서 블록 제출하고 operator부터 checkpoint return 받은 후 아래 logic 수행
 
   // TODO: 각 receiver에게 생성한 proof 전송
 
   // const { receiver, txHash } = req.body;
   // const txProof = "txproof"; // Make tx proof with tx, block header, checkpoint
-  // const result = await nw.sendTxProof(txProof); // TODO
-  res.send(proofs);
+  // const result = await nw.sendTxProof(txProof); // TODO\
+
+  const { blockNonce, receiver } = req.body;
+  const db = req.app.locals.db;
+  const proof = db.readProof(blockNonce, receiver);
+  const user = db.getUser(receiver);
+  const result = await axios.post(user.ip + "/proof", proof);
+  res.send(result);
 });
 api.get("/currentTxs", function(req, res) {
   const miner = req.app.locals.miner;
