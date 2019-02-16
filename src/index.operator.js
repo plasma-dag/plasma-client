@@ -18,7 +18,7 @@ async function initPlasmaOperator() {
   const operator = new Operator(db); // TODO: operator nonce management
   await operator.init();
   const app = express();
-  const senderUrl = "http://localhost:3000/sendProof";
+  const senderUrl = `http://localhost:3000`;
 
   app.use(bodyParser.json());
   app.get("/blockchains", function(req, res) {
@@ -48,16 +48,18 @@ async function initPlasmaOperator() {
     function(req, res, next) {
       const block = req.body;
       if (block) {
+        res.locals.block = block;
         next();
       }
     },
     //send checkpoint to sender
-    async () => {
+    async (req, res) => {
+      const block = res.locals.block;
       const checkpoint = operator.processBlock(
         block,
         wl.getPrivateFromWallet()
       );
-      await request.post(senderUrl, { form: ckeckpoint }),
+      await request.post(`${senderUrl}/sendProof`, { form: ckeckpoint }),
         (err, response, body) => {
           if (err) {
             console.error(err);
