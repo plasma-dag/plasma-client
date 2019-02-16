@@ -42,7 +42,7 @@ async function initPlasmaOperator() {
     res.send(operator.opNonce);
   });
   // TODO: Mutex lock for opNonce may needed
-  app.post("/sendBlock", function(req, res) {
+  app.post("/block", function(req, res) {
     res.send(operator.processBlock(req.body.block, wl.getPrivateFromWallet()));
   });
   app.listen(http_port, function() {
