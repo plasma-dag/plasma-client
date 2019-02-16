@@ -2,7 +2,7 @@
 
 const express = require("express");
 const api = express.Router();
-
+const request = require("request");
 const { User } = require("../network/user");
 
 // Return block list
@@ -36,7 +36,8 @@ api.post("/makeTx", function(req, res) {
   const tx = miner.makeTx(receiver, value);
   res.send(tx);
 });
-api.post("/requestCheckpoint", async function(req, res) {
+
+api.use("/sendToOperator", async function(req, res) {
   /**
    * 1. miner 객체에서 최신 블록을 갖고 온다.
    * 2. nw 객체에 구현된 sendToOperator(block) 함수 호출 (TODO)
@@ -44,13 +45,29 @@ api.post("/requestCheckpoint", async function(req, res) {
    */
   const { miner, nw } = req.app.locals;
   const currentBlock = miner.getCurrentBlock();
-  const checkpoint = await nw.requestCheckpoint(currentBlock);
+  //const checkpoint = await nw.requestCheckpoint(currentBlock);
+
+  await request.post(
+    "http://localhost:3001/sendBlock",
+    { form: currentBlock },
+    (err, response, body) => {
+      if (err) {
+        console.error(err);
+        throw err;
+      }
+      //console.log(body);
+    }
+  );
+
+  //TO DO : checkpoint
+
   if (checkpoint) {
     // Reset miner's data.
     miner.refresh();
   }
   res.send(checkpoint);
 });
+
 api.post("/sendProof", async function(req, res) {
   //  const nw = req.app.locals.nw;
 
