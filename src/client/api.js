@@ -1,6 +1,7 @@
 "use-strict";
 
 const express = require("express");
+const axios = require("axios");
 const api = express.Router();
 
 const { User } = require("../network/user");
@@ -104,8 +105,12 @@ api.post("/sendProof", async function(req, res) {
 
   // const { receiver, txHash } = req.body;
   // const txProof = "txproof"; // Make tx proof with tx, block header, checkpoint
-  // const result = await nw.sendTxProof(txProof); // TODO
-  res.send(proofs);
+  // const result = await nw.sendTxProof(txProof); // TODO\
+  const { proof } = req.body;
+  const db = req.app.locals.db;
+  const receiver = db.getUser(proof.tx.receiver);
+  const result = await axios.post(receiver.ip, proof);
+  res.send(result);
 });
 api.get("/currentTxs", function(req, res) {
   const miner = req.app.locals.miner;
