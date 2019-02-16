@@ -116,11 +116,11 @@ api.post("/sendProof", async function(req, res) {
   // const txProof = "txproof"; // Make tx proof with tx, block header, checkpoint
   // const result = await nw.sendTxProof(txProof); // TODO\
 
-  const { blockHeader, receiver } = req.body;
+  const { blockNonce, receiver } = req.body;
   const db = req.app.locals.db;
-  const proof = db.readProof(blockHeader, receiver);
-  const receiver = db.getUser(receiver);
-  const result = await axios.post(receiver.ip + "/proof", proof);
+  const proof = db.readProof(blockNonce, receiver);
+  const user = db.getUser(receiver);
+  const result = await axios.post(user.ip + "/proof", proof);
   res.send(result);
 });
 api.get("/currentTxs", function(req, res) {
