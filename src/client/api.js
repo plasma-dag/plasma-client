@@ -46,9 +46,10 @@ api.use("/sendToOperator", async function(req, res) {
   const { miner, nw } = req.app.locals;
   const currentBlock = miner.getCurrentBlock();
   //const checkpoint = await nw.requestCheckpoint(currentBlock);
+  const opsendUrl = "http://localhost:3001/sendBlock";
 
   await request.post(
-    "http://localhost:3001/sendBlock",
+    opsendUrl,
     { form: currentBlock },
     (err, response, body) => {
       if (err) {
