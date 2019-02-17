@@ -32,8 +32,8 @@ class Database {
       });
     });
   }
-  //todo
-  readProof(blocknum, receiver) {
+
+  readProof(blockNum, receiver) {
     return new Promise((resolve, reject) => {
       this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
         if (err) {
@@ -43,8 +43,18 @@ class Database {
         const proofs = client.db("plasma").collection("proofs");
 
         proofs
-          .findOne({ _id: blockHash })
-          .then(result => resolve(result))
+          .find({
+            "proof_list.proof.blockHeader.data.accountState.nonce": blockNum
+          })
+          .project({ proof_list: 1, _id: 0 })
+          .toArray()
+          .then(result =>
+            resolve(
+              result[0].proof_list.filter(
+                proof => proof.proof.tx.data.receiver === receiver
+              )[0]
+            )
+          )
           .catch(err => reject(err));
       });
     });
