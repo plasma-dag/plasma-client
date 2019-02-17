@@ -69,7 +69,7 @@ class Database {
         }
         const users = client.db("plasma").collection("users");
         users
-          .updateOne({ _id: user.address }, { $set: user }, { upsert: true })
+          .updateOne({ _id: user.addr }, { $set: user }, { upsert: true })
           .then(({ result }) => resolve(result))
           .catch(err => reject(err));
       });
