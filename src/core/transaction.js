@@ -35,6 +35,14 @@ class Transaction {
     });
     return this.txHash;
   }
+
+  get value() {
+    return this.data.value;
+  }
+
+  get receiver() {
+    return this.data.receiver;
+  }
 }
 
 module.exports = {

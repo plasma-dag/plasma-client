@@ -3,6 +3,7 @@
 const { Blockchain } = require("../core/blockchain");
 const { BlockValidator } = require("../core/validator");
 const { PotentialDB } = require("../core/potential");
+const { StateDB } = require("../core/state");
 const { stateProcess } = require("../core/state_processor");
 
 /**
@@ -17,8 +18,8 @@ class Operator {
    */
   constructor(db, opNonce = 0) {
     this.db = db;
-    this.opNonce = opNonce;
-    this.blockchains = {};
+    this._opNonce = opNonce;
+    this._blockchains = {};
   }
 
   async init() {
@@ -30,8 +31,9 @@ class Operator {
     // For each user in userList make their own blockchain instance in
     // this.blockchains
     this.userList.forEach(async user => {
-      this.blockchains[user.address] = new Blockchain(db, user.address);
-      await this.blockchains[user.address].init();
+      let blkchain = new Blockchain(this.db, user.addr);
+      await blkchain.init();
+      this.blockchains[user.addr] = blkchain;
     });
   }
 
@@ -42,7 +44,6 @@ class Operator {
     this.potentialDB.sendPotential(value, contractBlock.state.address);
     return { error: false };
   }
-
   /**
    * If operator receives block, this function validates it and make checkpoint
    * and state transition.
@@ -69,6 +70,12 @@ class Operator {
       this.opNonce
     );
     return opSigCheckpoint;
+  }
+  get blockchains() {
+    return this._blockchains;
+  }
+  get opNonce() {
+    return this._opNonce;
   }
 }
 

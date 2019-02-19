@@ -87,10 +87,11 @@ class StateDB {
 
   async populate() {
     const allStates = await this.db.readAllStates();
-    for (p in allStates) {
-      this.stateObjects[p.address] = new StateObject(
-        p.address,
-        p.account,
+    for (let i = 0; i < allStates.length; i++) {
+      let s = allStates[i];
+      this.stateObjects[s.address] = new StateObject(
+        s.address,
+        s.account,
         this.db
       );
     }

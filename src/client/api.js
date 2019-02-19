@@ -31,7 +31,7 @@ api.post("/mineBlock", async function(req, res) {
   res.send(block);
 });
 api.post("/makeTx", function(req, res) {
-  const { receiver, value } = req.body.data;
+  const { receiver, value } = req.body;
   const miner = req.app.locals.miner;
   const tx = miner.makeTx(receiver, value);
   res.send(tx);

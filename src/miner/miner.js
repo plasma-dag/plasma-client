@@ -61,7 +61,7 @@ class Miner {
       potentialHashList,
       newTxs
     );
-    if (accountState.error) return Error(accountState.error);
+    if (accountState.error) return accountState.error;
     const leaves = newTxs.map(tx => tx.hash());
     const merkleHash = merkle(leaves);
     const difficulty = 1; // For test.
@@ -83,7 +83,6 @@ class Miner {
     newHeader.data = result;
     const minedBlock = new Block(newHeader, newTxs);
     signBlock(minedBlock, prvKey);
-    console.log(minedBlock);
     await this.db.writeBlock(minedBlock);
 
     //deepcopy
@@ -102,10 +101,16 @@ class Miner {
     const index = this.newTxs.findIndex(tx => tx.data.receiver === receiver);
     if (index !== -1) {
       // update exist tx's value
-      return (this.newTxs[index].data.value += value);
+      this.newTxs[index].data.value += value;
+      return {
+        success: `Updated exist tx to: ${receiver}, value: ${
+          this.newTxs[index].data.value
+        }`
+      };
     }
     let tx = new Transaction(receiver, value);
-    return this.newTxs.push(tx);
+    this.newTxs.push(tx);
+    return { success: `New tx added to: ${receiver}, value: ${value}` };
   }
   /**
    * Refresh mined block and all tx list

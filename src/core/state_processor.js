@@ -157,16 +157,16 @@ const preStateProcess = function(
       return res;
     }
   }
-
+  let balanceError = undefined;
   // 6 state copy로 block에 포함된 tx를 처리하여 update
   transactions.forEach(tx => {
     const res = sendStateTransition(stateCopy, tx);
     if (res.error) {
       // TODO: send error toleration logic here
-
-      return res;
+      balanceError = res.error;
     }
   });
+  if (balanceError) return balanceError;
   stateCopy.account.nonce++;
   // state copy return(원래 state는 그대로 유지)
   return stateCopy;
