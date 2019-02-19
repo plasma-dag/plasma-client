@@ -2,12 +2,13 @@
 "use strict";
 const express = require("express");
 const bodyParser = require("body-parser");
+const morgan = require("morgan");
 
 const wl = require("./client/wallet");
 
 const { Database } = require("./db");
 const { Operator } = require("./client/operator");
-
+const { User } = require("./network/user");
 // set environment variable
 const http_port = process.env.HTTP_PORT || 3001; // > $env:HTTP_PORT=3003 (windows) || export HTTP_PORT=3003 (mac)
 
@@ -20,8 +21,20 @@ async function initPlasmaOperator() {
   const app = express();
 
   app.use(bodyParser.json());
+  app.use(morgan("dev"));
+
+  app.post("/addUser", async function(req, res) {
+    let { id, addr, ip } = req.body;
+    const user = new User(id, addr, ip);
+    await db.writeUser(user);
+    res.send(`User added successfully: ${user.id}`);
+  });
   app.get("/blockchains", function(req, res) {
-    res.send(operator.blockchains);
+    res.send(
+      Object.keys(operator.blockchains).map(
+        addr => operator.blockchains[addr].blockchain
+      )
+    );
   });
   app.get("/blockchain/:addr", function(req, res) {
     const address = req.param.addr;
@@ -38,8 +51,8 @@ async function initPlasmaOperator() {
     const address = req.params.addr;
     res.send(operator.stateDB.stateObjects[address]);
   });
-  app.get("currentOpNonce", function(req, res) {
-    res.send(operator.opNonce);
+  app.get("/opNonce", function(req, res) {
+    res.send({ opNonce: operator.opNonce });
   });
   // TODO: Mutex lock for opNonce may needed
   app.post("/block", function(req, res) {

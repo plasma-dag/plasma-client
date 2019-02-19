@@ -8,6 +8,9 @@ class User {
     this.addr = addr;
     this.ip = ip;
   }
+  get address() {
+    return this.addr;
+  }
 }
 
 module.exports = {

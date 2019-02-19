@@ -2,6 +2,7 @@
 "use strict";
 const express = require("express");
 const bodyParser = require("body-parser");
+const morgan = require("morgan");
 
 const nw = require("./network");
 const wl = require("./client/wallet");
@@ -28,28 +29,30 @@ async function initPlasmaClient() {
   // Make stateDB object
   const stateDB = new StateDB(db);
   // TODO: If state object doesn't exist in user's database, should user ask it to op?
-  if (!stateDB.isExist(addr)) {
-    stateDB.makeNewState(addr);
+  let stateExist = await stateDB.isExist(addr);
+  if (!stateExist) {
+    if (bc.currentBlock) {
+      await stateDB.setState(addr, bc.currentBlock.header.data.accountState);
+    } else {
+      await stateDB.makeNewState(addr);
+    }
   }
   // Make potentialDB object
   const potentialDB = new PotentialDB(db);
+  await potentialDB.populate();
   // If potential for user addr doesn't exist make blank potential object
   if (!potentialDB.potentials[addr]) {
     potentialDB.makeNewPotential(addr);
   }
+  let state = await stateDB.getStateObject(addr);
   // Set miner object for user address
-  const miner = new Miner(
-    bc,
-    stateDB.getStateObject(addr),
-    potentialDB.potentials[addr]
-  );
-  let userList = await this.db.getUserList();
+  const miner = new Miner(db, bc, state, potentialDB.potentials[addr]);
+  let userList = await db.getUserList();
   const proofList = [];
-
   const app = express();
 
   app.locals = {
-    ...locals,
+    ...app.locals,
     db,
     bc,
     stateDB,
@@ -60,6 +63,7 @@ async function initPlasmaClient() {
     wl
   };
   app.use(bodyParser.json());
+  app.use(morgan("dev"));
   app.use("/api", api);
 
   // Server logics

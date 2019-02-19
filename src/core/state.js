@@ -87,17 +87,18 @@ class StateDB {
 
   async populate() {
     const allStates = await this.db.readAllStates();
-    for (p in allStates) {
-      this.stateObjects[p.address] = new StateObject(
-        p.address,
-        p.account,
+    for (let i = 0; i < allStates.length; i++) {
+      let s = allStates[i];
+      this.stateObjects[s.address] = new StateObject(
+        s.address,
+        s.account,
         this.db
       );
     }
   }
 
-  isExist(addr) {
-    return Boolean(this.getStateObject(addr));
+  async isExist(addr) {
+    return Boolean(await this.getStateObject(addr));
   }
 
   async getStateObject(addr) {
@@ -115,7 +116,7 @@ class StateDB {
 
   makeNewState(addr) {
     const newAccount = new Account(0, 0, "");
-    state = new StateObject(addr, newAccount);
+    const state = new StateObject(addr, newAccount);
     this.setState(addr, newAccount);
     return state;
   }

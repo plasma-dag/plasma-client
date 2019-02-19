@@ -3,7 +3,7 @@
 const { Block, Header, signBlock } = require("../core/block");
 const { Transaction } = require("../core/transaction");
 const { merkle, hashMessage } = require("../crypto/index");
-const { Database } = require("../db/index");
+const { preStateProcess } = require("../core/state_processor");
 
 class Miner {
   constructor(db, bc, stateObj, potential) {
@@ -50,12 +50,18 @@ class Miner {
    * @param {*} prvKey
    */
   async mineBlock(prvKey) {
-    await this.bc.init();
     const previousHash = this.bc.currentBlock.blockHash;
     const potentialHashList = this.potential.getHashList();
-    const accountState = this.state.account;
     this.pendTx();
     const newTxs = this.pendingTxList;
+    const accountState = preStateProcess(
+      this.db,
+      this.state,
+      this.potential,
+      potentialHashList,
+      newTxs
+    );
+    if (accountState.error) return accountState.error;
     const leaves = newTxs.map(tx => tx.hash());
     const merkleHash = merkle(leaves);
     const difficulty = 1; // For test.
@@ -77,10 +83,11 @@ class Miner {
     newHeader.data = result;
     const minedBlock = new Block(newHeader, newTxs);
     signBlock(minedBlock, prvKey);
-    this.db.writeBlock(minedBlock);
+    await this.db.writeBlock(minedBlock);
 
     //deepcopy
     this.curBlock = JSON.parse(JSON.stringify(minedBlock));
+    console.log(this.curBlock);
     return minedBlock;
   }
 
@@ -94,10 +101,16 @@ class Miner {
     const index = this.newTxs.findIndex(tx => tx.data.receiver === receiver);
     if (index !== -1) {
       // update exist tx's value
-      return (this.newTxs[index].data.value += value);
+      this.newTxs[index].data.value += value;
+      return {
+        success: `Updated exist tx to: ${receiver}, value: ${
+          this.newTxs[index].data.value
+        }`
+      };
     }
     let tx = new Transaction(receiver, value);
-    return this.newTxs.push(tx);
+    this.newTxs.push(tx);
+    return { success: `New tx added to: ${receiver}, value: ${value}` };
   }
   /**
    * Refresh mined block and all tx list

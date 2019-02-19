@@ -54,11 +54,11 @@ class PotentialDB {
 
   async populate() {
     const res = await this.db.readAllPotentials();
-    for (p in res) {
-      this.potentials[p.address] = new Potential(
+    for (let i = 0; i < res.length; i++) {
+      this.potentials[res[i].address] = new Potential(
         this.db,
-        p.address,
-        p.blockHashList
+        res[i].address,
+        res[i].blockHashList ? res[i].blockHashList : []
       );
     }
   }
