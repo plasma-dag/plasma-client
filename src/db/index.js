@@ -86,8 +86,9 @@ class Database {
         const users = client.db("plasma").collection("users");
 
         users
-          .findOne({ id: id })
-          .then(result => resolve(result))
+          .find({ id: id }, { projection: { _id: 0 } })
+          .toArray()
+          .then(result => resolve(result[0]))
           .catch(err => reject(err));
       });
     });

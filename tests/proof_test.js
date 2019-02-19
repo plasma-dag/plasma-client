@@ -34,5 +34,4 @@ const db = new Database();
 
 // wait(db.writeProof([Proof1, Proof2]));
 wait(db.readProof(1, "receiver1"));
-
-// console.log([Proof1, Proof2].filter(proof => proof.proof.tx.data.receiver == "receiver1"))
+wait(db.readProof(1, "receiver2"));
