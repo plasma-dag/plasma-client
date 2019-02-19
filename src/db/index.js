@@ -93,6 +93,23 @@ class Database {
     });
   }
 
+  getUserList() {
+    return new Promise((resolve, reject) => {
+      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+        if (err) {
+          console.log(err);
+          return;
+        }
+        const users = client.db("plasma").collection("users");
+        users
+          .find()
+          .toArray()
+          .then(result => resolve(result))
+          .catch(err => reject(err));
+      });
+    });
+  }
+
   readUserbyAddress(address) {
     return new Promise((resolve, reject) => {
       this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
@@ -370,7 +387,7 @@ class Database {
         const states = client.db("plasma").collection("states");
         states
           .findOne({ address: address })
-          .then(result => resolve(result))
+          .then(({ address, account }) => resolve({ address, account }))
           .catch(err => reject(err));
       });
     });
@@ -392,7 +409,7 @@ class Database {
         states
           .updateOne(
             { address: state.address },
-            { $set: state },
+            { $set: { account: state.account } },
             { upsert: true }
           )
           .then(({ result }) => resolve(result))

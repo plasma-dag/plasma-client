@@ -96,8 +96,8 @@ class StateDB {
     }
   }
 
-  isExist(addr) {
-    return Boolean(this.getStateObject(addr));
+  async isExist(addr) {
+    return Boolean(await this.getStateObject(addr));
   }
 
   async getStateObject(addr) {
@@ -115,7 +115,7 @@ class StateDB {
 
   makeNewState(addr) {
     const newAccount = new Account(0, 0, "");
-    state = new StateObject(addr, newAccount);
+    const state = new StateObject(addr, newAccount);
     this.setState(addr, newAccount);
     return state;
   }

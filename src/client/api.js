@@ -9,7 +9,7 @@ const { User } = require("../network/user");
 // Return block list
 api.get("/blockchain", function(req, res) {
   const bc = req.app.locals.bc;
-  res.send(bc.blockchain());
+  res.send(bc.blockchain);
 });
 // Enable mining
 api.post("/startMiner", function(req, res) {
@@ -24,11 +24,10 @@ api.post("/stopMiner", function(req, res) {
   res.send("Stopped miner");
 });
 // Mine new block with current state, return mined block.
-api.post("/mineBlock", function(req, res) {
-  const { data } = req.body;
-  const miner = req.app.locals.miner;
+api.post("/mineBlock", async function(req, res) {
+  const { miner, wl } = req.app.locals;
   // miner object containes mined block hash value temporarily
-  const block = miner.mineBlock(data);
+  const block = await miner.mineBlock(wl.getPrivateFromWallet());
   res.send(block);
 });
 api.post("/makeTx", function(req, res) {
@@ -125,11 +124,12 @@ api.post("/sendProof", async function(req, res) {
 });
 api.get("/currentTxs", function(req, res) {
   const miner = req.app.locals.miner;
-  res.send(miner.getTxs());
+  res.send(miner.getTxs);
 });
 api.get("/minedBlock", function(req, res) {
   const miner = req.app.locals.miner;
-  res.send(miner.getCurrentBlock());
+  console.log(miner.curBlock);
+  res.send(miner.curBlock);
 });
 api.get("/currentBlock", function(req, res) {
   const bc = req.app.locals.bc;

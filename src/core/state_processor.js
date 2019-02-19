@@ -126,7 +126,13 @@ const stateProcess = function(
  * @param {potentialObject} potential
  * @param {*} block
  */
-const preStateProcess = function(db, state, potential, block) {
+const preStateProcess = function(
+  db,
+  state,
+  potential,
+  potentialHashList,
+  transactions
+) {
   /**
    * 1. Check operator's signature is real usable one and address is user's (confirmSend 함수에서 처리하도록 수정)
    * 2. Find block by checkpoint's block hash (confirmSend 함수에서 처리하도록 수정)
@@ -140,12 +146,12 @@ const preStateProcess = function(db, state, potential, block) {
   // 5 state, potential copy로 potential을 받을 받아서 state copy를 update
   const stateCopy = deepCopy(state);
   const potentialCopy = deepCopy(potential);
-  if (targetBlock.header.potentialHashList.length !== 0) {
+  if (potentialHashList.length !== 0) {
     const res = receivePotential(
       db,
       stateCopy,
       potentialCopy,
-      block.header.potentialHashList
+      potentialHashList
     );
     if (res.error) {
       return res;
@@ -153,7 +159,7 @@ const preStateProcess = function(db, state, potential, block) {
   }
 
   // 6 state copy로 block에 포함된 tx를 처리하여 update
-  block.transactions.forEach(tx => {
+  transactions.forEach(tx => {
     const res = sendStateTransition(stateCopy, tx);
     if (res.error) {
       // TODO: send error toleration logic here
@@ -161,7 +167,7 @@ const preStateProcess = function(db, state, potential, block) {
       return res;
     }
   });
-
+  stateCopy.account.nonce++;
   // state copy return(원래 state는 그대로 유지)
   return stateCopy;
 };
