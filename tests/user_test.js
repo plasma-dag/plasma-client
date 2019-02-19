@@ -16,3 +16,4 @@ async function wait(promise, prefix) {
 
 wait(db.readUserbyId("id1"));
 wait(db.readUserbyId("id2"));
+wait(db.readUserbyAddress("addr1"));

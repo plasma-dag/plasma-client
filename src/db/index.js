@@ -121,8 +121,9 @@ class Database {
         const users = client.db("plasma").collection("users");
 
         users
-          .findOne({ _id: address })
-          .then(result => resolve(result))
+          .find({ _id: address }, { projection: { _id: 0 } })
+          .toArray()
+          .then(result => resolve(result[0]))
           .catch(err => reject(err));
       });
     });
@@ -186,7 +187,7 @@ class Database {
         }
         const potentials = client.db("plasma").collection("potentials");
         return potentials
-          .find()
+          .find({}, { projection: { _id: 0 } })
           .toArray()
           .then(result => resolve(result))
           .catch(err => reject(err));
@@ -235,7 +236,7 @@ class Database {
         const checkpoints = client.db("plasma").collection("checkpoints");
         // TODO: 필터에 signature => address 바꾸는 로직? 사실 함수 자체가 필요없을 수도 있긴 함.
         return checkpoints
-          .find({ blockHash })
+          .find({ blockHash }, { projection: { _id: 0 } })
           .toArray()
           .then(result => resolve(result))
           .catch(err => reject(err));
@@ -257,7 +258,7 @@ class Database {
         const blocks = client.db("plasma").collection("blocks");
         // TODO: 필터에 signature => address 바꾸는 로직? 사실 함수 자체가 필요없을 수도 있긴 함.
         return blocks
-          .find({})
+          .find({}, { projection: { _id: 0 } })
           .toArray()
           .then(result => resolve(result))
           .catch(err => reject(err));
@@ -280,8 +281,9 @@ class Database {
         }
         const blocks = client.db("plasma").collection("blocks");
         blocks
-          .findOne({ _id: hash })
-          .then(result => resolve(result))
+          .find({ _id: hash }, { projection: { _id: 0 } })
+          .toArray()
+          .then(result => resolve(result[0]))
           .catch(err => reject(err));
       });
     });
@@ -324,7 +326,7 @@ class Database {
         }
         const transactions = client.db("plasma").collection("transactions");
         transactions
-          .findOne({ _id: hash })
+          .find({ _id: hash }, { projection: { _id: 0 } })
           .then(result => resolve(result))
           .catch(err => reject(err));
       });
@@ -365,7 +367,7 @@ class Database {
         }
         const states = client.db("plasma").collection("states");
         return states
-          .find()
+          .find({}, { projection: { _id: 0 } })
           .toArray()
           .then(result => resolve(result))
           .catch(err => reject(err));

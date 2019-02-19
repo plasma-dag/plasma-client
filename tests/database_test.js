@@ -1,10 +1,10 @@
 "use-strict";
-const { Block, Header } = require("../core/block");
-const { Transaction } = require("../core/transaction");
-const { StateObject } = require("../core/stateObject");
-const { Account } = require("../core/account");
-const { Checkpoint } = require("../core/checkpoint");
-const { Database } = require("./database");
+const { Block, Header } = require("../src/core/block");
+const { Transaction } = require("../src/core/transaction");
+const { StateObject } = require("../src/core/state");
+const { Account } = require("../src/core/account");
+const { Checkpoint } = require("../src/core/checkpoint");
+const { Database } = require("../src/db/index");
 
 async function wait(promise, prefix) {
   let r = await promise;
@@ -75,6 +75,7 @@ const db = new Database();
 // wait(db.readBlock(newBlock.hash()), 'read block: ');
 
 // wait(db.writeState(newState), 'write state: ');
+// wait(db.readState("addresstest"))
 // wait(db.readState(newState.getAddress()), 'read state: ');
 
 // wait(db.writePotential(newState.address,[ newBlock.hash() ]), 'write potential: ');
