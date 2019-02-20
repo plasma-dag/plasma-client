@@ -116,6 +116,9 @@ class Blockchain {
     let blockList = this.db
       .loadLastCheckpoint(this.address)
       .then(last_checkpoint => {
+        if (last_checkpoint.length == 0) {
+          return [];
+        }
         // Gets blockhash of the last_checkpoint
         const lastBlockHash = last_checkpoint[0].blockHash;
 
