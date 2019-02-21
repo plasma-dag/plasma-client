@@ -34,6 +34,8 @@ class Operator {
       let blkchain = new Blockchain(this.db, user.addr);
       await blkchain.init();
       this.blockchains[user.addr] = blkchain;
+      let lastOpNonce = blkchain.lastOpNonce;
+      this._opNonce = Math.max(lastOpNonce, this._opNonce);
     });
   }
 
@@ -51,24 +53,30 @@ class Operator {
    * @param {*} block
    * @param {*} prvKey
    */
-  processBlock(block, prvKey) {
+  async processBlock(block, prvKey) {
     const validator = new BlockValidator(
       this.db,
-      this.blockchains[block.sender()],
+      this.blockchains[block.sender],
       this.potentialDB
     );
-    let result = validator.validateBlock(block); // TODO: have to cover validating deposit block(deposit block has no tx)
+    let result = await validator.validateBlock(block); // TODO: have to cover validating deposit block(deposit block has no tx)
     if (result.error) return result;
+    console.log("validation OK!");
+    console.log(result);
     // block process
     const opSigCheckpoint = stateProcess(
       this.db,
       this.stateDB,
       this.potentialDB,
-      this.blockchains[block.sender()],
+      this.blockchains[block.sender],
       block,
       prvKey,
       this.opNonce
     );
+    if (opSigCheckpoint.error) {
+      return { error: opSigCheckpoint.error };
+    }
+    this.opNonce += 1;
     return opSigCheckpoint;
   }
   get blockchains() {
@@ -76,6 +84,9 @@ class Operator {
   }
   get opNonce() {
     return this._opNonce;
+  }
+  set opNonce(nonce) {
+    this._opNonce = nonce;
   }
 }
 

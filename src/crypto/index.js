@@ -3,6 +3,8 @@ const Web3 = require("web3");
 const MerkleTree = require("merkletreejs");
 const SHA256 = require("crypto-js/sha256");
 
+const { flatten } = require("../common/utils");
+
 const web3 = new Web3("http://localhost:8545");
 
 /**
@@ -26,7 +28,8 @@ function privateKeyToAccount(privateKey) {
  * @returns {String} hex string starts with '0x'
  */
 function hashMessage(data) {
-  const strData = Object.entries(data).reduce(
+  const fd = flatten(data);
+  const strData = Object.entries(fd).reduce(
     (prev, curr) => prev + curr[1].toString(),
     ""
   );
@@ -51,12 +54,17 @@ function ecrecover(messageHash, r, s, v) {
 }
 
 /**
- * generate signature of hash with privateKey
- * @param {string} hash data to sign
- * @param {string} privateKey key to sign with
+ * generate signature of data with privateKey
+ * @param {Object} data data to sign
+ * @param {String} privateKey key to sign with
  */
-function makeSignature(hash, privateKey) {
-  return web3.eth.accounts.sign(hash, privateKey);
+function makeSignature(data, privateKey) {
+  const fd = flatten(data);
+  const strData = Object.entries(fd).reduce(
+    (prev, curr) => prev + curr[1].toString(),
+    ""
+  );
+  return web3.eth.accounts.sign(strData, privateKey);
 }
 
 /**
@@ -78,13 +86,18 @@ function calculateSHA256(data) {
  * @param {string[]} leaves data to merkle
  */
 function merkle(leaves) {
-  let tree = new MerkleTree(leaves, SHA256);
+  let tree = new MerkleTree(leaves.map(hash => hash.replace("0x", "")), SHA256);
   return tree.getRoot().toString("hex");
 }
 
 function merkleProof(leaves, index) {
-  let tree = new MerkleTree(leaves, SHA256);
-  return tree.getProof(leaves[index], index);
+  let tree = new MerkleTree(leaves.map(hash => hash.replace("0x", "")), SHA256);
+  // return tree.getProof(leaves[index], index);
+  const rawProof = tree.getProof(leaves[index], index);
+  return rawProof.map(proof => ({
+    position: proof.position,
+    data: proof.data.toString("hex")
+  }));
 }
 
 /**
@@ -97,7 +110,11 @@ function merkleProof(leaves, index) {
 function verifyMerkle(deps, proof, target, root) {
   let leaves = new Array((arrayLength = deps)).fill(SHA256(0));
   let tree = new MerkleTree(leaves, SHA256);
-  return tree.verify(proof, target, root);
+  const bufProof = proof.map(proof => ({
+    position: proof.position,
+    data: Buffer.from(proof.data, "hex")
+  }));
+  return tree.verify(bufProof, target.replace("0x", ""), root);
 }
 module.exports = {
   pubToAddress,

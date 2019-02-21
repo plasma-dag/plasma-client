@@ -8,6 +8,8 @@ const wl = require("./client/wallet");
 
 const { Database } = require("./db");
 const { Operator } = require("./client/operator");
+const { Block, Header } = require("./core/block");
+const { Transaction } = require("./core/transaction");
 const { User } = require("./network/user");
 // set environment variable
 const http_port = process.env.HTTP_PORT || 3001; // > $env:HTTP_PORT=3003 (windows) || export HTTP_PORT=3003 (mac)
@@ -55,8 +57,19 @@ async function initPlasmaOperator() {
     res.send({ opNonce: operator.opNonce });
   });
   // TODO: Mutex lock for opNonce may needed
-  app.post("/block", function(req, res) {
-    res.send(operator.processBlock(req.body.block, wl.getPrivateFromWallet()));
+  app.post("/block", async function(req, res) {
+    const block = new Block(
+      new Header(req.body.header.data),
+      req.body.transactions.map(
+        t => new Transaction(t.data.receiver, t.data.value)
+      ),
+      req.body.r,
+      req.body.s,
+      req.body.v
+    );
+    res.send(
+      await operator.processBlock(block, "0x" + wl.getPrivateFromWallet())
+    );
   });
   app.listen(http_port, function() {
     console.log("Listening http port on: " + http_port);

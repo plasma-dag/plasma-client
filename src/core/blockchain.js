@@ -1,6 +1,10 @@
 "use strict";
 
 const { Database } = require("../db");
+const { Block, Header } = require("./block");
+const { Transaction } = require("./transaction");
+const { Checkpoint } = require("./checkpoint");
+
 /**
  * Represents the Blockchain structure
  */
@@ -25,7 +29,16 @@ class Blockchain {
       this.loadLastCheckpoint(),
       this.makeBlockChain()
     ]);
-    this.checkpoint = result[0];
+    this.checkpoint = result[0]
+      ? new Checkpoint(
+          result[0].address,
+          result[0].blockHash,
+          result[0].operatorNonce,
+          result[0].r,
+          result[0].s,
+          result[0].v
+        )
+      : undefined;
     this.blocks = result[1];
     this.genesisBlock = this.blocks[this.blocks.length - 1];
     this.currentBlock = this.blocks[0];
@@ -36,8 +49,7 @@ class Blockchain {
    * gets address and returns a "list" which contains the lat checkpoint
    */
   async loadLastCheckpoint() {
-    let r = await this.db.loadLastCheckpoint(this.address);
-    // console.log("checkpoint : ")
+    const r = await this.db.loadLastCheckpoint(this.address);
     return r;
   }
 
@@ -48,8 +60,8 @@ class Blockchain {
    *
    * @param {Block} block
    */
-  insertBlock(block) {
-    this.db.writeBlock(block);
+  async insertBlock(block) {
+    await this.db.writeBlock(block);
     this.currentBlock = block;
     this.blocks.unshift(block);
   }
@@ -59,9 +71,9 @@ class Blockchain {
    *
    * @param {Object} checkpoint
    */
-  updateCheckpoint(checkpoint) {
-    this.db.writeCheckpoint(checkpoint);
-    this.lastCheckpoint.push(checkpoint);
+  async updateCheckpoint(checkpoint) {
+    await this.db.writeCheckpoint(checkpoint);
+    this.checkpoint = checkpoint;
   }
 
   /**
@@ -97,9 +109,9 @@ class Blockchain {
    * @param {Number} number
    */
   getBlockByNumber(number) {
-    return this.blocks[this.blocks.length - number - 1]
-      ? this.blocks[this.blocks.length - number - 1]
-      : null;
+    return 0 < number && number <= this.blocks.length
+      ? this.blocks[this.blocks.length - number]
+      : undefined;
   }
 
   /**
@@ -108,7 +120,9 @@ class Blockchain {
   get blockchain() {
     return this.blocks;
   }
-
+  get lastOpNonce() {
+    return this.checkpoint ? this.checkpoint.operatorNonce : -1;
+  }
   //Gets all blocks by address and returns Promise object
 
   async makeBlockChain() {
@@ -116,14 +130,23 @@ class Blockchain {
     let blockList = this.db
       .loadLastCheckpoint(this.address)
       .then(last_checkpoint => {
+        if (!last_checkpoint) return [];
         // Gets blockhash of the last_checkpoint
-        const lastBlockHash = last_checkpoint[0].blockHash;
+        const lastBlockHash = last_checkpoint.blockHash;
 
         // Gets block object by blockHash and throw the block object to lastBlock
-        let a = this.db.readBlock(lastBlockHash).then(lastBlock => {
+        let a = this.db.readBlock(lastBlockHash).then(lBlock => {
+          const lastBlock = new Block(
+            new Header(lBlock.header.data),
+            lBlock.transactions.map(
+              t => new Transaction(t.data.receiver, t.data.value)
+            ),
+            lBlock.r,
+            lBlock.s,
+            lBlock.v
+          );
           // Gets block nonce of the last finalized block and store it in lastBlockNonce
           const lastBlockNonce = lastBlock.header.data.accountState.nonce;
-
           // Gets all the blocks related to this.address and throw the list to allBlockList
           let b = this.db
             .loadBlockswithAddress(this.address)
@@ -136,8 +159,15 @@ class Blockchain {
               // Move the filtered list items to dictionary,
               // key : (String) block hash & value : (Object) block object
               let filteredDict = {};
-              filteredList.map(
-                block => (filteredDict[block.blockHash] = block)
+              filteredList.forEach(
+                block =>
+                  (filteredDict[block.blockHash] = new Block(
+                    new Header(block.header.data),
+                    block.transactions,
+                    block.r,
+                    block.s,
+                    block.v
+                  ))
               );
 
               // To ensure if blocks in the filteredList are all linked to each other by previousHash,
@@ -160,7 +190,7 @@ class Blockchain {
                 ) {
                   console.log(
                     "invalid blockchain : previous block does not exist, blockhash : ",
-                    blockList[blockList.length - 1].hash()
+                    blockList[blockList.length - 1].hash
                   );
                   break;
                 }

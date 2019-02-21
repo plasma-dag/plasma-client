@@ -2,7 +2,7 @@
 "use-strict";
 const mongo = require("mongodb").MongoClient;
 const url = "mongodb://localhost:27017";
-
+// const dbName = process.env.HTTP_PORT || '3001';
 /**
  * Represent database structure
  */
@@ -10,8 +10,9 @@ class Database {
   /**
    * @constructor
    */
-  constructor() {
+  constructor(dbName = process.env.HTTP_PORT || "3001") {
     this.db = mongo;
+    this.dbName = dbName;
   }
   writeProof(proof_list) {
     return new Promise((resolve, reject) => {
@@ -20,10 +21,10 @@ class Database {
           console.error(err);
           return;
         }
-        const proofs = client.db("plasma").collection("proofs");
+        const proofs = client.db(this.dbName).collection("proofs");
         proofs
           .updateOne(
-            { _id: proof_list[0].proof.blockHeader.hash() },
+            { _id: proof_list[0].proof.blockHeader.hash },
             { $set: { proof_list } },
             { upsert: true }
           )
@@ -33,26 +34,50 @@ class Database {
     });
   }
 
-  readProof(blockNum, receiver) {
+  readProof(blockHash, receiver) {
     return new Promise((resolve, reject) => {
       this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
         if (err) {
           console.error(err);
           return;
         }
-        const proofs = client.db("plasma").collection("proofs");
+        const proofs = client.db(this.dbName).collection("proofs");
 
         proofs
-          .find({
-            "proof_list.proof.blockHeader.data.accountState.nonce": blockNum
+          .findOne({
+            _id: blockHash
           })
-          .project({ proof_list: 1, _id: 0 })
+          .then(result =>
+            resolve(
+              result
+                ? result.proof_list.find(
+                    p => p.proof.tx.data.receiver === receiver
+                  )
+                : undefined
+            )
+          )
+          .catch(err => reject(err));
+      });
+    });
+  }
+
+  readAllProof() {
+    return new Promise((resolve, reject) => {
+      this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        const proofs = client.db(this.dbName).collection("proofs");
+
+        proofs
+          .find()
           .toArray()
           .then(result =>
             resolve(
-              result[0].proof_list.filter(
-                proof => proof.proof.tx.data.receiver === receiver
-              )[0]
+              result.reduce((prev, curr) => {
+                return prev.concat(curr.proof_list);
+              }, [])
             )
           )
           .catch(err => reject(err));
@@ -67,7 +92,7 @@ class Database {
           console.error(err);
           return;
         }
-        const users = client.db("plasma").collection("users");
+        const users = client.db(this.dbName).collection("users");
         users
           .updateOne({ _id: user.addr }, { $set: user }, { upsert: true })
           .then(({ result }) => resolve(result))
@@ -76,14 +101,14 @@ class Database {
     });
   }
 
-  readUserbyId(id) {
+  readUserById(id) {
     return new Promise((resolve, reject) => {
       this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
         if (err) {
           console.error(err);
           return;
         }
-        const users = client.db("plasma").collection("users");
+        const users = client.db(this.dbName).collection("users");
 
         users
           .findOne({ id: id })
@@ -100,7 +125,7 @@ class Database {
           console.log(err);
           return;
         }
-        const users = client.db("plasma").collection("users");
+        const users = client.db(this.dbName).collection("users");
         users
           .find()
           .toArray()
@@ -117,7 +142,7 @@ class Database {
           console.error(err);
           return;
         }
-        const users = client.db("plasma").collection("users");
+        const users = client.db(this.dbName).collection("users");
 
         users
           .findOne({ _id: address })
@@ -134,14 +159,14 @@ class Database {
           console.error(err);
           return;
         }
-        const checkpoints = client.db("plasma").collection("checkpoints");
+        const checkpoints = client.db(this.dbName).collection("checkpoints");
 
         checkpoints
           .find({ address: addr })
           .sort({ operatorNonce: -1 })
           .limit(1)
           .toArray()
-          .then(result => resolve(result))
+          .then(result => resolve(result[0]))
           .catch(err => reject(err));
       });
     });
@@ -160,7 +185,7 @@ class Database {
           console.error(err);
           return;
         }
-        const potentials = client.db("plasma").collection("potentials");
+        const potentials = client.db(this.dbName).collection("potentials");
         potentials
           .updateOne(
             { address },
@@ -183,7 +208,7 @@ class Database {
           console.error(err);
           return;
         }
-        const potentials = client.db("plasma").collection("potentials");
+        const potentials = client.db(this.dbName).collection("potentials");
         return potentials
           .find()
           .toArray()
@@ -207,10 +232,10 @@ class Database {
           console.error(err);
           return;
         }
-        const checkpoints = client.db("plasma").collection("checkpoints");
+        const checkpoints = client.db(this.dbName).collection("checkpoints");
         checkpoints
           .updateOne(
-            { _id: checkpoint.blockHash },
+            { _id: checkpoint.hash },
             { $set: checkpoint },
             { upsert: true }
           )
@@ -231,12 +256,12 @@ class Database {
           console.error(err);
           return;
         }
-        const checkpoints = client.db("plasma").collection("checkpoints");
+        const checkpoints = client.db(this.dbName).collection("checkpoints");
         // TODO: 필터에 signature => address 바꾸는 로직? 사실 함수 자체가 필요없을 수도 있긴 함.
         return checkpoints
           .find({ blockHash })
           .toArray()
-          .then(result => resolve(result))
+          .then(result => resolve(result[0]))
           .catch(err => reject(err));
       });
     });
@@ -253,7 +278,7 @@ class Database {
           console.error(err);
           return;
         }
-        const blocks = client.db("plasma").collection("blocks");
+        const blocks = client.db(this.dbName).collection("blocks");
         // TODO: 필터에 signature => address 바꾸는 로직? 사실 함수 자체가 필요없을 수도 있긴 함.
         return blocks
           .find({})
@@ -277,7 +302,7 @@ class Database {
           console.error(err);
           return;
         }
-        const blocks = client.db("plasma").collection("blocks");
+        const blocks = client.db(this.dbName).collection("blocks");
         blocks
           .findOne({ _id: hash })
           .then(result => resolve(result))
@@ -299,8 +324,8 @@ class Database {
           return;
         }
         // Block's hash value is always unique
-        block._id = block.hash();
-        const blocks = client.db("plasma").collection("blocks");
+        block._id = block.hash;
+        const blocks = client.db(this.dbName).collection("blocks");
         blocks
           .insertOne(block)
           .then(({ result }) => resolve(result))
@@ -321,7 +346,7 @@ class Database {
           console.error(err);
           return;
         }
-        const transactions = client.db("plasma").collection("transactions");
+        const transactions = client.db(this.dbName).collection("transactions");
         transactions
           .findOne({ _id: hash })
           .then(result => resolve(result))
@@ -343,8 +368,8 @@ class Database {
           return;
         }
         // Transaciton's hash value is always unique
-        tx._id = tx.hash();
-        const transactions = client.db("plasma").collection("transactions");
+        tx._id = tx.hash;
+        const transactions = client.db(this.dbName).collection("transactions");
         transactions
           .insertOne(tx)
           .then(({ result }) => resolve(result))
@@ -362,7 +387,7 @@ class Database {
           console.error(err);
           return;
         }
-        const states = client.db("plasma").collection("states");
+        const states = client.db(this.dbName).collection("states");
         return states
           .find()
           .toArray()
@@ -384,7 +409,7 @@ class Database {
           console.error(err);
           return;
         }
-        const states = client.db("plasma").collection("states");
+        const states = client.db(this.dbName).collection("states");
         states
           .findOne({ address: address })
           .then(({ address, account }) => resolve({ address, account }))
@@ -405,7 +430,7 @@ class Database {
           console.error(err);
           return;
         }
-        const states = client.db("plasma").collection("states");
+        const states = client.db(this.dbName).collection("states");
         states
           .updateOne(
             { address: state.address },

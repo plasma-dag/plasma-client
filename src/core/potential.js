@@ -28,21 +28,18 @@ class Potential {
     return this.blockHashList.includes(blockHash);
   }
 
-  insert(blockHash) {
+  async insert(blockHash) {
     this.blockHashList.push(blockHash);
-    this.save();
+    await this.save();
   }
 
-  remove(blockHash) {
+  async remove(blockHash) {
     if (this.blockHashList.includes(blockHash)) {
       this.blockHashList.filter(d => d !== blockHash);
-      this.save();
+      await this.save();
       return true;
     }
     return Error("No matching blockHash in potential");
-  }
-  getHashList() {
-    return Array.prototype.slice.call(this.blockHashList);
   }
 }
 
@@ -58,7 +55,7 @@ class PotentialDB {
       this.potentials[res[i].address] = new Potential(
         this.db,
         res[i].address,
-        res[i].blockHashList ? res[i].blockHashList : []
+        res[i].hashList ? res[i].hashList : []
       );
     }
   }
@@ -73,10 +70,10 @@ class PotentialDB {
     }
     return false;
   }
-  makeNewPotential(addr) {
+  async makeNewPotential(addr) {
     const newPotential = new Potential(this.db, addr, []);
     this.potentials[addr] = newPotential;
-    newPotential.save();
+    await newPotential.save();
     return newPotential;
   }
   /**
@@ -84,30 +81,39 @@ class PotentialDB {
    * @param {*} blockHash
    * @param {address} receiver
    */
-  sendPotential(blockHash, receiver) {
+  async sendPotential(blockHash, receiver) {
     // Potential already exist
     if (this.potentials[receiver]) {
-      return this.potentials[receiver].insert(blockHash);
+      return await this.potentials[receiver].insert(blockHash);
     }
     // make new Potential for receiver
     this.potentials[receiver] = new Potential(this.db, receiver, [blockHash]);
-    return this.potentials[receiver].save();
+    return await this.potentials[receiver].save();
   }
   /**
    *
    * @param {*} blockHash
    * @param {address} receiver
    */
-  receivePotential(blockHash, receiver) {
+  async receivePotential(blockHash, receiver) {
     // Available potential is exist
     if (this.potentials[receiver]) {
-      return this.potentials[receiver].remove(blockHash);
+      return await this.potentials[receiver].remove(blockHash);
     }
     return Error("No Potentials for receiver address");
   }
 }
+/**
+ * Returns potential's unreceived block hash list
+ *
+ * @param {Potential} potential
+ */
+function getHashList(potential) {
+  return Array.prototype.slice.call(potential.blockHashList);
+}
 
 module.exports = {
   Potential,
-  PotentialDB
+  PotentialDB,
+  getHashList
 };

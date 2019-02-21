@@ -1,6 +1,11 @@
 "use-strict";
 
-const { merkleProof, verifyMerkle } = require("../crypto/index.js");
+const {
+  merkleProof,
+  verifyMerkle,
+  ecrecover,
+  hashMessage
+} = require("../crypto");
 
 class Proof {
   /**
@@ -18,7 +23,10 @@ class Proof {
     merkleRoot,
     merkleDeps,
     checkpoint,
-    blockHeader
+    blockHeader,
+    r,
+    s,
+    v
   ) {
     this.proof = {
       tx,
@@ -26,7 +34,10 @@ class Proof {
       merkleRoot,
       merkleDeps,
       checkpoint,
-      blockHeader
+      blockHeader,
+      r,
+      s,
+      v
     };
   }
 
@@ -38,7 +49,7 @@ class Proof {
   // receiver의 검증
   // proofList = receiver가 지금까지 검증한 proof의 리스트
   validate() {
-    for (key in this.proof) {
+    for (let key in this.proof) {
       if (!this.proof[key]) return { error: true };
     }
 
@@ -46,49 +57,68 @@ class Proof {
   }
 
   merkleProof() {
-    // 머클 증명을 통한 tx 포함 여부 확인
-    if (
-      !verifyMerkle(
-        this.merkleDeps,
-        this.merkleProof,
-        this.tx.hash(),
-        this.merkleRoot
-      )
-    )
-      return { error: true };
-    return { error: false };
+    const result = !verifyMerkle(
+      this.proof.merkleDeps,
+      this.proof.merkleProof,
+      this.proof.tx.hash,
+      this.proof.merkleRoot
+    );
+    return {
+      error: result
+    };
+  }
+
+  get sender() {
+    if (this.from) return this.from;
+    this.from = ecrecover(
+      hashMessage(this.proof.blockHeader.data),
+      this.proof.r,
+      this.proof.s,
+      this.proof.v
+    );
+    return this.from;
+  }
+  get checkpoint() {
+    return this.proof.checkpoint;
+  }
+  get blockHash() {
+    return this.proof.blockHeader.hash;
+  }
+  get tx() {
+    return this.proof.tx;
+  }
+  get blockHeader() {
+    return this.proof.blockHeader;
   }
 }
 
 /**
+ * Returns Proof object with given transaction, block, checkpoint
  *
- * @param {*} checkpoint
- * @param {*} block
+ * @param {*} tx
+ * @param {*} blk
+ * @param {*} cp
  */
-// sender의 증명
-function makeProof(checkpoint, block) {
-  // 4. merkle tree 생성
-  const txs = block.transactions;
+function makeProof(tx, blk, cp) {
+  const txs = blk.transactions;
 
-  let leaves = [];
-  txs.forEach(tx => leaves.push(tx.hash()));
-  //const root = merkle(leaves);
-  //const deps = leaves.length;
+  let leaves = txs.map(tx => tx.hash);
 
-  // 5. 각 tx마다 proof를 생성하여 리스트에 추가
-  let proofs = [];
-  txs.forEach((tx, index) => {
-    let proof = new Proof(
-      tx,
-      merkleProof(leaves, index),
-      block.header.merkleHash,
-      block.transactions.length,
-      checkpoint,
-      block.header
-    );
-    proofs.push(proof);
-  });
-  return proofs;
+  const index = txs.findIndex(t => t === tx);
+  console.log("tx index: ", index);
+  if (index === -1) return { error: "Invalid target tx" };
+
+  return new Proof(
+    tx,
+    merkleProof(leaves, index),
+    blk.merkleHash,
+    blk.transactions.length,
+    cp,
+    blk.header,
+    blk.r,
+    blk.s,
+    blk.v
+  );
 }
 
 module.exports = {

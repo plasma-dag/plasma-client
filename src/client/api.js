@@ -5,6 +5,8 @@ const axios = require("axios");
 const api = express.Router();
 
 const { User } = require("../network/user");
+const { Checkpoint } = require("../core/checkpoint");
+const { makeProof, Proof } = require("../core/proof");
 
 // Return block list
 api.get("/blockchain", function(req, res) {
@@ -27,7 +29,7 @@ api.post("/stopMiner", function(req, res) {
 api.post("/mineBlock", async function(req, res) {
   const { miner, wl } = req.app.locals;
   // miner object containes mined block hash value temporarily
-  const block = await miner.mineBlock(wl.getPrivateFromWallet());
+  const block = await miner.mineBlock("0x" + wl.getPrivateFromWallet());
   res.send(block);
 });
 api.post("/makeTx", function(req, res) {
@@ -42,85 +44,93 @@ api.post("/sendBlock", async function(req, res) {
    * 2. nw 객체에 구현된 sendToOperator(block) 함수 호출 (TODO)
    * 3. websocket의 response를 기다린 후, 성공, 실패 로직을 각각 실행한다.
    */
-  const miner = req.app.locals.miner;
-  const block = miner.getCurrentBlock();
+  const { miner, db, bc, stateDB, potentialDB } = req.app.locals;
+  const block = miner.currentBlock;
+  if (!block) return res.send("Mined block doesn't exist");
 
-  const db = req.app.locals.db;
-  const operator = db.readUserById("operator");
+  const operator = await db.readUserById("operator");
 
   miner.pendBlock();
   let result = await axios.post(operator.ip + "/block", block);
-  const checkpoint = result.body;
+  const checkpoint = new Checkpoint(
+    result.data.address,
+    result.data.blockHash,
+    result.data.operatorNonce,
+    result.data.r,
+    result.data.s,
+    result.data.v
+  );
+
   if (checkpoint.error) {
     // Reset miner's data.
-    throw new Error("ERROR");
+    return res.send(checkpoint);
   }
   miner.confirmBlock();
+  console.log(result);
 
   const sender = checkpoint.address;
-  if (!sender) throw new Error("ERROR");
-
-  const miner = req.app.locals.miner;
-  if (!block) throw new Error("ERROR");
+  if (!sender) return res.send("checkpoint doesn't have sender");
 
   // checkpoint 검증
-  result = validateCheckpoint(
-    sender,
-    checkpoint,
-    block.header.hash(),
-    opAddr // TODO: getOpAddr
-  );
-  if (result.error) throw new Error("ERROR");
+  result = checkpoint.validate(operator.addr);
+  if (result.error)
+    return res.send("Checkpoint validation failed: ", result.error);
 
   // checkpoint operator nonce 확인
-  const bc = req.app.locals.bc;
-  if (
-    bc.checkpoint[bc.checkpoint.length - 1].operatorNonce >=
-    checkpoint.operatorNonce
-  )
-    throw new Error("ERROR");
+  if (bc.opNonce >= checkpoint.operatorNonce)
+    return res.send("Operator nonce is lower than recent one");
 
   // bc update
-  const bc = req.app.locals.bc;
-  bc.insertBlock(targetBlock);
+  await bc.insertBlock(block);
   bc.updateCheckpoint(checkpoint);
+  miner.bc = bc;
 
   // block header에 있는 accountState로 state 반영
-  const stateDB = req.app.locals.stateDB;
-  stateDB.setState(
-    block.header.accountState.address,
-    block.header.accountState.account
-  );
+  await stateDB.setState(block.sender, block.account);
 
   // potential clear(모든 block hash list 다 받았기 때문에, block header에 포텐셜의 blockHashList 모두 넣지 않았을 경우 문제 발생)
-  const potentialDB = req.app.locals.potentialDB;
-  potentialDB.makeNewPotential(sender);
-
-  // proof 생성
-  const proofs = makeProof(checkpoint, block);
-  result = await db.writeProof(proofs);
-  if (result.error) throw new Error("ERROR");
-
-  res.send(proofs);
+  result = await potentialDB.makeNewPotential(sender);
+  res.send(result);
 });
 api.post("/sendProof", async function(req, res) {
-  //  const nw = req.app.locals.nw;
-
-  // checkpoint 다루는 부분(proof생성까지) requestCheckpoint(sendBlock)로 이동 필요
-  // sendBlock에서 블록 제출하고 operator부터 checkpoint return 받은 후 아래 logic 수행
-
-  // TODO: 각 receiver에게 생성한 proof 전송
-
-  // const { receiver, txHash } = req.body;
-  // const txProof = "txproof"; // Make tx proof with tx, block header, checkpoint
-  // const result = await nw.sendTxProof(txProof); // TODO\
-
-  const { blockNonce, receiver } = req.body;
-  const db = req.app.locals.db;
-  const proof = db.readProof(blockNonce, receiver);
-  const user = db.getUser(receiver);
-  const result = await axios.post(user.ip + "/proof", proof);
-  res.send(result);
+  const { blockNonce, receiverId } = req.body;
+  const { db, bc } = req.app.locals;
+  // Make proof
+  const receiver = await db.readUserById(receiverId);
+  if (!receiver) {
+    return res.send("User doesn't exist");
+  }
+  const targetBlock = bc.getBlockByNumber(blockNonce);
+  if (!targetBlock) {
+    return res.send("Block nonce is invalid one");
+  }
+  const targetTx = targetBlock.transactions.find(
+    tx => tx.receiver === receiver.addr
+  );
+  if (!targetTx) {
+    return res.send("Block doesn't have receiver related tx");
+  }
+  const targetCheckpoint = await db.readCheckpointWithBlockHash(
+    targetBlock.hash
+  );
+  if (!targetCheckpoint) {
+    return res.send("Checkpoint doesn't exist");
+  }
+  const proof = makeProof(targetTx, targetBlock, targetCheckpoint);
+  try {
+    const result = await axios.post(receiver.ip + "/proof", proof);
+    return res.send(result.data);
+  } catch (error) {
+    return res.send(error);
+  }
+});
+api.get("/potentials", function(req, res) {
+  const { potentialDB, addr } = req.app.locals;
+  res.send(potentialDB.potentials[addr]);
+});
+api.get("/state", async function(req, res) {
+  const { stateDB, addr } = req.app.locals;
+  res.send(await stateDB.getStateObject[addr]);
 });
 api.get("/currentTxs", function(req, res) {
   const miner = req.app.locals.miner;

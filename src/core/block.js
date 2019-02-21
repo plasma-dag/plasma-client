@@ -16,7 +16,7 @@ class Header {
    * @param {Number}  timestamp
    * @param {Number}  nonce
    */
-  constructor(
+  constructor({
     previousHash,
     potentialHashList,
     accountState,
@@ -24,7 +24,7 @@ class Header {
     difficulty,
     timestamp,
     nonce
-  ) {
+  }) {
     this.data = {
       previousHash,
       potentialHashList,
@@ -36,7 +36,7 @@ class Header {
     };
   }
 
-  hash() {
+  get hash() {
     if (this.blockHash) return this.blockHash;
     this.blockHash = hashMessage(this.data);
     return this.blockHash;
@@ -54,15 +54,12 @@ class Block {
    * @param {Header}        header        this block's header
    * @param {Transaction[]} transactions  list of txs
    */
-  constructor(header, transactions) {
+  constructor(header, transactions, r, s, v) {
     this.header = header;
     this.transactions = transactions;
-  }
-
-  hash() {
-    if (this.blockHash) return this.blockHash;
-    this.blockHash = this.header.hash();
-    return this.blockHash;
+    this.r = r;
+    this.s = s;
+    this.v = v;
   }
 
   /**
@@ -76,13 +73,45 @@ class Block {
   }
   /**
    *
-   * @param {Block} block
    */
-  sender(block) {
-    if (!block.from) {
-      block.from = ecrecover(block.hash(), block.r, block.s, block.v);
+
+  get hash() {
+    if (this.blockHash) return this.blockHash;
+    this.blockHash = this.header.hash;
+    return this.blockHash;
+  }
+  get sender() {
+    if (!this.from) {
+      this.from = ecrecover(this.hash, this.r, this.s, this.v);
     }
-    return block.from;
+    return this.from;
+  }
+  get account() {
+    return this.header.data.accountState;
+  }
+  get accountNonce() {
+    return this.header.data.accountState.nonce;
+  }
+  get accountBalance() {
+    return this.header.data.accountState.balance;
+  }
+  get potentialHashList() {
+    return this.header.data.potentialHashList;
+  }
+  get previousHash() {
+    return this.header.data.previousHash;
+  }
+  get timestamp() {
+    return this.header.data.timestamp;
+  }
+  get blockNonce() {
+    return this.header.data.nonce;
+  }
+  get difficulty() {
+    return this.header.data.difficulty;
+  }
+  get merkleHash() {
+    return this.header.data.merkleHash;
   }
 }
 
@@ -92,8 +121,8 @@ class Block {
  * @param {PrivateKey}  prv
  */
 function signBlock(block, prv) {
-  let h = block.hash();
-  let sig = makeSignature(h, prv);
+  let msg = block.header.data;
+  let sig = makeSignature(msg, prv);
   return block.withSignature(sig);
 }
 

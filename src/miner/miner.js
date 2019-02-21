@@ -1,17 +1,16 @@
 "use strict";
 
 const { Block, Header, signBlock } = require("../core/block");
+const { getHashList } = require("../core/potential");
 const { Transaction } = require("../core/transaction");
 const { merkle, hashMessage } = require("../crypto/index");
 const { preStateProcess } = require("../core/state_processor");
 
 class Miner {
-  constructor(db, bc, stateObj, potential) {
-    if (bc.address !== stateObj.address)
-      return Error("Address should be equal");
+  constructor(db, bc, stateDB, potentialDB) {
     this.bc = bc;
-    this.state = stateObj;
-    this.potential = potential;
+    this.stateDB = stateDB;
+    this.potentialDB = potentialDB;
     this.newTxs = [];
     this.isRunning = false;
     this.db = db;
@@ -50,20 +49,25 @@ class Miner {
    * @param {*} prvKey
    */
   async mineBlock(prvKey) {
-    const previousHash = this.bc.currentBlock.blockHash;
-    const potentialHashList = this.potential.getHashList();
+    if (!this.bc.genesisBlock) {
+      return mineGenesisBlock(prvKey); //TODO: initial state checking needed
+    }
+    const previousHash = this.bc.currentBlock.hash;
+    const potentialHashList = getHashList(
+      this.potentialDB.potentials[this.bc.address]
+    );
     this.pendTx();
     const newTxs = this.pendingTxList;
-    const accountState = preStateProcess(
+    const state = await preStateProcess(
       this.db,
-      this.state,
-      this.potential,
-      potentialHashList,
+      await this.stateDB.getStateObject(this.bc.address),
+      this.potentialDB.potentials[this.bc.address],
       newTxs
     );
-    if (accountState.error) return accountState.error;
-    const leaves = newTxs.map(tx => tx.hash());
-    const merkleHash = merkle(leaves);
+    if (state.error) return state.error;
+    const accountState = state.account;
+    const leaves = newTxs.map(tx => tx.hash);
+    const merkleHash = merkle(leaves); // TODO: merkle hash에 length 1인 리스트 들어가니깐 작동 안함
     const difficulty = 1; // For test.
     const timestamp = Math.round(new Date().getTime() / 1000);
     const data = {
@@ -79,15 +83,12 @@ class Miner {
     if (result === -1) {
       return Error("Miner is not enabled");
     }
-    const newHeader = new Header();
-    newHeader.data = result;
+    const newHeader = new Header(result);
     const minedBlock = new Block(newHeader, newTxs);
     signBlock(minedBlock, prvKey);
-    await this.db.writeBlock(minedBlock);
 
     //deepcopy
-    this.curBlock = JSON.parse(JSON.stringify(minedBlock));
-    console.log(this.curBlock);
+    this.curBlock = this.blockCopy(minedBlock);
     return minedBlock;
   }
 
@@ -127,11 +128,11 @@ class Miner {
    * 그러나 이는 블록에 담긴 tx들만 옮겨야 한다
    */
   pendTx() {
-    this.pendingTxList = Array.prototype.slice.call(this.newTxs);
+    this.pendingTxList = this.newTxs.map(tx => tx);
     this.newTxs = [];
   }
   pendBlock() {
-    this.pendingBlock = JSON.parse(JSON.stringify(this.curBlock));
+    this.pendingBlock = this.blockCopy(this.curBlock);
     this.curBlock = undefined;
   }
   confirmBlock() {
@@ -144,10 +145,18 @@ class Miner {
   recover() {
     this.pendingTxList.forEach(tx => this.makeTx(tx.receiver, tx.value));
     this.pendingTxList = [];
-    this.curBlock = JSON.parse(JSON.stringify(this.pendingBlock));
+    this.curBlock = this.blockCopy(this.pendingBlock);
   }
 
-  // TODO: tx editing methods.
+  blockCopy(block) {
+    return new Block(
+      new Header(block.header.data),
+      block.transactions,
+      block.r,
+      block.s,
+      block.v
+    );
+  }
 
   get newTxList() {
     return this.newTxs;

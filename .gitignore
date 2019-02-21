@@ -4,7 +4,7 @@ env/*
 # no more vscode
 .vscode/
 # no more wallet
-wallet/
+# wallet/
 
 # OS X
 **/.DS_Store

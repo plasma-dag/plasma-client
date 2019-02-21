@@ -24,7 +24,7 @@ class Transaction {
   /**
    * Returns and saves hash value of tx data, exclude signature information
    */
-  hash() {
+  get hash() {
     if (this.txHash) return this.txHash;
     // cache hash value
     const { receiver, value } = this.data;

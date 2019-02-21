@@ -1,6 +1,7 @@
 "use strict";
 
 const { Checkpoint, signCheckpoint } = require("./checkpoint");
+const { getHashList } = require("./potential");
 const {
   sendStateTransition,
   receiveStateTransition
@@ -12,21 +13,20 @@ const { deepCopy } = require("../common/utils");
  * @param {Database}    db
  * @param {StateObject} stateObject     block owner's state object
  * @param {Potential}   potential       potential object
- * @param {Hash[]}      blockHashList   block's unreceived block hash list
  */
 // contract block process
-async function receivePotential(db, stateObject, potential, blockHashList) {
+async function receivePotential(db, stateObject, potential) {
   const owner = stateObject.address;
-  const promises = blockHashList.map(hash => db.readBlock(hash));
+  console.log(getHashList(potential));
+  const promises = getHashList(potential).map(hash => db.readBlock(hash));
   const blocks = await Promise.all(promises);
-
-  blocks.forEach(blk => {
+  console.log(blocks);
+  blocks.forEach(async blk => {
     const transactions = blk.transactions;
     transactions
-      .filter(tx => tx.receiver === owner)
+      .filter(tx => tx.data.receiver === owner)
       .forEach(tx => receiveStateTransition(stateObject, tx));
-    //potentialDB.receivePotential(blk.hash(), owner);
-    potential.remove(blk.hash());
+    //potentialDB.receivePotential(blk.hash, owner);
   });
   return { error: false };
 }
@@ -44,7 +44,7 @@ async function receivePotential(db, stateObject, potential, blockHashList) {
  * @param {Number}          opNonce
  */
 
-const stateProcess = function(
+const stateProcess = async function(
   db,
   stateDB,
   potentialDB,
@@ -67,12 +67,12 @@ const stateProcess = function(
    * 변동사항 쓸지 결정해서 이를 setState 방식으로 저장하도록 바꾸기
    */
 
-  bc.insertBlock(block);
+  await bc.insertBlock(block);
 
   // 5
   //const blockOwnerAddress = bc.address;
-  const blockOwner = block.header.state.address;
-  const blockHash = block.hash();
+  const blockOwner = block.sender;
+  const blockHash = block.hash;
 
   //let blockOwnerState = stateDB.getStateObject(blockOwner);
 
@@ -80,14 +80,22 @@ const stateProcess = function(
   const blockOwnerState = stateDB.stateObjects[blockOwner];
   const stateCopy = deepCopy(blockOwnerState);
   const potential = potentialDB.potentials[blockOwner];
-  const potentialCopy = deepCopy(potential);
+  const potentialCopy = potential
+    ? {
+        address: potential.address,
+        blockHashList: potential.blockHashList
+      }
+    : {
+        address: blockOwner,
+        blockHashList: []
+      };
 
-  if (block.header.potentialHashList.length !== 0) {
-    const res = receivePotential(
+  if (block.potentialHashList.length !== 0) {
+    const res = await receivePotential(
       db,
       stateCopy,
       potentialCopy,
-      block.header.potentialHashList
+      block.potentialHashList
     );
     if (res.error) {
       // rollback -> 아마 setState 메소드 좀 바꾸면 더 쉽게 만들 수 있을듯.
@@ -98,9 +106,9 @@ const stateProcess = function(
   }
 
   // 6
-  block.transactions.forEach(tx => {
+  block.transactions.forEach(async tx => {
     let receiver = tx.receiver;
-    potentialDB.sendPotential(blockHash, receiver);
+    await potentialDB.sendPotential(blockHash, receiver);
     const res = sendStateTransition(stateCopy, tx);
     if (res.error) {
       // TODO: send error toleration logic here
@@ -110,13 +118,14 @@ const stateProcess = function(
   });
 
   // 7
-  let checkpoint = new Checkpoint(blockOwner, blockHash, opNonce);
-  const opSigCheckpoint = signCheckpoint(checkpoint, prvKey);
-  bc.updateCheckpoint(opSigCheckpoint);
+  let checkpoint = new Checkpoint(blockOwner, blockHash, opNonce + 1);
+  signCheckpoint(checkpoint, prvKey);
+  if (checkpoint.error) return checkpoint;
+  await bc.updateCheckpoint(checkpoint);
 
-  stateDB.setState(stateCopy.address, stateCopy.account);
-  potentialDB.makeNewPotential(potentialCopy.address); // TODO: 지금은 potential처리하고 나면 래퍼런스된 모든 블록을 처리한다고 생각하고 새로 만드는 로직, 하지만 potential 처리시 없는 block hash가 생길 수도 있음.. setPotential() 필요?
-  return opSigCheckpoint;
+  await stateDB.setState(stateCopy.address, stateCopy.account);
+  await potentialDB.makeNewPotential(stateCopy.address); // TODO: 지금은 potential처리하고 나면 래퍼런스된 모든 블록을 처리한다고 생각하고 새로 만드는 로직, 하지만 potential 처리시 없는 block hash가 생길 수도 있음.. setPotential() 필요?
+  return checkpoint;
 };
 
 /**
@@ -126,13 +135,7 @@ const stateProcess = function(
  * @param {potentialObject} potential
  * @param {*} block
  */
-const preStateProcess = function(
-  db,
-  state,
-  potential,
-  potentialHashList,
-  transactions
-) {
+const preStateProcess = async function(db, state, potential, transactions) {
   /**
    * 1. Check operator's signature is real usable one and address is user's (confirmSend 함수에서 처리하도록 수정)
    * 2. Find block by checkpoint's block hash (confirmSend 함수에서 처리하도록 수정)
@@ -145,14 +148,12 @@ const preStateProcess = function(
 
   // 5 state, potential copy로 potential을 받을 받아서 state copy를 update
   const stateCopy = deepCopy(state);
-  const potentialCopy = deepCopy(potential);
-  if (potentialHashList.length !== 0) {
-    const res = receivePotential(
-      db,
-      stateCopy,
-      potentialCopy,
-      potentialHashList
-    );
+  const potentialCopy = {
+    address: potential.address,
+    blockHashList: potential.blockHashList
+  };
+  if (getHashList(potential).length !== 0) {
+    const res = await receivePotential(db, stateCopy, potentialCopy);
     if (res.error) {
       return res;
     }
@@ -163,7 +164,7 @@ const preStateProcess = function(
     const res = sendStateTransition(stateCopy, tx);
     if (res.error) {
       // TODO: send error toleration logic here
-      balanceError = res.error;
+      balanceError = res;
     }
   });
   if (balanceError) return balanceError;
