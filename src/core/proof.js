@@ -102,7 +102,7 @@ class Proof {
 function makeProof(tx, blk, cp) {
   const txs = blk.transactions;
 
-  let leaves = txs.map(tx => tx.hash);
+  let leaves = txs.map(tx => tx.txHash);
 
   const index = txs.findIndex(t => t === tx);
   console.log("tx index: ", index);

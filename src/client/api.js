@@ -105,7 +105,7 @@ api.post("/sendProof", async function(req, res) {
     return res.send("Block nonce is invalid one");
   }
   const targetTx = targetBlock.transactions.find(
-    tx => tx.receiver === receiver.addr
+    tx => tx.data.receiver === receiver.addr
   );
   if (!targetTx) {
     return res.send("Block doesn't have receiver related tx");
