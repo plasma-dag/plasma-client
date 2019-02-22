@@ -24,7 +24,7 @@ class Database {
         const proofs = client.db(this.dbName).collection("proofs");
         proofs
           .updateOne(
-            { _id: proof_list[0].proof.blockHeader.hash },
+            { _id: proof_list[0].data.blockHeader.hash },
             { $set: { proof_list } },
             { upsert: true }
           )
@@ -51,7 +51,7 @@ class Database {
             resolve(
               result
                 ? result.proof_list.find(
-                    p => p.proof.tx.data.receiver === receiver
+                    p => p.data.tx.data.receiver === receiver
                   )
                 : undefined
             )
