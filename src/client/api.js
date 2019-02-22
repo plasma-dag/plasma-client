@@ -93,10 +93,13 @@ api.post("/sendBlock", async function(req, res) {
   res.send(result);
 });
 api.post("/sendProof", async function(req, res) {
-  const { blockNonce, receiverId } = req.body;
+  const { blockNonce, receiverStr } = req.body;
   const { db, bc } = req.app.locals;
   // Make proof
-  const receiver = await db.readUserById(receiverId);
+  const receiver = await db.readUserById(receiverStr);
+  if (!receiver) {
+    receiver = await db.readUserByAddress(receiverStr);
+  }
   if (!receiver) {
     return res.send("User doesn't exist");
   }
