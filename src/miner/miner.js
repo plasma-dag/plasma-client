@@ -103,9 +103,8 @@ class Miner {
     let receiver;
     if (!index) {
       receiver = await db.readUserById(receiverStr);
-      index = this.newTxs.findIndex(
-        tx => tx.data.receiver === receiver.address
-      );
+      receiverStr = receiver.address;
+      index = this.newTxs.findIndex(tx => tx.data.receiver === receiverStr);
     }
     if (index !== -1) {
       // update exist tx's value
@@ -116,7 +115,7 @@ class Miner {
         }`
       };
     }
-    let tx = new Transaction(receiver.address, value);
+    let tx = new Transaction(receiverStr, value);
     this.newTxs.push(tx);
     return { success: `New tx added to: ${receiverStr}, value: ${value}` };
   }
