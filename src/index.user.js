@@ -89,7 +89,7 @@ async function initPlasmaClient() {
      * 6. prooflist에 proof 추가
      */
 
-    const { proof } = req.body;
+    const proof = req.body;
     const prf = new Proof(
       new Transaction(proof.tx.data.receiver, proof.tx.data.value),
       proof.merkleProof,

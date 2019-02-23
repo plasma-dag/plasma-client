@@ -118,7 +118,7 @@ api.post("/sendProof", async function(req, res) {
   }
   const proof = makeProof(targetTx, targetBlock, targetCheckpoint);
   try {
-    const result = await axios.post(receiver.ip + "/proof", proof);
+    const result = await axios.post(receiver.ip + "/proof", proof.data);
     return res.send(result.data);
   } catch (error) {
     return res.send(error);
@@ -134,7 +134,7 @@ api.get("/state", async function(req, res) {
 });
 api.get("/currentTxs", function(req, res) {
   const miner = req.app.locals.miner;
-  res.send(miner.getTxs);
+  res.send(miner.newTxs);
 });
 api.get("/minedBlock", function(req, res) {
   const miner = req.app.locals.miner;
