@@ -32,10 +32,10 @@ api.post("/mineBlock", async function(req, res) {
   const block = await miner.mineBlock("0x" + wl.getPrivateFromWallet());
   res.send(block);
 });
-api.post("/makeTx", function(req, res) {
+api.post("/makeTx", async function(req, res) {
   const { receiver, value } = req.body;
   const miner = req.app.locals.miner;
-  const tx = miner.makeTx(receiver, value);
+  const tx = await miner.makeTx(receiver, value);
   res.send(tx);
 });
 api.post("/sendBlock", async function(req, res) {
@@ -96,7 +96,7 @@ api.post("/sendProof", async function(req, res) {
   const { blockNonce, receiverStr } = req.body;
   const { db, bc } = req.app.locals;
   // Make proof
-  const receiver = await db.readUserById(receiverStr);
+  let receiver = await db.readUserById(receiverStr);
   if (!receiver) {
     receiver = await db.readUserByAddress(receiverStr);
   }

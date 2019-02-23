@@ -102,7 +102,7 @@ class Miner {
     const index = this.newTxs.findIndex(tx => tx.data.receiver === receiverStr);
     let receiver;
     if (!index) {
-      receiver = await db.readUserById(receiverStr);
+      receiver = await this.db.readUserById(receiverStr);
       receiverStr = receiver.address;
       index = this.newTxs.findIndex(tx => tx.data.receiver === receiverStr);
     }
