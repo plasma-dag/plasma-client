@@ -414,8 +414,9 @@ class Database {
         }
         const states = client.db(this.dbName).collection("states");
         states
-          .findOne({ address: address })
-          .then(({ address, account }) => resolve({ address, account }))
+          .find({}, { address: address })
+          .toArray()
+          .then(result => resolve(result[0]))
           .catch(err => reject(err));
       });
     });

@@ -77,7 +77,7 @@ api.post("/sendBlock", async function(req, res) {
     return res.send("Checkpoint validation failed: ", result.error);
 
   // checkpoint operator nonce 확인
-  if (bc.opNonce >= checkpoint.operatorNonce)
+  if (bc.lastOpNonce >= checkpoint.operatorNonce)
     return res.send("Operator nonce is lower than recent one");
 
   // bc update
