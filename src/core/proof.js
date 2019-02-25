@@ -10,12 +10,12 @@ const {
 class Proof {
   /**
    *
-   * @param {*} tx
-   * @param {*} merkleProof
-   * @param {*} merkleRoot
-   * @param {*} merkleDeps
-   * @param {*} checkpoint
-   * @param {*} blockHeader
+   * @param {Transaction}          tx
+   * @param {{Position, String}[]} merkleProof
+   * @param {Buffer}               merkleRoot
+   * @param {Number}               merkleDeps
+   * @param {Checkpoint}           checkpoint
+   * @param {Header}               blockHeader
    */
   constructor(
     tx,
@@ -28,7 +28,7 @@ class Proof {
     s,
     v
   ) {
-    this.proof = {
+    this.data = {
       tx,
       merkleProof,
       merkleRoot,
@@ -49,8 +49,8 @@ class Proof {
   // receiver의 검증
   // proofList = receiver가 지금까지 검증한 proof의 리스트
   validate() {
-    for (let key in this.proof) {
-      if (!this.proof[key]) return { error: true };
+    for (let key in this.data) {
+      if (!this.data[key]) return { error: true };
     }
 
     return { error: false };
@@ -58,10 +58,10 @@ class Proof {
 
   merkleProof() {
     const result = !verifyMerkle(
-      this.proof.merkleDeps,
-      this.proof.merkleProof,
-      this.proof.tx.hash,
-      this.proof.merkleRoot
+      this.data.merkleDeps,
+      this.data.merkleProof,
+      this.data.tx.hash,
+      this.data.merkleRoot
     );
     return {
       error: result
@@ -71,24 +71,24 @@ class Proof {
   get sender() {
     if (this.from) return this.from;
     this.from = ecrecover(
-      hashMessage(this.proof.blockHeader.data),
-      this.proof.r,
-      this.proof.s,
-      this.proof.v
+      hashMessage(this.data.blockHeader.data),
+      this.data.r,
+      this.data.s,
+      this.data.v
     );
     return this.from;
   }
   get checkpoint() {
-    return this.proof.checkpoint;
+    return this.data.checkpoint;
   }
   get blockHash() {
-    return this.proof.blockHeader.hash;
+    return this.data.blockHeader.hash;
   }
   get tx() {
-    return this.proof.tx;
+    return this.data.tx;
   }
   get blockHeader() {
-    return this.proof.blockHeader;
+    return this.data.blockHeader;
   }
 }
 

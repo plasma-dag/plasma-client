@@ -1,10 +1,7 @@
 "use strict";
 /**
- * potential Data at DB
- * {
- *  address,
- *  blockHashList
- * }
+ * Represents potential structure
+ * Potential is an unreceived balance which is to be added.
  */
 class Potential {
   /**
@@ -43,12 +40,18 @@ class Potential {
   }
 }
 
+/**
+ * Potential Database
+ */
 class PotentialDB {
+  /**
+   * Potential dictionary with address : {addr1: Potential1 , addr2: Potential2 , ...}
+   * @param {Database} db
+   */
   constructor(db) {
     this.db = db;
     this.potentials = {};
   }
-
   async populate() {
     const res = await this.db.readAllPotentials();
     for (let i = 0; i < res.length; i++) {
@@ -60,9 +63,9 @@ class PotentialDB {
     }
   }
   /**
-   *
-   * @param {*} blockHash
-   * @param {*} receiver
+   * Checks if there exists a potential that contains a specific blockHash and a receiver, and returns Boolean
+   * @param {Hash} blockHash
+   * @param {address} receiver
    */
   isExist(blockHash, receiver) {
     if (this.potentials[receiver]) {
@@ -77,8 +80,8 @@ class PotentialDB {
     return newPotential;
   }
   /**
-   *
-   * @param {*} blockHash
+   * Adds a new potential in potentials dictionary
+   * @param {Hash} blockHash
    * @param {address} receiver
    */
   async sendPotential(blockHash, receiver) {
@@ -91,8 +94,8 @@ class PotentialDB {
     return await this.potentials[receiver].save();
   }
   /**
-   *
-   * @param {*} blockHash
+   * Removes a potential from potentials dictionary, in case the potential is to be added to balance
+   * @param {Hash} blockHash
    * @param {address} receiver
    */
   async receivePotential(blockHash, receiver) {

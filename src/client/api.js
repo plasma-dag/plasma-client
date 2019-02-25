@@ -38,13 +38,9 @@ api.post("/makeTx", function(req, res) {
   const tx = miner.makeTx(receiver, value);
   res.send(tx);
 });
-api.post("/sendBlock", async function(req, res) {
-  /**
-   * 1. miner 객체에서 최신 블록을 갖고 온다.
-   * 2. nw 객체에 구현된 sendToOperator(block) 함수 호출 (TODO)
-   * 3. websocket의 response를 기다린 후, 성공, 실패 로직을 각각 실행한다.
-   */
-  const { miner, db, bc, stateDB, potentialDB } = req.app.locals;
+
+api.post("/receiveCheckpoint", async function(req, res) {
+  const { miner, db } = req.app.locals;
   const block = miner.currentBlock;
   if (!block) return res.send("Mined block doesn't exist");
 
@@ -52,6 +48,9 @@ api.post("/sendBlock", async function(req, res) {
 
   miner.pendBlock();
   let result = await axios.post(operator.ip + "/block", block);
+  if (result.data.error) {
+    return res.send(result.data.error);
+  }
   const checkpoint = new Checkpoint(
     result.data.address,
     result.data.blockHash,
@@ -60,13 +59,43 @@ api.post("/sendBlock", async function(req, res) {
     result.data.s,
     result.data.v
   );
+  res.send(checkpoint);
+});
 
-  if (checkpoint.error) {
-    // Reset miner's data.
-    return res.send(checkpoint);
+api.post("/sendBlock", async function(req, res) {
+  /**
+   * 1. miner 객체에서 최신 블록을 갖고 온다.
+   * 2. nw 객체에 구현된 sendToOperator(block) 함수 호출 (TODO)
+   * 3. websocket의 response를 기다린 후, 성공, 실패 로직을 각각 실행한다.
+   */
+  const { miner, db, bc, stateDB, potentialDB } = req.app.locals;
+  // const block = miner.currentBlock;
+  // if (!block) return res.send("Mined block doesn't exist");
+
+  // const operator = await db.readUserById("operator");
+
+  // miner.pendBlock();
+  // let result = await axios.post(operator.ip + "/block", block);
+  // if(result.data.error){
+  //   return res.send(result.data.error)
+  // }
+  // const checkpoint = new Checkpoint(
+  //   result.data.address,
+  //   result.data.blockHash,
+  //   result.data.operatorNonce,
+  //   result.data.r,
+  //   result.data.s,
+  //   result.data.v
+  // );
+
+  let checkpoint = await axios.post(
+    "http://localhost:3001" + "/receiveCheckpoint"
+  );
+  console.log(checkpoint);
+  if (checkpoint.data.error) {
+    return checkpoint;
   }
   miner.confirmBlock();
-  console.log(result);
 
   const sender = checkpoint.address;
   if (!sender) return res.send("checkpoint doesn't have sender");
@@ -77,7 +106,7 @@ api.post("/sendBlock", async function(req, res) {
     return res.send("Checkpoint validation failed: ", result.error);
 
   // checkpoint operator nonce 확인
-  if (bc.opNonce >= checkpoint.operatorNonce)
+  if (bc.lastOpNonce >= checkpoint.operatorNonce)
     return res.send("Operator nonce is lower than recent one");
 
   // bc update
@@ -118,7 +147,7 @@ api.post("/sendProof", async function(req, res) {
   }
   const proof = makeProof(targetTx, targetBlock, targetCheckpoint);
   try {
-    const result = await axios.post(receiver.ip + "/proof", proof);
+    const result = await axios.post(receiver.ip + "/proof", proof.data);
     return res.send(result.data);
   } catch (error) {
     return res.send(error);
@@ -126,15 +155,16 @@ api.post("/sendProof", async function(req, res) {
 });
 api.get("/potentials", function(req, res) {
   const { potentialDB, addr } = req.app.locals;
+  console.log(addr);
   res.send(potentialDB.potentials[addr]);
 });
 api.get("/state", async function(req, res) {
   const { stateDB, addr } = req.app.locals;
-  res.send(await stateDB.getStateObject[addr]);
+  res.send(await stateDB.stateObjects[addr]);
 });
 api.get("/currentTxs", function(req, res) {
   const miner = req.app.locals.miner;
-  res.send(miner.getTxs);
+  res.send(miner.newTxs);
 });
 api.get("/minedBlock", function(req, res) {
   const miner = req.app.locals.miner;

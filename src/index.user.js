@@ -89,7 +89,7 @@ async function initPlasmaClient() {
      * 6. prooflist에 proof 추가
      */
 
-    const { proof } = req.body;
+    const proof = req.body;
     const prf = new Proof(
       new Transaction(proof.tx.data.receiver, proof.tx.data.value),
       proof.merkleProof,
@@ -123,7 +123,7 @@ async function initPlasmaClient() {
     console.log(proofList);
     // 3
     result = proofList.find(p => {
-      return prf.blockHash === p.proof.blockHeader.blockHash; // TODO: proof 저장되어 있는 놈에서 hash 만드는거...
+      return prf.blockHash === p.data.blockHeader.blockHash; // TODO: proof 저장되어 있는 놈에서 hash 만드는거...
     });
     console.log(result);
     if (result) return res.send("Proof already exist");
