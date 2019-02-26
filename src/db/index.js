@@ -136,7 +136,7 @@ class Database {
     });
   }
 
-  readUserbyAddress(address) {
+  readUserByAddress(address) {
     return new Promise((resolve, reject) => {
       this.db.connect(url, { useNewUrlParser: true }, (err, client) => {
         if (err) {

@@ -95,24 +95,31 @@ class Miner {
   /**
    * Receives tx information and update newTx list
    *
-   * @param {*} receiver
+   * @param {*} receiverStr
    * @param {*} value
    */
-  makeTx(receiver, value) {
-    const index = this.newTxs.findIndex(tx => tx.data.receiver === receiver);
+  async makeTx(receiverStr, value) {
+    const index = this.newTxs.findIndex(tx => tx.data.receiver === receiverStr);
+    let receiver;
+    if (!index) {
+      receiver = await this.db.readUserById(receiverStr);
+      receiverStr = receiver.address;
+      index = this.newTxs.findIndex(tx => tx.data.receiver === receiverStr);
+    }
     if (index !== -1) {
       // update exist tx's value
       this.newTxs[index].data.value += value;
       return {
-        success: `Updated exist tx to: ${receiver}, value: ${
+        success: `Updated exist tx to: ${receiverStr}, value: ${
           this.newTxs[index].data.value
         }`
       };
     }
-    let tx = new Transaction(receiver, value);
+    let tx = new Transaction(receiverStr, value);
     this.newTxs.push(tx);
-    return { success: `New tx added to: ${receiver}, value: ${value}` };
+    return { success: `New tx added to: ${receiverStr}, value: ${value}` };
   }
+
   /**
    * Refresh mined block and all tx list
    */
