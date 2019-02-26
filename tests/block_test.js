@@ -1,4 +1,4 @@
-const { Block, Header } = require("./block");
+const { Block, Header } = require("../src/core/block");
 
 let hd = new Header("ddfkdfdk", null, "dfdfdfdfd", 0, 1, 1532315, 123, null);
 

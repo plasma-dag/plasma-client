@@ -1,34 +1,174 @@
 "use strict";
 
-//const SHA256 = require("crypto-js/sha256");
-const bigInt = require("big-integer");
+const { Block, Header, signBlock } = require("../core/block");
+const { getHashList } = require("../core/potential");
+const { Transaction } = require("../core/transaction");
+const { merkle, hashMessage } = require("../crypto/index");
+const { preStateProcess } = require("../core/state_processor");
 
-/**
- * ethash.go, miner.go sealer.go api.go참고
- algorithm.go
- */
+class Miner {
+  constructor(db, bc, stateDB, potentialDB) {
+    this.bc = bc;
+    this.stateDB = stateDB;
+    this.potentialDB = potentialDB;
+    this.newTxs = [];
+    this.isRunning = false;
+    this.db = db;
+  }
+  /**
+   * Enable mining
+   */
+  start() {
+    this.isRunning = true;
+  }
+  /**
+   * Disable mining
+   */
+  stop() {
+    this.isRunning = false;
+  }
+  /**
+   *
+   * @param {Object} data
+   */
+  mine(data) {
+    while (this.isRunning) {
+      const hash = hashMessage(data);
+      if (hash.slice(2, data.difficulty + 2) === "0".repeat(data.difficulty)) {
+        return data;
+      }
+      data.nonce += 1;
+    }
 
-/**
- * Hashimoto() 우선 제외함
- *
- * @param {*} block
- * @param {*} previousBlock
- */
+    return -1;
+  }
+  /**
+   * Returns mined block with current environment, only available
+   * when miner is enabled by start() method
+   *
+   * @param {*} prvKey
+   */
+  async mineBlock(prvKey) {
+    if (!this.bc.genesisBlock) {
+      return mineGenesisBlock(prvKey); //TODO: initial state checking needed
+    }
+    const previousHash = this.bc.currentBlock.hash;
+    const potentialHashList = getHashList(
+      this.potentialDB.potentials[this.bc.address]
+    );
+    this.pendTx();
+    const newTxs = this.pendingTxList;
+    const state = await preStateProcess(
+      this.db,
+      await this.stateDB.getStateObject(this.bc.address),
+      this.potentialDB.potentials[this.bc.address],
+      newTxs
+    );
+    if (state.error) return state.error;
+    const accountState = state.account;
+    const leaves = newTxs.map(tx => tx.hash);
+    const merkleHash = merkle(leaves); // TODO: merkle hash에 length 1인 리스트 들어가니깐 작동 안함
+    const difficulty = 1; // For test.
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    const data = {
+      previousHash,
+      potentialHashList,
+      accountState,
+      merkleHash,
+      difficulty,
+      timestamp,
+      nonce: 0
+    };
+    const result = this.mine(data);
+    if (result === -1) {
+      return Error("Miner is not enabled");
+    }
+    const newHeader = new Header(result);
+    const minedBlock = new Block(newHeader, newTxs);
+    signBlock(minedBlock, prvKey);
 
-const mine = (block, previousBlock) => {
-	const difficulty = calcDifficulty(block, previousBlock);
+    //deepcopy
+    this.curBlock = this.blockCopy(minedBlock);
+    return minedBlock;
+  }
 
-	const target = new bigInt(2 ** 256 / difficulty);
-	let nonce = Math.floor(Math.random() * (2 ** 64 + 1));
+  /**
+   * Receives tx information and update newTx list
+   *
+   * @param {*} receiver
+   * @param {*} value
+   */
+  makeTx(receiver, value) {
+    const index = this.newTxs.findIndex(tx => tx.data.receiver === receiver);
+    if (index !== -1) {
+      // update exist tx's value
+      this.newTxs[index].data.value += value;
+      return {
+        success: `Updated exist tx to: ${receiver}, value: ${
+          this.newTxs[index].data.value
+        }`
+      };
+    }
+    let tx = new Transaction(receiver, value);
+    this.newTxs.push(tx);
+    return { success: `New tx added to: ${receiver}, value: ${value}` };
+  }
+  /**
+   * Refresh mined block and all tx list
+   */
+  refresh() {
+    this.curBlock = undefined;
+    this.pendingBlock = undefined;
+    this.newTxs = [];
+    this.pendingTxlist = [];
+  }
+  /**
+   * Saves tx list temporarily
+   * TODO: 지금은 모든 트랜잭션을 담아 만들어 tx 리스트를 그냥 없애버림.
+   * 그러나 이는 블록에 담긴 tx들만 옮겨야 한다
+   */
+  pendTx() {
+    this.pendingTxList = this.newTxs.map(tx => tx);
+    this.newTxs = [];
+  }
+  pendBlock() {
+    this.pendingBlock = this.blockCopy(this.curBlock);
+    this.curBlock = undefined;
+  }
+  confirmBlock() {
+    this.pendingBlock = undefined;
+    this.pendingTxlist = [];
+  }
+  /**
+   * Recovers temporarily saved block and its tx list
+   */
+  recover() {
+    this.pendingTxList.forEach(tx => this.makeTx(tx.receiver, tx.value));
+    this.pendingTxList = [];
+    this.curBlock = this.blockCopy(this.pendingBlock);
+  }
 
-	//while(hashimoto()>target)
-	while (nonce > target) {
-		nonce = (nonce + 1) % 2 ** 64;
-	}
-	return nonce;
-};
+  blockCopy(block) {
+    return new Block(
+      new Header(block.header.data),
+      block.transactions,
+      block.r,
+      block.s,
+      block.v
+    );
+  }
 
-/**
+  get newTxList() {
+    return this.newTxs;
+  }
+  get currentBlock() {
+    return this.curBlock;
+  }
+  get pendingTxs() {
+    return this.pendingTxlist;
+  }
+
+  /**
  * TO DO: mod연산 수정
  * 
     ethereum difficulty를 구하는 과정에서(consensus/ethash/consensus.go)
@@ -39,33 +179,34 @@ const mine = (block, previousBlock) => {
  * @param {*} previousBlock
  */
 
-const calcDifficulty = (block, previousBlock) => {
-	let diff = 0;
-	let expDiff = 0;
-	const adjust = previousBlock.difficulty / 2048; //2048 is difficultyBoundDivisor
-	const time = block.header.timestamp;
-	const previousTime = previousBlock.header.timestamp;
-	const previousDiff = previousBlock.header.difficulty;
-	const minimumDiff = 131072;
+  calcDifficulty(timestamp, previousBlock, totalAmount) {
+    let diff = 0;
+    let expDiff = 0;
+    const adjust = previousBlock.difficulty / 2048; //2048 is difficultyBoundDivisor
+    const previousTime = previousBlock.header.timestamp;
+    const previousDiff = previousBlock.header.difficulty;
+    const minimumDiff = 131072;
 
-	// const durationLimit = 13;
-	const value = block.header.value;
-	let valueAdjust = adjust;
+    // const durationLimit = 13;
+    const value = totalAmount;
+    let valueAdjust = adjust;
 
-	//10000003은 소수 아무거나 정한거
-	let mod = 10000003 % value;
+    //10000003은 소수 아무거나 정한거
+    let mod = 10000003 % value;
 
-	if (mod !== 0) {
-		valueAdjust = mod / 2048;
-	} else {
-		mod = 10000003 % (value + 1);
-		valueAdjust = (mod + 1) / 2048;
-	}
+    if (mod !== 0) {
+      valueAdjust = mod / 2048;
+    } else {
+      mod = 10000003 % (value + 1);
+      valueAdjust = (mod + 1) / 2048;
+    }
 
-	//이더리움의 경우 previousblock의 uncle block이 있으면 max 옆의 값을 1이아닌 2로 바꿔 계산
-	expDiff = previousDiff + valueAdjust * Math.max(1 - (time - previousTime) / 9, -99);
+    //이더리움의 경우 previousblock의 uncle block이 있으면 max 옆의 값을 1이아닌 2로 바꿔 계산
+    expDiff =
+      previousDiff +
+      valueAdjust * Math.max(1 - (timestamp - previousTime) / 9, -99);
 
-	/* durationLimit와 비교해 조정
+    /* durationLimit와 비교해 조정
     if ((time - previousIime) < (durationLimit)) {
         expDiff = previousDiff + adjust;
     } else {
@@ -73,15 +214,16 @@ const calcDifficulty = (block, previousBlock) => {
     } 
       */
 
-	if (expDiff > minimumDiff) {
-		diff = minimumDiff;
-	} else diff = expDiff;
+    if (expDiff > minimumDiff) {
+      diff = minimumDiff;
+    } else diff = expDiff;
 
-	return diff;
-};
+    return diff;
+  }
 
-const hashrate = () => {};
+  hashrate() {}
+}
 
 module.exports = {
-	mine
+  Miner
 };

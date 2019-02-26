@@ -1,5 +1,5 @@
 "use-strict";
-const { calculateSHA256 } = require("../crypto");
+const { hashMessage } = require("../crypto");
 
 /**
  * Transaction
@@ -24,42 +24,26 @@ class Transaction {
   /**
    * Returns and saves hash value of tx data, exclude signature information
    */
-  hash() {
+  get hash() {
     if (this.txHash) return this.txHash;
     // cache hash value
     const { receiver, value } = this.data;
-    this.txHash = calculateSHA256({
+    this.txHash = hashMessage({
       receiver,
       value
       // data,
     });
     return this.txHash;
   }
-}
 
-/**
- * TODO: this part is for cli, not about transaction itself. Should be moved to other files.
- */
+  get value() {
+    return this.data.value;
+  }
 
-/*
-function sendTransaction(nonce, receiver, sender, value) {
-	let Transaction = new Transaction(nonce, receiver, sender, value);
-	//transfer(Transaction, );
+  get receiver() {
+    return this.data.receiver;
+  }
 }
-
-function receiveTransaction(sender, receiver, value) {
-	let Transaction = new Transaction(nonce, receiver, sender, value);
-	//trasfer(Transaction, )
-}
-
-function addTransaction(account, newTransaction) {
-	if(isValidTransaction(newTransaction)) {
-		Transaction.push(newTransaction);
-		return true;
-	} 
-	return false;
-}
-*/
 
 module.exports = {
   Transaction

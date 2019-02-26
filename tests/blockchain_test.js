@@ -63,7 +63,8 @@ const block4 = new Block(header4, []);
 //check if it works - assign 1st value to checkpoint, 2nd value to blocks
 
 async function main() {
-  const sample_blockchain = await new Blockchain(db, "chan");
+  const sample_blockchain = new Blockchain(db, "chan");
+  await sample_blockchain.init();
   console.log(sample_blockchain.checkpoint);
   console.log(sample_blockchain.blocks);
   console.log(sample_blockchain.currentBlock);
